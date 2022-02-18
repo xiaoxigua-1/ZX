@@ -8,7 +8,7 @@ pub fn init() {
 
 #[derive(Parser)]
 #[clap(name = "zx")]
-#[clap(about = "A fictional versioning CLI", long_about = None)]
+#[clap(about = "ZX is a simple programmimg language", long_about = None)]
 struct Cli {
     #[clap(subcommand)]
     command: SubCommand
