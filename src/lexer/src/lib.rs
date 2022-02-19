@@ -64,8 +64,4 @@ impl Lexer {
 
         self.tokens.push(Token { token_type: Tokens::EOF, literal: "".to_string() })
     }
-
-    fn get_tokens(self) -> Vec<Token> {
-        self.tokens
-    }
 }

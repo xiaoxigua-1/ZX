@@ -24,6 +24,7 @@ pub enum Tokens {
     ArrowToken,
     IdentifierToken
 }
+
 #[derive(Debug)]
 pub struct Token {
     pub(crate) token_type: Tokens,

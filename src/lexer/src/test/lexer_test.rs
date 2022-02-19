@@ -6,7 +6,7 @@ mod lexer_test {
     fn test_lexer() {
         let mut lexer = Lexer::new("./test_data/test_data.zx".to_string());
         lexer.lexer();
-        println!("{:?}", lexer.get_tokens())
+        println!("{:?}", lexer.tokens)
     }
 }
 
