@@ -5,7 +5,7 @@ mod test;
 use std::fs;
 use file_stream::StringStream;
 use util::repost::{Level, Repost};
-use crate::token::{Token, Tokens};
+use crate::token::{Literal, Position, Token, Tokens};
 
 struct Lexer {
     path: String,
@@ -32,8 +32,13 @@ impl Lexer {
                 ' '..='/' | ':'..='@' | '['..='`' | '{'..='~' | '\n' | '\r' => {
                     if !identifier_string.is_empty() {
                         self.tokens.push(Token {
-                            token_type: Tokens::IdentifierToken,
-                            literal: identifier_string,
+                            token_type: Tokens::IdentifierToken {
+                                literal: identifier_string
+                            },
+                            pos: Position {
+                                start: file_stream.index,
+                                end: file_stream.index,
+                            },
                         });
                         identifier_string = String::new();
                     }
@@ -44,10 +49,10 @@ impl Lexer {
             match file_stream.get_currently() {
                 '"' => {
                     match self.lex_string(&mut file_stream) {
-                        Err(error) => {
+                        Err(()) => {
                             self.reposts.push(Repost {
                                 level: Level::Error,
-                                message: error,
+                                message: "EOL while scanning string literal",
                             });
 
                             break;
@@ -60,13 +65,19 @@ impl Lexer {
                 '*' => {
                     self.tokens.push(Token {
                         token_type: Tokens::MultiplyToken,
-                        literal: "*".to_string(),
+                        pos: Position {
+                            start: file_stream.index,
+                            end: file_stream.index,
+                        },
                     });
                 }
                 '\n' => {
                     self.tokens.push(Token {
                         token_type: Tokens::LineSeparator,
-                        literal: '\n'.to_string(),
+                        pos: Position {
+                            start: file_stream.index,
+                            end: file_stream.index,
+                        },
                     });
                 }
                 '\r' => {}
@@ -93,7 +104,13 @@ impl Lexer {
         }
 
         if filter_reposts.is_empty() {
-            self.tokens.push(Token { token_type: Tokens::EOF, literal: "".to_string() });
+            self.tokens.push(Token {
+                token_type: Tokens::EOF,
+                pos: Position {
+                    start: file_stream.index,
+                    end: file_stream.index,
+                },
+            });
 
             Ok(())
         } else {
@@ -101,14 +118,24 @@ impl Lexer {
         }
     }
 
-    fn lex_string(&self, string_stream: &mut StringStream) -> Result<Token, String> {
+    fn lex_string(&self, string_stream: &mut StringStream) -> Result<Token, ()> {
         let mut string_content = String::new();
+        let start = string_stream.index.clone();
         string_stream.next();
 
         while !string_stream.is_eof {
             match string_stream.get_currently() {
                 '"' => {
                     break;
+                }
+                '\\' => {
+                    string_stream.next();
+
+                    if !string_stream.is_eof {
+                        string_content.push(string_stream.get_currently());
+                    } else {
+                        break;
+                    }
                 }
                 _ => {
                     string_content.push(string_stream.get_currently());
@@ -120,11 +147,17 @@ impl Lexer {
 
         if !string_stream.is_eof {
             Ok(Token {
-                token_type: Tokens::StringToken,
-                literal: string_content,
+                token_type: Tokens::LiteralToken {
+                    kid: Literal::String,
+                    literal: string_content,
+                },
+                pos: Position {
+                    start,
+                    end: string_stream.index
+                }
             })
         } else {
-            Err("abc".to_string())
+            Err(())
         }
     }
 }

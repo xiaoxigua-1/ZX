@@ -22,12 +22,30 @@ pub enum Tokens {
     LessToken,
     MoreToken,
     ArrowToken,
-    IdentifierToken,
-    StringToken
+    IdentifierToken {
+        literal: String
+    },
+    LiteralToken {
+        kid: Literal,
+        literal: String
+    }
+}
+
+#[derive(Debug)]
+pub enum Literal {
+    String,
+    Number,
+    Char
+}
+
+#[derive(Debug)]
+pub struct Position {
+    pub(crate) start: usize,
+    pub(crate) end: usize,
 }
 
 #[derive(Debug)]
 pub struct Token {
     pub(crate) token_type: Tokens,
-    pub(crate) literal: String,
+    pub(crate) pos: Position,
 }

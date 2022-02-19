@@ -5,7 +5,12 @@ mod lexer_test {
     #[test]
     fn test_lexer() {
         let mut lexer = Lexer::new("./test_data/test_data.zx".to_string());
-        lexer.lexer();
+        match lexer.lexer() {
+            Err(error) => {
+
+            }
+            Ok(()) => {}
+        };
         println!("{:?}", lexer.tokens)
     }
 }

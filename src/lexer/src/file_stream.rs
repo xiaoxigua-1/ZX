@@ -4,7 +4,7 @@ use std::str::Chars;
 pub struct StringStream<'a> {
     code_string_iterators: Chars<'a>,
     currently: char,
-    index: usize,
+    pub(crate) index: usize,
     pub(crate) is_eof: bool
 }
 

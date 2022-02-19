@@ -6,7 +6,7 @@ pub enum Level {
 
 pub struct Repost {
     pub level: Level,
-    pub message: String,
+    pub message: &'static str,
 }
 
 impl Repost {
