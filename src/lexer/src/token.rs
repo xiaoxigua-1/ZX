@@ -1,5 +1,7 @@
+#[derive(Debug)]
 pub enum Tokens {
     EOF,
+    LineSeparator,
     CommaToken,
     ColonToken,
     LeftCurlyBracketsToken,
@@ -21,4 +23,9 @@ pub enum Tokens {
     MoreToken,
     ArrowToken,
     IdentifierToken
+}
+#[derive(Debug)]
+pub struct Token {
+    pub(crate) token_type: Tokens,
+    pub(crate) literal: String,
 }

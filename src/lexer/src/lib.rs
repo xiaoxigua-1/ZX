@@ -1,23 +1,71 @@
 mod file_stream;
-mod chars;
-pub mod tokens;
+
+pub mod token;
+mod test;
 
 use std::fs;
 use file_stream::FileStream;
+use crate::token::{Token, Tokens};
 
 struct Lexer {
     path: String,
+    tokens: Vec<Token>,
 }
-
 
 impl Lexer {
     fn new(path: String) -> Lexer {
         Lexer {
-            path: path.clone()
+            path,
+            tokens: vec![],
         }
     }
 
-    fn lexer(mut self) {
-        let _ = fs::read_to_string(self.path).expect("Something went wrong reading the file");
+    fn lexer(&mut self) {
+        let file_string = fs::read_to_string(self.path.clone()).expect("Something went wrong reading the file");
+        let mut file_stream = FileStream::new(&file_string);
+        let mut identifier_string = String::new();
+
+        while !file_stream.is_eof {
+            match file_stream.get_currently() {
+                ' '..='/' | ':'..='@' | '['..='`' | '{'..='~' | '\n' | '\r' => {
+                    if !identifier_string.is_empty() {
+                        println!("{}", identifier_string);
+                        self.tokens.push(Token {
+                            token_type: Tokens::IdentifierToken,
+                            literal: identifier_string,
+                        });
+                        identifier_string = String::new();
+                    }
+                }
+                _ => {}
+            }
+
+            match file_stream.get_currently() {
+                '*' => {
+                    self.tokens.push(Token {
+                        token_type: Tokens::MultiplyToken,
+                        literal: "*".to_string(),
+                    });
+                }
+                '\n' => {
+                    self.tokens.push(Token {
+                        token_type: Tokens::LineSeparator,
+                        literal: '\n'.to_string(),
+                    });
+                }
+                '\r' => {}
+                _ => {
+                    identifier_string.push(file_stream.get_currently());
+                }
+            }
+
+            file_stream.next()
+        }
+
+        self.tokens.push(Token { token_type: Tokens::EOF, literal: "".to_string() })
+    }
+
+    fn get_tokens(self) -> Vec<Token> {
+        self.tokens
     }
 }
