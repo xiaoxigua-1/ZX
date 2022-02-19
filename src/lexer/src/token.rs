@@ -22,7 +22,8 @@ pub enum Tokens {
     LessToken,
     MoreToken,
     ArrowToken,
-    IdentifierToken
+    IdentifierToken,
+    StringToken
 }
 
 #[derive(Debug)]
