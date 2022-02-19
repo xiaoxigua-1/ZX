@@ -1,3 +1,7 @@
+use crate::error::ZXError;
+use crate::token::Position;
+
+
 pub enum Level {
     Error,
     Warning,
@@ -6,19 +10,19 @@ pub enum Level {
 
 pub struct Repost {
     pub level: Level,
-    pub message: &'static str,
+    pub error_type: ZXError,
+    pub message: String,
+    pub pos: Position
 }
 
 impl Repost {
     pub fn print(&self) {
-        let mut s = match self.level {
+        let color_char = match self.level {
             Level::Error => "\x1b[31m".to_string(),
             Level::Warning => "\x1b[33m".to_string(),
             Level::Debug => "\x1b[34m".to_string(),
         };
 
-        s.push_str(&self.message);
-        s.push_str("\x1b[0m");
-        println!("{}", s);
+        println!("{}{:?}: {}\x1b[0m", color_char, self.error_type, self.message);
     }
 }

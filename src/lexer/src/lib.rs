@@ -1,11 +1,11 @@
 mod file_stream;
-pub mod token;
 mod test;
 
 use std::fs;
 use file_stream::StringStream;
 use util::repost::{Level, Repost};
-use crate::token::{Literal, Position, Token, Tokens};
+use util::error::ZXError;
+use util::token::{Literal, Position, Token, Tokens};
 
 struct Lexer {
     path: String,
@@ -28,7 +28,9 @@ impl Lexer {
         let mut identifier_string = String::new();
 
         while !file_stream.is_eof {
-            match file_stream.get_currently() {
+            let currently = file_stream.get_currently();
+
+            match currently {
                 ' '..='/' | ':'..='@' | '['..='`' | '{'..='~' | '\n' | '\r' => {
                     if !identifier_string.is_empty() {
                         self.tokens.push(Token {
@@ -46,43 +48,63 @@ impl Lexer {
                 _ => {}
             }
 
-            match file_stream.get_currently() {
-                '"' => {
-                    match self.lex_string(&mut file_stream) {
-                        Err(()) => {
-                            self.reposts.push(Repost {
-                                level: Level::Error,
-                                message: "EOL while scanning string literal",
-                            });
+            match currently {
+                '"' | '/' => {
+                    let result = match currently {
+                        '"' => self.lex_string(&mut file_stream),
+                        '/' => self.lex_slash(&mut file_stream),
+                        _ => Result::Ok(())
+                    };
 
+                    match result {
+                        Ok(()) => {}
+                        Err(()) => {
                             break;
-                        }
-                        Ok(token) => {
-                            self.tokens.push(token);
                         }
                     }
                 }
-                '*' => {
+                '!'..='.' | ':'..='@' | '['..='`' | '{'..='~' | '\n' => {
+                    let kid = match currently {
+                        '\n' => Tokens::LineSeparator,
+                        '*' => Tokens::MultiplyToken,
+                        '+' => Tokens::PlusToken,
+                        '-' => Tokens::MinusToken,
+                        '>' => Tokens::MoreToken,
+                        '<' => Tokens::LessToken,
+                        '=' => Tokens::EqualToken,
+                        '{' => Tokens::LeftCurlyBracketsToken,
+                        '}' => Tokens::RightCurlyBracketsToken,
+                        '[' => Tokens::LeftSquareBracketsToken,
+                        ']' => Tokens::RightSquareBracketsToken,
+                        '(' => Tokens::LeftParenthesesToken,
+                        ')' => Tokens::RightParenthesesToken,
+                        '.' => Tokens::DotToken,
+                        ';' => Tokens::SemicolonToken,
+                        _ => {
+                            self.reposts.push(Repost {
+                                level: Level::Error,
+                                error_type: ZXError::SyntaxError,
+                                message: "invalid syntax".to_string(),
+                                pos: Position {
+                                    start: file_stream.index,
+                                    end: file_stream.index,
+                                },
+                            });
+                            break;
+                        }
+                    };
+
                     self.tokens.push(Token {
-                        token_type: Tokens::MultiplyToken,
+                        token_type: kid,
                         pos: Position {
                             start: file_stream.index,
                             end: file_stream.index,
                         },
-                    });
+                    })
                 }
-                '\n' => {
-                    self.tokens.push(Token {
-                        token_type: Tokens::LineSeparator,
-                        pos: Position {
-                            start: file_stream.index,
-                            end: file_stream.index,
-                        },
-                    });
-                }
-                '\r' => {}
+                '\r' | ' ' => {}
                 _ => {
-                    identifier_string.push(file_stream.get_currently());
+                    identifier_string.push(currently);
                 }
             }
 
@@ -118,14 +140,16 @@ impl Lexer {
         }
     }
 
-    fn lex_string(&self, string_stream: &mut StringStream) -> Result<Token, ()> {
+    fn lex_string(&mut self, string_stream: &mut StringStream) -> Result<(), ()> {
         let mut string_content = String::new();
+        let mut end_double_quotes = false;
         let start = string_stream.index.clone();
         string_stream.next();
 
         while !string_stream.is_eof {
             match string_stream.get_currently() {
                 '"' => {
+                    end_double_quotes = true;
                     break;
                 }
                 '\\' => {
@@ -145,19 +169,84 @@ impl Lexer {
             string_stream.next();
         }
 
-        if !string_stream.is_eof {
-            Ok(Token {
+        if end_double_quotes {
+            self.tokens.push(Token {
                 token_type: Tokens::LiteralToken {
                     kid: Literal::String,
                     literal: string_content,
                 },
                 pos: Position {
                     start,
-                    end: string_stream.index
-                }
-            })
+                    end: string_stream.index,
+                },
+            });
+            Ok(())
         } else {
+            self.push_syntax_error("EOL while scanning string literal", Position {
+                start,
+                end: start,
+            });
             Err(())
         }
+    }
+
+    fn lex_slash(&mut self, string_stream: &mut StringStream) -> Result<(), ()> {
+        let start = string_stream.index;
+        string_stream.next();
+
+        match string_stream.get_currently() {
+            '/' => {
+                while !string_stream.is_eof && string_stream.get_currently() != '\n' {
+                    string_stream.next();
+                }
+                Ok(())
+            }
+            '*' => {
+                let mut end_comment = false;
+
+                while !string_stream.is_eof {
+                    if string_stream.get_currently() == '*' {
+                        string_stream.next();
+                        if string_stream.get_currently() == '/' {
+                            end_comment = true;
+                            break;
+                        } else {
+                            string_stream.back();
+                        }
+                    }
+                    string_stream.next();
+                }
+
+                if end_comment {
+                    Ok(())
+                } else {
+                    self.push_syntax_error("invalid syntax", Position {
+                        start,
+                        end: start + 1,
+                    });
+                    Err(())
+                }
+            }
+            _ => {
+                self.tokens.push(Token {
+                    token_type: Tokens::SlashToken,
+                    pos: Position {
+                        start: string_stream.index,
+                        end: string_stream.index,
+                    },
+                });
+                string_stream.back();
+                Ok(())
+            }
+        }
+    }
+
+    fn push_syntax_error(&mut self, error_message: &str, pos: Position) {
+        self.reposts.push(Repost {
+            level: Level::Error,
+            error_type: ZXError::SyntaxError,
+            message: String::from(error_message),
+            pos,
+        });
     }
 }

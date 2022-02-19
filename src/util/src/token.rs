@@ -8,8 +8,6 @@ pub enum Tokens {
     RightCurlyBracketsToken,
     LeftSquareBracketsToken,
     RightSquareBracketsToken,
-    DoubleQuotesToken,
-    SingleQuotesToken,
     LeftParenthesesToken,
     RightParenthesesToken,
     SlashToken,
@@ -21,7 +19,7 @@ pub enum Tokens {
     DotToken,
     LessToken,
     MoreToken,
-    ArrowToken,
+    SemicolonToken,
     IdentifierToken {
         literal: String
     },
@@ -40,12 +38,12 @@ pub enum Literal {
 
 #[derive(Debug)]
 pub struct Position {
-    pub(crate) start: usize,
-    pub(crate) end: usize,
+    pub start: usize,
+    pub end: usize,
 }
 
 #[derive(Debug)]
 pub struct Token {
-    pub(crate) token_type: Tokens,
-    pub(crate) pos: Position,
+    pub token_type: Tokens,
+    pub pos: Position,
 }
