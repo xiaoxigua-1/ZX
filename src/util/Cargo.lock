@@ -3,12 +3,5 @@
 version = 3
 
 [[package]]
-name = "lexer"
-version = "0.1.0"
-dependencies = [
- "util",
-]
-
-[[package]]
 name = "util"
 version = "0.1.0"

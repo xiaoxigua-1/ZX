@@ -12,11 +12,11 @@ mod lexer_test {
 
 #[cfg(test)]
 mod file_stream_test {
-    use crate::FileStream;
+    use crate::StringStream;
 
     #[test]
     fn test_file_stream() {
-        let mut file_stream = FileStream::new("abc");
+        let mut file_stream = StringStream::new("abc");
 
         while !file_stream.is_eof {
             println!("{}", file_stream.get_currently());

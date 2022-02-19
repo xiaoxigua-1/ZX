@@ -1,15 +1,16 @@
 mod file_stream;
-
 pub mod token;
 mod test;
 
 use std::fs;
-use file_stream::FileStream;
+use file_stream::StringStream;
+use util::Repost;
 use crate::token::{Token, Tokens};
 
 struct Lexer {
     path: String,
     tokens: Vec<Token>,
+    repost: Vec<Repost>
 }
 
 impl Lexer {
@@ -17,12 +18,13 @@ impl Lexer {
         Lexer {
             path,
             tokens: vec![],
+            repost: vec![]
         }
     }
 
     fn lexer(&mut self) {
         let file_string = fs::read_to_string(self.path.clone()).expect("Something went wrong reading the file");
-        let mut file_stream = FileStream::new(&file_string);
+        let mut file_stream = StringStream::new(&file_string);
         let mut identifier_string = String::new();
 
         while !file_stream.is_eof {

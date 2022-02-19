@@ -7,11 +7,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/cli/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/lexer/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/parser/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/util/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/cli/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/lexer/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/backend/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/parser/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src/util/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
