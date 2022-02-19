@@ -35,6 +35,7 @@ pub enum Tokens {
 pub enum Literal {
     String,
     Number,
+    Float,
     Char
 }
 

@@ -121,7 +121,7 @@ impl Lexer {
             .collect();
 
         for report in self.reposts.iter() {
-            report.print();
+            report.print(&file_string, &self.path);
         }
 
         if filter_reposts.is_empty() {

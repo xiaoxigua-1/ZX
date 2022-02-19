@@ -8,10 +8,17 @@ pub struct Compiler {
 }
 
 impl Compiler {
-    fn compile(&self) {
+    fn compile(&self) -> Result<(), ()> {
         let mut lexer = Lexer::new(&self.path);
-        lexer.lexer();
-        let parser = Parser { tokens: lexer.tokens };
-        parser.parse();
+        match lexer.lexer() {
+            Ok(()) => {
+                let parser = Parser { tokens: lexer.tokens };
+                parser.parse();
+                Ok(())
+            }
+            Err(()) => {
+                Err(())
+            }
+        }
     }
 }
