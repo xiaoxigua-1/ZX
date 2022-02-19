@@ -7,23 +7,24 @@ use util::repost::{Level, Repost};
 use util::error::ZXError;
 use util::token::{Literal, Position, Token, Tokens};
 
-struct Lexer {
+pub struct Lexer {
     path: String,
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
     reposts: Vec<Repost>,
 }
 
 impl Lexer {
-    fn new(path: String) -> Lexer {
+    pub fn new(path: &String) -> Lexer {
         Lexer {
-            path,
+            path: path.to_string(),
             tokens: vec![],
             reposts: vec![],
         }
     }
 
-    fn lexer(&mut self) -> Result<(), ()> {
-        let file_string = fs::read_to_string(self.path.clone()).expect("Something went wrong reading the file");
+    pub fn lexer(&mut self) -> Result<(), ()> {
+        let file_string = fs::read_to_string(self.path.clone())
+            .expect("Something went wrong reading the file");
         let mut file_stream = StringStream::new(&file_string);
         let mut identifier_string = String::new();
 
@@ -49,10 +50,11 @@ impl Lexer {
             }
 
             match currently {
-                '"' | '/' => {
+                '"' | '/' | '\'' => {
                     let result = match currently {
                         '"' => self.lex_string(&mut file_stream),
                         '/' => self.lex_slash(&mut file_stream),
+                        '\'' => self.lex_char(&mut file_stream),
                         _ => Result::Ok(())
                     };
 
@@ -183,6 +185,53 @@ impl Lexer {
                 start,
                 end: start,
             });
+            Err(())
+        }
+    }
+
+    fn lex_char(&mut self, string_stream: &mut StringStream) -> Result<(), ()> {
+        let start = string_stream.index.clone();
+        let mut c = String::new();
+        let mut end_apostrophe = false;
+
+        string_stream.next();
+
+        while !string_stream.is_eof {
+            match string_stream.get_currently() {
+                '\'' => {
+                    end_apostrophe = true;
+                    break;
+                }
+                '\\' => {
+                    string_stream.next();
+                    c.push(string_stream.get_currently());
+                }
+                _ => {
+                    c.push(string_stream.get_currently());
+                }
+            }
+
+            string_stream.next();
+        }
+
+        let error_message = if !end_apostrophe {
+            "EOL while scanning char literal"
+        } else if c.len() > 1 {
+            "character literal may only contain one codepoint"
+        } else if c.is_empty() {
+            "empty character literal"
+        } else {
+            ""
+        };
+
+        if !error_message.is_empty() {
+            self.push_syntax_error(error_message, Position {
+                start,
+                end: start + c.len() + 1,
+            });
+
+            Ok(())
+        } else {
             Err(())
         }
     }

@@ -3,5 +3,11 @@ use util::token::Token;
 mod test;
 
 pub struct Parser {
-    tokens: Vec<Token>
+    pub tokens: Vec<Token>
+}
+
+impl Parser {
+    pub fn parse(&self) {
+
+    }
 }
