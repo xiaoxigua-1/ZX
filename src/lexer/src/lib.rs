@@ -80,15 +80,12 @@ impl Lexer {
                         ')' => Tokens::RightParenthesesToken,
                         '.' => Tokens::DotToken,
                         ';' => Tokens::SemicolonToken,
+                        ':' => Tokens::ColonToken,
+                        '!' => Tokens::ExclamationToken,
                         _ => {
-                            self.reposts.push(Repost {
-                                level: Level::Error,
-                                error_type: ZXError::SyntaxError,
-                                message: "invalid syntax".to_string(),
-                                pos: Position {
-                                    start: file_stream.index,
-                                    end: file_stream.index,
-                                },
+                            self.push_syntax_error("invalid syntax", Position {
+                                start: file_stream.index,
+                                end: file_stream.index,
                             });
                             break;
                         }

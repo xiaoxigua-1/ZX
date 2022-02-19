@@ -20,6 +20,8 @@ pub enum Tokens {
     LessToken,
     MoreToken,
     SemicolonToken,
+    ExclamationToken,
+
     IdentifierToken {
         literal: String
     },
