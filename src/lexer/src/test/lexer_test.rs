@@ -9,7 +9,7 @@ mod lexer_test {
             Err(()) => {}
             Ok(()) => {}
         };
-        println!("{:?}", lexer.tokens)
+        println!("{:#?}", lexer.tokens)
     }
 }
 

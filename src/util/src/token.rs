@@ -21,7 +21,6 @@ pub enum Tokens {
     MoreToken,
     SemicolonToken,
     ExclamationToken,
-
     IdentifierToken {
         literal: String
     },
