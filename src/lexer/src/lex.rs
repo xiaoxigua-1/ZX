@@ -151,4 +151,8 @@ impl Lexer {
             }
         }
     }
+
+    pub fn lex_number(&mut self, string_stream: &mut StringStream) {
+
+    }
 }

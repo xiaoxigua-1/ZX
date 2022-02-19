@@ -67,7 +67,7 @@ impl Repost {
         let srcdir = PathBuf::from(path);
         let path_string = fs::canonicalize(&srcdir).unwrap().into_os_string().into_string().unwrap();
         for source in print_source {
-            println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start);
+            println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start + 1);
             println!("{:<width$}|", "", width = max_number);
             println!("{:<width$}| {}", source.line_number, source.source, width = max_number);
             println!("{space:<width$}| {space:>arrow_start$}{space:^>arrow_width$}",
