@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Display, Debug, Clone)]
 pub enum Tokens {
     EOF,
     LineSeparatorToken,
@@ -30,7 +30,7 @@ pub enum Tokens {
     }
 }
 
-#[derive(Debug)]
+#[derive(Display, Debug, Clone, EnumString)]
 pub enum Literal {
     String,
     Integer,
@@ -38,14 +38,24 @@ pub enum Literal {
     Char
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Position {
     pub start: usize,
     pub end: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: Tokens,
     pub pos: Position,
+}
+
+impl Token {
+    pub fn is_token_type(&self, token_type: Tokens) -> bool {
+        token_type.to_string() == self.token_type.to_string()
+    }
+
+    pub fn is_token_type_str(&self, token_type: &str) -> bool {
+        self.token_type.to_string() == token_type
+    }
 }

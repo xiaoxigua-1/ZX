@@ -12,7 +12,7 @@ impl Compiler {
         let mut lexer = Lexer::new(&self.path);
         match lexer.lexer() {
             Ok(()) => {
-                let parser = Parser { tokens: lexer.tokens };
+                let mut parser = Parser::new(&lexer.tokens);
                 parser.parse();
                 Ok(())
             }
