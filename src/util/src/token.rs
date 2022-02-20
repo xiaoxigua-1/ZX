@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub enum Tokens {
     EOF,
-    LineSeparator,
+    LineSeparatorToken,
     CommaToken,
     ColonToken,
     LeftCurlyBracketsToken,

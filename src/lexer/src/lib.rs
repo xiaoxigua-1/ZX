@@ -69,7 +69,7 @@ impl Lexer {
                 }
                 '!'..='.' | ':'..='@' | '['..='^' | '{'..='~' | '\n' | '`' => {
                     let kid = match currently {
-                        '\n' => Tokens::LineSeparator,
+                        '\n' => Tokens::LineSeparatorToken,
                         '*' => Tokens::MultiplyToken,
                         '+' => Tokens::PlusToken,
                         '-' => Tokens::MinusToken,
