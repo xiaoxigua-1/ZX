@@ -33,7 +33,7 @@ pub enum Tokens {
 #[derive(Debug)]
 pub enum Literal {
     String,
-    Number,
+    Integer,
     Float,
     Char
 }

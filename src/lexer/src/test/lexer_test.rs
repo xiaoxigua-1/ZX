@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod lexer_test {
-    use util::token::Tokens;
+    use util::token::{Literal, Tokens};
     use crate::Lexer;
 
     #[test]
@@ -12,8 +12,13 @@ mod lexer_test {
         };
         for token in lexer.tokens {
             match token.token_type {
-                Tokens::LiteralToken { kid: _, literal} => {
-                    println!("string content: {}", literal);
+                Tokens::LiteralToken { kid, literal } => {
+                    match kid {
+                        Literal::String => println!("string content: {}", literal),
+                        Literal::Float => println!("float content: {}", literal),
+                        Literal::Integer => println!("integer content: {}", literal),
+                        Literal::Char => println!("char content: {}", literal),
+                    }
                 }
                 Tokens::IdentifierToken { literal } => {
                     println!("identifier content: {}", literal);
@@ -38,5 +43,20 @@ mod file_stream_test {
             println!("{}", file_stream.get_currently());
             file_stream.next();
         }
+    }
+
+    #[test]
+    fn test_file_stream_back() {
+        let mut file_stream = StringStream::new("abcd");
+
+        println!("{}", file_stream.get_currently()); // a
+        file_stream.next();
+        println!("{}", file_stream.get_currently()); // b
+        file_stream.back();
+        println!("{}", file_stream.get_currently()); // a
+        file_stream.next();
+        println!("{}", file_stream.get_currently()); // b
+        file_stream.next();
+        println!("{}", file_stream.get_currently()); // c
     }
 }

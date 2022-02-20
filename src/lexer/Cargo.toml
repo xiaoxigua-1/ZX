@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 util = { path = "../util" }
+linked-list = "0.0.3"

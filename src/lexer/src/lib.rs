@@ -2,6 +2,7 @@ mod file_stream;
 mod test;
 mod lex;
 mod escapes;
+mod lexer_error;
 
 use std::fs;
 use file_stream::StringStream;
@@ -52,17 +53,24 @@ impl Lexer {
             }
 
             match currently {
-                '"' | '/' | '\'' => {
+                '"' | '/' | '\'' | '.' | '-' | '0'..='9' => {
                     let result = match currently {
                         '"' => self.lex_string(&mut file_stream),
                         '/' => self.lex_slash(&mut file_stream),
                         '\'' => self.lex_char(&mut file_stream),
+                        '.' | '-' | '0'..='9' => self.lex_number(&mut file_stream),
                         _ => Result::Ok(())
                     };
 
                     match result {
                         Ok(()) => {}
-                        Err(()) => {
+                        Err(lexer_error) => {
+                            self.reposts.push(Repost {
+                                level: Level::Error,
+                                error_type: ZXError::SyntaxError,
+                                message: lexer_error.message,
+                                pos: lexer_error.pos
+                            });
                             break;
                         }
                     }
