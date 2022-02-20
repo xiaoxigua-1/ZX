@@ -1,5 +1,6 @@
 // This a simple example
 
+// program entry point
 fn main() {
     // & is std library
     &.print("hello world")
