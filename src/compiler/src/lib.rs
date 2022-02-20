@@ -8,7 +8,7 @@ pub struct Compiler {
 }
 
 impl Compiler {
-    fn compile(&self) -> Result<(), ()> {
+    pub fn compile(&self) -> Result<(), ()> {
         let mut lexer = Lexer::new(&self.path);
         match lexer.lexer() {
             Ok(()) => {

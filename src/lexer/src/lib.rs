@@ -1,6 +1,7 @@
 mod file_stream;
 mod test;
 mod lex;
+mod escapes;
 
 use std::fs;
 use file_stream::StringStream;
@@ -33,7 +34,7 @@ impl Lexer {
             let currently = file_stream.get_currently();
 
             match currently {
-                ' '..='/' | ':'..='@' | '['..='`' | '{'..='~' | '\n' | '\r' => {
+                ' '..='/' | ':'..='@' | '['..='^' | '{'..='~' | '\n' | '\r' | '`' => {
                     if !identifier_string.is_empty() {
                         self.tokens.push(Token {
                             token_type: Tokens::IdentifierToken {
@@ -66,7 +67,7 @@ impl Lexer {
                         }
                     }
                 }
-                '!'..='.' | ':'..='@' | '['..='`' | '{'..='~' | '\n' => {
+                '!'..='.' | ':'..='@' | '['..='^' | '{'..='~' | '\n' | '`' => {
                     let kid = match currently {
                         '\n' => Tokens::LineSeparator,
                         '*' => Tokens::MultiplyToken,
@@ -100,7 +101,7 @@ impl Lexer {
                             start: file_stream.index,
                             end: file_stream.index,
                         },
-                    })
+                    });
                 }
                 '\r' | ' ' => {}
                 _ => {
@@ -108,7 +109,7 @@ impl Lexer {
                 }
             }
 
-            file_stream.next()
+            file_stream.next();
         }
 
         let is_to_eof = self.reposts

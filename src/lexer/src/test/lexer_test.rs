@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod lexer_test {
+    use util::token::Tokens;
     use crate::Lexer;
 
     #[test]
@@ -9,7 +10,19 @@ mod lexer_test {
             Err(()) => {}
             Ok(()) => {}
         };
-        println!("{:#?}", lexer.tokens)
+        for token in lexer.tokens {
+            match token.token_type {
+                Tokens::LiteralToken { kid: _, literal} => {
+                    println!("string content: {}", literal);
+                }
+                Tokens::IdentifierToken { literal } => {
+                    println!("identifier content: {}", literal);
+                }
+                _ => {
+                    println!("{:#?}", token.token_type);
+                }
+            }
+        }
     }
 }
 
