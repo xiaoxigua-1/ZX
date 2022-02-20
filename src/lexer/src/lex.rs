@@ -126,13 +126,17 @@ impl Lexer {
             }
             // multi line comment
             '*' => {
+                string_stream.next();
                 let mut end_comment = false;
+
                 // search close chars `*/`
                 while !string_stream.is_eof {
                     if string_stream.get_currently() == '*' {
                         string_stream.next();
+
                         if string_stream.get_currently() == '/' {
                             end_comment = true;
+                            string_stream.next();
                             break;
                         } else {
                             string_stream.back();
