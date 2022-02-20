@@ -1,2 +1,6 @@
-// This a simple print hello world example
+// This a simple example
 
+fn main() {
+    // & is std library
+    &.print("hello world")
+}
