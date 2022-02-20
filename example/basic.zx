@@ -3,5 +3,5 @@
 // program entry point
 fn main() {
     // & is std library
-    &.print("hello world")
+    &::print("hello world")
 }
