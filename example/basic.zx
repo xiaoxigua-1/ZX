@@ -1,7 +1,20 @@
 // This a simple example
 
+// built in library
+// math is file ?
+// Math class ?
+// plus function ?
+im math::Math::{ plus }
+
 // program entry point
 fn main() {
     // & is std library
     &::print("hello world")
+
+    // variable declaration
+    var example: i32 = 10
+
+    // call function
+    var number = plus(10, 20)
+
 }
