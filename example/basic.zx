@@ -2,19 +2,19 @@
 
 // built in library
 // math is file ?
-// Math class ?
 // plus function ?
-im math::Math::{ plus }
+im math
+im math::{ pow, PI }
 
 // program entry point
 fn main() {
     // & is std library
     &::print("hello world")
 
-    // variable declaration
+    // variable declaration example
     var example: i32 = 10
 
-    // call function
-    var number = plus(10, 20)
-
+    // call function example
+    var number = pow(10, 5) // number equal 10^5
+    math::abs(-32) // 32
 }
