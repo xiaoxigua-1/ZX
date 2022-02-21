@@ -1,25 +1,46 @@
 #[derive(Display, Debug, Clone)]
 pub enum Tokens {
+    // End of file
     EOF,
+    // `\n`
     LineSeparatorToken,
+    // `,`
     CommaToken,
+    // `:`
     ColonToken,
+    // `{`
     LeftCurlyBracketsToken,
+    // `}`
     RightCurlyBracketsToken,
+    // `[`
     LeftSquareBracketsToken,
+    // `]`
     RightSquareBracketsToken,
+    // `(`
     LeftParenthesesToken,
+    // `)`
     RightParenthesesToken,
+    // `/`
     SlashToken,
+    // `\`
     BackslashToken,
+    // `+`
     PlusToken,
+    // `-`
     MinusToken,
+    // `*`
     MultiplyToken,
+    // `=`
     EqualToken,
+    // `.`
     DotToken,
+    // `<`
     LessToken,
+    // `>`
     MoreToken,
+    // `;`
     SemicolonToken,
+    // `!`
     ExclamationToken,
     IdentifierToken {
         literal: String

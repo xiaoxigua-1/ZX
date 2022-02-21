@@ -2,9 +2,10 @@
 
 // built in library
 // math is file ?
-// plus function ?
-im math
+// pow is function ?
+// PI is const ?
 im math::{ pow, PI }
+im math
 
 // program entry point
 fn main() {
@@ -15,6 +16,27 @@ fn main() {
     var example: i32 = 10
 
     // call function example
-    var number = pow(10, 5) // number equal 10^5
+    var number = pow(10, 5) // number equal to 10^5
     math::abs(-32) // 32
+
+    ZanZanDianShen::dian_ren() // print `dian`
+
+    var zan_zan_dian_shen_object = ZanZanDianShen("zan zan")
+    zan_zan_dian_shen_object.print_dian_shen_name() // print `zan zan`
+}
+
+class ZanZanDianShen {
+    var dian_shen: String
+
+    static fn dian_ren() {
+        print("dian")
+    }
+
+    pub fn init(str: String) {
+        this.dian_shen = str
+    }
+
+    pub fn print_dian_shen_name() {
+        print(this.dian_shen)
+    }
 }
