@@ -18,9 +18,7 @@ struct PrintSource {
 
 pub struct Repost {
     pub level: Level,
-    pub error_type: ZXError,
-    pub message: String,
-    pub pos: Position,
+    pub error: ZXError
 }
 
 impl Repost {
@@ -33,24 +31,31 @@ impl Repost {
             Level::Warning => "\x1b[33m".to_string(),
             Level::Debug => "\x1b[34m".to_string(),
         };
+        let (message, pos) = match &self.error {
+            ZXError::SyntaxError { message, pos } => (message, pos),
+            ZXError::NameError { message, pos } => (message, pos),
+            ZXError::NullError { message, pos } => (message, pos),
+            ZXError::TypeError { message, pos } => (message, pos),
+        };
 
-        println!("{}{:?}: {}\x1b[0m", color_char, self.error_type, self.message);
+        self.print_error_message(color_char, message.to_string());
+
         for line_code in source.split('\n') {
-            if source_index + line_code.len() >= self.pos.start {
+            if source_index + line_code.len() >= pos.start {
                 print_source.push(PrintSource {
                     source: line_code.to_string(),
                     line_number,
                     arrow_position: Position {
-                        start: self.pos.start - source_index,
-                        end: if source_index + line_code.len() > self.pos.end {
-                            self.pos.end - source_index
+                        start: pos.start - source_index,
+                        end: if source_index + line_code.len() > pos.end {
+                            pos.end - source_index
                         } else {
                             source_index + line_code.len()
                         },
                     },
                 });
 
-                if source_index + line_code.len() > self.pos.end {
+                if source_index + line_code.len() > pos.end {
                     break;
                 }
             }
@@ -79,5 +84,9 @@ impl Repost {
             );
             println!("{:<width$}|", "", width = max_number);
         }
+    }
+
+    fn print_error_message(&self, color_char: String, message: String) {
+        println!("{}{:?}: {}\x1b[0m", color_char, self.error.to_string(), message);
     }
 }

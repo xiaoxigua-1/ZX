@@ -2,6 +2,7 @@
 mod test_parser {
     use crate::Parser;
     use util::token::{Token, Position, Tokens, Literal};
+    use lexer::Lexer;
 
     #[test]
     fn test_parser() {
@@ -25,5 +26,14 @@ mod test_parser {
         ];
         let mut parser = Parser::new(&tokens);
         parser.parse();
+    }
+
+    #[test]
+    fn test_parser_function() {
+        let mut lexer = Lexer::new(&"./test_data/function.zx".to_string());
+        if let Ok(()) = lexer.lexer() {
+            let mut parser = Parser::new(&lexer.tokens);
+            parser.parse();
+        }
     }
 }

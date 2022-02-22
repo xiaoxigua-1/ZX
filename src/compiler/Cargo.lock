@@ -37,6 +37,7 @@ checksum = "a4dacf969043dc69f1f731b5042eb05e030d264bcf34f2242889fcbdc7a65f06"
 name = "parser"
 version = "0.1.0"
 dependencies = [
+ "lexer",
  "util",
 ]
 

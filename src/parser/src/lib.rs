@@ -1,8 +1,10 @@
 mod test;
+mod syntax;
 
 use util::token::Token;
 use util::token::Tokens;
 use std::slice::Iter;
+use util::error::ZXError;
 
 pub struct Parser<'a> {
     pub tokens: Iter<'a, Token>,
@@ -19,8 +21,32 @@ impl Parser<'_> {
         Parser {
             tokens: tokens_iter,
             index: 0,
-            is_eof: next_token.is_token_type(Tokens::EOF),
+            is_eof: next_token.is_token_type(&Tokens::EOF),
             currently: next_token,
+        }
+    }
+
+    pub fn comparison(&mut self, token: &Tokens) -> Result<Token, ZXError> {
+        if self.currently.is_token_type(token) {
+            let ret_token = self.currently.clone();
+            self.next_token();
+            Ok(ret_token)
+        } else {
+            Err(ZXError::SyntaxError {
+                message: format!("Unexpected token {}, expected token {}", self.currently.token_type.to_string(), token.to_string()),
+                pos: self.currently.pos.clone(),
+            })
+        }
+    }
+
+    pub fn comparison_string(&self, token: &str) -> Result<Token, ZXError> {
+        if self.currently.is_token_type_str(token) {
+            Ok(self.currently.clone())
+        } else {
+            Err(ZXError::SyntaxError {
+                message: format!("Unexpected token {}, expected token {}", self.currently.token_type.to_string(), token.to_string()),
+                pos: self.currently.pos.clone(),
+            })
         }
     }
 
@@ -29,7 +55,7 @@ impl Parser<'_> {
         self.is_eof = token.is_none();
 
         if !self.is_eof {
-            if token.unwrap().is_token_type(Tokens::EOF) {
+            if token.unwrap().is_token_type(&Tokens::EOF) {
                 self.currently = token.unwrap();
                 self.index += 1;
             }
@@ -37,14 +63,6 @@ impl Parser<'_> {
     }
 
     pub fn parse(&mut self) {
-        while !self.is_eof {
-            if self.currently.is_token_type_str("LiteralToken") {
-                if let Tokens::LiteralToken { kid, literal } = &self.currently.token_type {
-                    println!("{:?}: {}", kid, literal);
-                };
-
-            }
-            self.next_token();
-        }
+        self.statement();
     }
 }

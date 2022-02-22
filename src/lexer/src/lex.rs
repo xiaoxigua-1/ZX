@@ -1,12 +1,12 @@
 use util::token::{Literal, Position, Token, Tokens};
 use file_stream::StringStream;
+use util::error::ZXError;
 use crate::Lexer;
 use crate::file_stream;
-use crate::lexer_error::LexerError;
 
 impl Lexer {
     // lex string `"abc\"\n"`
-    pub fn lex_string(&mut self, string_stream: &mut StringStream) -> Result<(), LexerError> {
+    pub fn lex_string(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let mut string_content = String::new();
         let mut end_double_quotes = false;
         let start = string_stream.index.clone();
@@ -53,7 +53,7 @@ impl Lexer {
 
             Ok(())
         } else {
-            Err(LexerError {
+            Err(ZXError::SyntaxError {
                 message: "EOL while scanning string literal".to_string(),
                 pos: Position {
                     start,
@@ -63,7 +63,7 @@ impl Lexer {
         }
     }
     // lex char `'a'`
-    pub fn lex_char(&mut self, string_stream: &mut StringStream) -> Result<(), LexerError> {
+    pub fn lex_char(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let start = string_stream.index.clone();
         let mut c = String::new();
         let mut end_apostrophe = false;
@@ -103,7 +103,7 @@ impl Lexer {
         };
 
         if !error_message.is_empty() {
-            Err(LexerError {
+            Err(ZXError::SyntaxError {
                 message: error_message.to_string(),
                 pos: Position {
                     start,
@@ -125,7 +125,7 @@ impl Lexer {
         }
     }
 
-    pub fn lex_slash(&mut self, string_stream: &mut StringStream) -> Result<(), LexerError> {
+    pub fn lex_slash(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let start = string_stream.index;
         string_stream.next();
 
@@ -161,7 +161,7 @@ impl Lexer {
                 if end_comment {
                     Ok(())
                 } else {
-                    Err(LexerError {
+                    Err(ZXError::SyntaxError {
                         message: "EOL while scanning comment".to_string(),
                         pos: Position {
                             start,
@@ -186,7 +186,7 @@ impl Lexer {
         }
     }
 
-    pub fn lex_number(&mut self, string_stream: &mut StringStream) -> Result<(), LexerError> {
+    pub fn lex_number(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let mut is_folat = false;
         let mut number_string = String::new();
         let mut currently = string_stream.get_currently();
@@ -235,7 +235,7 @@ impl Lexer {
 
             Ok(())
         } else {
-            Err(LexerError {
+            Err(ZXError::SyntaxError {
                 message: "".to_string(),
                 pos: Position {
                     start,

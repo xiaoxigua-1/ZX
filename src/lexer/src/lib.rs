@@ -2,7 +2,6 @@ mod file_stream;
 mod test;
 mod lex;
 mod escapes;
-mod lexer_error;
 
 use std::fs;
 use file_stream::StringStream;
@@ -67,9 +66,7 @@ impl Lexer {
                         Err(lexer_error) => {
                             self.reposts.push(Repost {
                                 level: Level::Error,
-                                error_type: ZXError::SyntaxError,
-                                message: lexer_error.message,
-                                pos: lexer_error.pos
+                                error: lexer_error,
                             });
                             break;
                         }
@@ -153,9 +150,10 @@ impl Lexer {
     fn push_syntax_error(&mut self, error_message: &str, pos: Position) {
         self.reposts.push(Repost {
             level: Level::Error,
-            error_type: ZXError::SyntaxError,
-            message: String::from(error_message),
-            pos,
+            error: ZXError::SyntaxError {
+                message: String::from(error_message),
+                pos,
+            },
         });
     }
 }
