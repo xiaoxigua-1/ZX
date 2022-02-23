@@ -1,14 +1,15 @@
 #[cfg(test)]
 mod lexer_test {
     use util::token::{Literal, Tokens};
+    use std::fs;
     use crate::Lexer;
 
     #[test]
     fn test_lexer() {
         let path = "./test_data/test_data.zx".to_string();
-        let source = fs::read_to_string(path)
+        let source = fs::read_to_string(&path)
             .expect("Something went wrong reading the file");
-        let mut lexer = Lexer::new(path, source);
+        let mut lexer = Lexer::new(&path, &source);
         match lexer.lexer() {
             Err(()) => {}
             Ok(()) => {}
@@ -52,14 +53,14 @@ mod file_stream_test {
     fn test_file_stream_back() {
         let mut file_stream = StringStream::new("abcd");
 
-        println!("{}", file_stream.get_currently()); // a
+        assert_eq!('a', file_stream.get_currently());
         file_stream.next();
-        println!("{}", file_stream.get_currently()); // b
+        assert_eq!('b', file_stream.get_currently());
         file_stream.back();
-        println!("{}", file_stream.get_currently()); // a
+        assert_eq!('a', file_stream.get_currently());
         file_stream.next();
-        println!("{}", file_stream.get_currently()); // b
+        assert_eq!('b', file_stream.get_currently());
         file_stream.next();
-        println!("{}", file_stream.get_currently()); // c
+        assert_eq!('c', file_stream.get_currently());
     }
 }
