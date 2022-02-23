@@ -14,13 +14,13 @@ impl Parser<'_> {
                 "fn" => Some(self.function_syntax(keyword.clone())?),
                 _ => None
             };
-            if statement.is_none() {
+            if !statement.is_none() {
                 return Ok(statement.unwrap());
             }
         }
 
         Err(ZXError::SyntaxError {
-            message: "".to_string(),
+            message: "without this keyword".to_string(),
             pos: keyword.pos
         })
     }

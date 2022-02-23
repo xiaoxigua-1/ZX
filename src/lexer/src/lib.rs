@@ -3,7 +3,6 @@ mod test;
 mod lex;
 mod escapes;
 
-use std::fs;
 use file_stream::StringStream;
 use util::repost::{Level, Repost};
 use util::error::ZXError;
@@ -11,23 +10,24 @@ use util::token::{Position, Token, Tokens};
 
 pub struct Lexer {
     path: String,
+    source: String,
     pub tokens: Vec<Token>,
     reposts: Vec<Repost>,
 }
 
 impl Lexer {
-    pub fn new(path: &String) -> Lexer {
+    pub fn new(path: &String, source: &String) -> Lexer {
         Lexer {
             path: path.to_string(),
+            source: source.to_string(),
             tokens: vec![],
             reposts: vec![],
         }
     }
 
     pub fn lexer(&mut self) -> Result<(), ()> {
-        let file_string = fs::read_to_string(self.path.clone())
-            .expect("Something went wrong reading the file");
-        let mut file_stream = StringStream::new(&file_string);
+        let source = self.source.clone();
+        let mut file_stream = StringStream::new(&source);
         let mut identifier_string = String::new();
 
         while !file_stream.is_eof {
@@ -129,7 +129,7 @@ impl Lexer {
             .is_empty();
 
         for report in self.reposts.iter() {
-            report.print(&file_string, &self.path);
+            report.print(&self.source, &self.path);
         }
 
         if is_to_eof {

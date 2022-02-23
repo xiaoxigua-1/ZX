@@ -1,5 +1,6 @@
 use crate::token::Token;
 
+#[derive(Debug)]
 pub enum Statement {
     StaticFunctionDeclaration {
         static_keyword: Token,
@@ -51,6 +52,7 @@ pub enum Statement {
     ForLoop {},
 }
 
+#[derive(Debug)]
 pub enum Expression {
     Call {
         call_name: Token,
@@ -66,6 +68,7 @@ pub enum Expression {
     }
 }
 
+#[derive(Debug)]
 pub struct Parameter {
     parameter_name: Token,
     colon: Token,

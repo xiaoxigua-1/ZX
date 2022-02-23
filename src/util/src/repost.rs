@@ -69,6 +69,7 @@ impl Repost {
             .max_by(|a, b| a.line_number.cmp(&b.line_number))
             .unwrap();
         let max_number = format!("{}", max_number.line_number).len() + 1;
+
         let srcdir = PathBuf::from(path);
         let path_string = fs::canonicalize(&srcdir).unwrap().into_os_string().into_string().unwrap();
 
@@ -87,6 +88,6 @@ impl Repost {
     }
 
     fn print_error_message(&self, color_char: String, message: String) {
-        println!("{}{:?}: {}\x1b[0m", color_char, self.error.to_string(), message);
+        println!("{}{}: {}\x1b[0m", color_char, self.error.to_string(), message);
     }
 }

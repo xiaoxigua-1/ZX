@@ -5,7 +5,10 @@ mod lexer_test {
 
     #[test]
     fn test_lexer() {
-        let mut lexer = Lexer::new(&"./test_data/test_data.zx".to_string());
+        let path = "./test_data/test_data.zx".to_string();
+        let source = fs::read_to_string(path)
+            .expect("Something went wrong reading the file");
+        let mut lexer = Lexer::new(path, source);
         match lexer.lexer() {
             Err(()) => {}
             Ok(()) => {}

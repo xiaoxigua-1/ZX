@@ -4,13 +4,17 @@ mod syntax;
 use util::token::Token;
 use util::token::Tokens;
 use std::slice::Iter;
+use util::ast::Statement;
 use util::error::ZXError;
+use util::repost::{Repost, Level};
 
 pub struct Parser<'a> {
     pub tokens: Iter<'a, Token>,
     pub index: usize,
     currently: &'a Token,
     is_eof: bool,
+    asts: Vec<Statement>,
+    reposts: Vec<Repost>,
 }
 
 impl Parser<'_> {
@@ -23,6 +27,8 @@ impl Parser<'_> {
             index: 0,
             is_eof: next_token.is_token_type(&Tokens::EOF),
             currently: next_token,
+            asts: vec![],
+            reposts: vec![],
         }
     }
 
@@ -39,9 +45,11 @@ impl Parser<'_> {
         }
     }
 
-    pub fn comparison_string(&self, token: &str) -> Result<Token, ZXError> {
+    pub fn comparison_string(&mut self, token: &str) -> Result<Token, ZXError> {
         if self.currently.is_token_type_str(token) {
-            Ok(self.currently.clone())
+            let ret_token = self.currently.clone();
+            self.next_token();
+            Ok(ret_token)
         } else {
             Err(ZXError::SyntaxError {
                 message: format!("Unexpected token {}, expected token {}", self.currently.token_type.to_string(), token.to_string()),
@@ -51,18 +59,50 @@ impl Parser<'_> {
     }
 
     pub fn next_token(&mut self) {
-        let token = self.tokens.next();
+        let token = loop {
+            let token = self.tokens.next();
+
+            if let Some(content) = token {
+                if !content.is_token_type(&Tokens::LineSeparatorToken) {
+                    break token;
+                }
+            } else {
+                break token;
+            }
+        };
+
         self.is_eof = token.is_none();
 
         if !self.is_eof {
-            if token.unwrap().is_token_type(&Tokens::EOF) {
-                self.currently = token.unwrap();
+            self.currently = token.unwrap();
+            if !token.unwrap().is_token_type(&Tokens::EOF) {
                 self.index += 1;
+            } else {
+                self.is_eof = true;
             }
         }
     }
 
-    pub fn parse(&mut self) {
-        self.statement();
+    fn add_error(&mut self, error: ZXError) {
+        self.reposts.push(Repost {
+            level: Level::Error,
+            error: error,
+        });
+    }
+
+    pub fn parse(&mut self, path: &String, source: &String) {
+        while !self.is_eof {
+            let statement = self.statement();
+
+            if let Ok(statement) = statement {
+                self.asts.push(statement);
+            } else if let Err(error) = statement {
+                self.add_error(error);
+            }
+        }
+
+        for repost in &self.reposts {
+            repost.print(source, path);
+        }
     }
 }

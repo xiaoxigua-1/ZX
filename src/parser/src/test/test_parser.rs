@@ -3,6 +3,7 @@ mod test_parser {
     use crate::Parser;
     use util::token::{Token, Position, Tokens, Literal};
     use lexer::Lexer;
+    use std::fs;
 
     #[test]
     fn test_parser() {
@@ -24,16 +25,19 @@ mod test_parser {
                 pos: pos.clone(),
             },
         ];
-        let mut parser = Parser::new(&tokens);
-        parser.parse();
+        Parser::new(&tokens);
     }
 
     #[test]
     fn test_parser_function() {
-        let mut lexer = Lexer::new(&"./test_data/function.zx".to_string());
+        let path = "./test_data/function.zx".to_string();
+        let source = fs::read_to_string(&path)
+            .expect("Something went wrong reading the file");
+        let mut lexer = Lexer::new(&path, &source);
         if let Ok(()) = lexer.lexer() {
             let mut parser = Parser::new(&lexer.tokens);
-            parser.parse();
+            parser.parse(&path, &source);
+            // println!("{:#?}", parser.asts);
         }
     }
 }
