@@ -34,10 +34,11 @@ mod test_parser {
         let source = fs::read_to_string(&path)
             .expect("Something went wrong reading the file");
         let mut lexer = Lexer::new(&path, &source);
+
         if let Ok(()) = lexer.lexer() {
             let mut parser = Parser::new(&lexer.tokens);
             parser.parse(&path, &source);
-            // println!("{:#?}", parser.asts);
+            println!("{:#?}", parser.asts);
         }
     }
 }

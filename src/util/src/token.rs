@@ -73,7 +73,7 @@ pub struct Token {
 
 impl Token {
     pub fn is_token_type(&self, token_type: &Tokens) -> bool {
-        token_type.to_string() == self.token_type.to_string()
+            token_type.to_string() == self.token_type.to_string()
     }
 
     pub fn is_token_type_str(&self, token_type: &str) -> bool {

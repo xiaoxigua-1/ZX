@@ -45,17 +45,25 @@ impl Parser<'_> {
         }
     }
 
-    pub fn comparison_string(&mut self, token: &str) -> Result<Token, ZXError> {
-        if self.currently.is_token_type_str(token) {
-            let ret_token = self.currently.clone();
-            self.next_token();
-            Ok(ret_token)
-        } else {
-            Err(ZXError::SyntaxError {
-                message: format!("Unexpected token {}, expected token {}", self.currently.token_type.to_string(), token.to_string()),
-                pos: self.currently.pos.clone(),
-            })
+    pub fn comparison_string(&mut self, tokens: Vec<&str>) -> Result<Token, ZXError> {
+        for token in &tokens {
+            if self.currently.is_token_type_str(token) {
+                let ret_token = self.currently.clone();
+                self.next_token();
+                return Ok(ret_token);
+            }
         }
+
+        Err(ZXError::SyntaxError {
+            message: format!("Unexpected token {}, expected token {}",
+                             self.currently.token_type.to_string(),
+                             tokens.iter()
+                                 .map(|&x| x)
+                                 .collect::<Vec<&str>>()
+                                 .join(", ")
+            ),
+            pos: self.currently.pos.clone(),
+        })
     }
 
     pub fn next_token(&mut self) {

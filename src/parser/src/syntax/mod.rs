@@ -2,12 +2,12 @@ mod function_syntax;
 
 use crate::Parser;
 use util::error::ZXError;
-use util::ast::Statement;
+use util::ast::{Expression, Statement};
 use util::token::Tokens;
 
 impl Parser<'_> {
     pub fn statement(&mut self) -> Result<Statement, ZXError> {
-        let keyword = self.comparison_string("IdentifierToken")?;
+        let keyword = self.comparison_string(vec!["IdentifierToken"])?;
 
         if let Tokens::IdentifierToken { ref literal } = keyword.token_type {
             let statement = match literal.as_str() {
@@ -24,4 +24,8 @@ impl Parser<'_> {
             pos: keyword.pos
         })
     }
+
+    // pub fn expressions(&self) -> Result<Expression, ZXError> {
+    //
+    // }
 }
