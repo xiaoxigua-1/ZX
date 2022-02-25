@@ -9,9 +9,7 @@ pub enum Statement {
         left_parentheses: Token,
         parameters: Vec<Parameter>,
         right_parentheses: Token,
-        left_curly_brackets: Token,
-        statement: Vec<Statement>,
-        right_curly_brackets: Token,
+        block: Box<Statement>,
     },
     PublicFunctionDeclaration {
         pub_keyword: Option<Token>,
@@ -20,9 +18,7 @@ pub enum Statement {
         left_parentheses: Token,
         parameters: Vec<Parameter>,
         right_parentheses: Token,
-        left_curly_brackets: Token,
-        statement: Vec<Statement>,
-        right_curly_brackets: Token,
+        block: Box<Statement>,
     },
     FunctionDeclaration {
         fn_keyword: Token,
@@ -30,9 +26,7 @@ pub enum Statement {
         left_parentheses: Token,
         parameters: Vec<Parameter>,
         right_parentheses: Token,
-        left_curly_brackets: Token,
-        statement: Vec<Statement>,
-        right_curly_brackets: Token,
+        block: Box<Statement>,
     },
     VariableDeclaration {
         var_keyword: Token,
@@ -50,6 +44,11 @@ pub enum Statement {
     Else {},
     WhileLoop {},
     ForLoop {},
+    Block {
+        left_curly_brackets: Token,
+        statements: Vec<Statement>,
+        right_curly_brackets: Token,
+    },
 }
 
 #[derive(Debug)]
@@ -59,13 +58,13 @@ pub enum Expression {
         left_parentheses: Token,
         arguments: Vec<Expression>,
         right_parentheses: Token,
-        next: Box<Expression>
+        next: Box<Expression>,
     },
     Value {},
     Path {
         identifier: Token,
-        next: Box<Expression>
-    }
+        next: Box<Expression>,
+    },
 }
 
 #[derive(Debug)]
