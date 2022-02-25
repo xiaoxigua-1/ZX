@@ -1,14 +1,13 @@
 #[cfg(test)]
 mod lexer_test {
-    use util::token::{Literal, Tokens};
-    use std::fs;
     use crate::Lexer;
+    use std::fs;
+    use util::token::{Literal, Tokens};
 
     #[test]
     fn test_lexer() {
         let path = "./test_data/test_data.zx".to_string();
-        let source = fs::read_to_string(&path)
-            .expect("Something went wrong reading the file");
+        let source = fs::read_to_string(&path).expect("Something went wrong reading the file");
         let mut lexer = Lexer::new(&path, &source);
         match lexer.lexer() {
             Err(()) => {}
@@ -16,14 +15,12 @@ mod lexer_test {
         };
         for token in lexer.tokens {
             match token.token_type {
-                Tokens::LiteralToken { kid, literal } => {
-                    match kid {
-                        Literal::String => println!("string content: {}", literal),
-                        Literal::Float => println!("float content: {}", literal),
-                        Literal::Integer => println!("integer content: {}", literal),
-                        Literal::Char => println!("char content: {}", literal),
-                    }
-                }
+                Tokens::LiteralToken { kid, literal } => match kid {
+                    Literal::String => println!("string content: {}", literal),
+                    Literal::Float => println!("float content: {}", literal),
+                    Literal::Integer => println!("integer content: {}", literal),
+                    Literal::Char => println!("char content: {}", literal),
+                },
                 Tokens::IdentifierToken { literal } => {
                     println!("identifier content: {}", literal);
                 }

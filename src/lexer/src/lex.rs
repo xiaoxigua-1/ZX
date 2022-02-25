@@ -1,8 +1,8 @@
-use util::token::{Literal, Position, Token, Tokens};
+use crate::file_stream;
+use crate::Lexer;
 use file_stream::StringStream;
 use util::error::ZXError;
-use crate::Lexer;
-use crate::file_stream;
+use util::token::{Literal, Position, Token, Tokens};
 
 impl Lexer {
     // lex string `"abc\"\n"`
@@ -55,10 +55,7 @@ impl Lexer {
         } else {
             Err(ZXError::SyntaxError {
                 message: "EOL while scanning string literal".to_string(),
-                pos: Position {
-                    start,
-                    end: start,
-                },
+                pos: Position { start, end: start },
             })
         }
     }
@@ -223,15 +220,16 @@ impl Lexer {
         };
 
         let token_type = Tokens::LiteralToken {
-            kid: if is_folat { Literal::Float } else { Literal::Integer },
+            kid: if is_folat {
+                Literal::Float
+            } else {
+                Literal::Integer
+            },
             literal: number_string.clone(),
         };
 
         if (is_folat && number_string.len() > 1) || (!is_folat && number_string.len() > 0) {
-            self.tokens.push(Token {
-                token_type,
-                pos,
-            });
+            self.tokens.push(Token { token_type, pos });
 
             Ok(())
         } else {

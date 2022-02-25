@@ -1,16 +1,13 @@
 #[cfg(test)]
 mod test_parser {
     use crate::Parser;
-    use util::token::{Token, Position, Tokens, Literal};
     use lexer::Lexer;
     use std::fs;
+    use util::token::{Literal, Position, Token, Tokens};
 
     #[test]
     fn test_parser() {
-        let pos = Position {
-            start: 0,
-            end: 0,
-        };
+        let pos = Position { start: 0, end: 0 };
 
         let tokens = vec![
             Token {
@@ -31,8 +28,7 @@ mod test_parser {
     #[test]
     fn test_parser_function() {
         let path = "./test_data/function.zx".to_string();
-        let source = fs::read_to_string(&path)
-            .expect("Something went wrong reading the file");
+        let source = fs::read_to_string(&path).expect("Something went wrong reading the file");
         let mut lexer = Lexer::new(&path, &source);
 
         if let Ok(()) = lexer.lexer() {

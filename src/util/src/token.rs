@@ -42,9 +42,17 @@ pub enum Tokens {
     SemicolonToken,
     // `!`
     ExclamationToken,
+    // `?`
+    QuestionMarkToken,
+    // `&`
+    AmpersandToken,
+    // `%`
+    PercentToken,
+    // `example`
     IdentifierToken {
         literal: String
     },
+    // `'a'` or `"example"` or `123` or `.3` or `0.3`
     LiteralToken {
         kid: Literal,
         literal: String

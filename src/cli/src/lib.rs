@@ -11,7 +11,7 @@ pub fn init() {
 #[clap(about = "ZX is a simple programmimg language", long_about = None)]
 struct Cli {
     #[clap(subcommand)]
-    command: SubCommand
+    command: SubCommand,
 }
 
 #[derive(Subcommand)]
@@ -21,21 +21,19 @@ enum SubCommand {
         #[clap(required = true)]
         path: PathBuf,
         #[clap(short = 'o')]
-        output: String
+        output: String,
     },
     #[clap(arg_required_else_help = true)]
     Run {
         #[clap(required = true)]
-        path: PathBuf
-    }
+        path: PathBuf,
+    },
 }
 
 impl Cli {
     fn run_command(self) {
         match self.command {
-            SubCommand::Build { path, output } => {
-
-            }
+            SubCommand::Build { path, output } => {}
             SubCommand::Run { path } => {
                 println!("{:?}", path)
             }

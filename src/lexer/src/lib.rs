@@ -1,11 +1,11 @@
-mod file_stream;
-mod test;
-mod lex;
 mod escapes;
+mod file_stream;
+mod lex;
+mod test;
 
 use file_stream::StringStream;
-use util::repost::{Level, Repost};
 use util::error::ZXError;
+use util::repost::{Level, Repost};
 use util::token::{Position, Token, Tokens};
 
 pub struct Lexer {
@@ -38,7 +38,7 @@ impl Lexer {
                     if !identifier_string.is_empty() {
                         self.tokens.push(Token {
                             token_type: Tokens::IdentifierToken {
-                                literal: identifier_string
+                                literal: identifier_string,
                             },
                             pos: Position {
                                 start: file_stream.index,
@@ -58,7 +58,7 @@ impl Lexer {
                         '/' => self.lex_slash(&mut file_stream),
                         '\'' => self.lex_char(&mut file_stream),
                         '.' | '-' | '0'..='9' => self.lex_number(&mut file_stream),
-                        _ => Result::Ok(())
+                        _ => Result::Ok(()),
                     };
 
                     match result {
@@ -91,11 +91,18 @@ impl Lexer {
                         ';' => Tokens::SemicolonToken,
                         ':' => Tokens::ColonToken,
                         '!' => Tokens::ExclamationToken,
+                        '?' => Tokens::QuestionMarkToken,
+                        '&' => Tokens::AmpersandToken,
+                        ',' => Tokens::CommaToken,
+                        '%' => Tokens::PercentToken,
                         _ => {
-                            self.push_syntax_error("invalid syntax", Position {
-                                start: file_stream.index,
-                                end: file_stream.index,
-                            });
+                            self.push_syntax_error(
+                                "invalid syntax",
+                                Position {
+                                    start: file_stream.index,
+                                    end: file_stream.index,
+                                },
+                            );
                             break;
                         }
                     };
@@ -117,13 +124,12 @@ impl Lexer {
             file_stream.next();
         }
 
-        let is_to_eof = self.reposts
+        let is_to_eof = self
+            .reposts
             .iter()
-            .filter(|repost| {
-                match repost.level {
-                    Level::Error => true,
-                    _ => false
-                }
+            .filter(|repost| match repost.level {
+                Level::Error => true,
+                _ => false,
             })
             .collect::<Vec<&Repost>>()
             .is_empty();

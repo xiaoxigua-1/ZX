@@ -1,12 +1,12 @@
-mod test;
 mod syntax;
+mod test;
 
-use util::token::Token;
-use util::token::Tokens;
 use std::slice::Iter;
 use util::ast::Statement;
 use util::error::ZXError;
-use util::repost::{Repost, Level};
+use util::repost::{Level, Repost};
+use util::token::Token;
+use util::token::Tokens;
 
 pub struct Parser<'a> {
     pub tokens: Iter<'a, Token>,
@@ -39,7 +39,11 @@ impl Parser<'_> {
             Ok(ret_token)
         } else {
             Err(ZXError::SyntaxError {
-                message: format!("Unexpected token {}, expected token {}", self.currently.token_type.to_string(), token.to_string()),
+                message: format!(
+                    "Unexpected token {}, expected token {}",
+                    self.currently.token_type.to_string(),
+                    token.to_string()
+                ),
                 pos: self.currently.pos.clone(),
             })
         }
@@ -55,12 +59,10 @@ impl Parser<'_> {
         }
 
         Err(ZXError::SyntaxError {
-            message: format!("Unexpected token {}, expected token {}",
-                             self.currently.token_type.to_string(),
-                             tokens.iter()
-                                 .map(|&x| x)
-                                 .collect::<Vec<&str>>()
-                                 .join(", ")
+            message: format!(
+                "Unexpected token {}, expected token {}",
+                self.currently.token_type.to_string(),
+                tokens.iter().map(|&x| x).collect::<Vec<&str>>().join(", ")
             ),
             pos: self.currently.pos.clone(),
         })

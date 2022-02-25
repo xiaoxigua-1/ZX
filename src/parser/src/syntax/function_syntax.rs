@@ -1,7 +1,7 @@
+use crate::Parser;
 use util::ast::Statement;
 use util::error::ZXError;
-use util::token::{Tokens};
-use crate::Parser;
+use util::token::Tokens;
 
 impl Parser<'_> {
     pub fn function_syntax(&mut self) -> Result<Statement, ZXError> {
@@ -11,7 +11,6 @@ impl Parser<'_> {
         // parse parameters
         let right_parentheses = self.comparison(&Tokens::RightParenthesesToken)?;
         let block = self.block_syntax()?;
-
 
         Ok(Statement::FunctionDeclaration {
             fn_keyword,

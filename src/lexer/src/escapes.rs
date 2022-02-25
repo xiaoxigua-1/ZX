@@ -7,7 +7,7 @@ impl Lexer {
             'r' => '\r',
             't' => '\t',
             '0' => '\0',
-            _ => now_char
+            _ => now_char,
         }
     }
 }

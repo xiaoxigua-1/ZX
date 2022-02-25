@@ -7,7 +7,7 @@ pub struct StringStream<'a> {
     back_list: Vec<char>,
     back_index: usize,
     pub(crate) index: usize,
-    pub(crate) is_eof: bool
+    pub(crate) is_eof: bool,
 }
 
 impl StringStream<'_> {
@@ -21,7 +21,7 @@ impl StringStream<'_> {
             index: 0,
             back_index: 0,
             back_list: vec![next_char.unwrap_or(' ')],
-            is_eof: next_char == None
+            is_eof: next_char == None,
         }
     }
 

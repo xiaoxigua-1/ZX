@@ -1,7 +1,7 @@
-use util::ast::{Statement};
+use crate::Parser;
+use util::ast::Statement;
 use util::error::ZXError;
 use util::token::Tokens;
-use crate::Parser;
 
 impl Parser<'_> {
     pub fn block_syntax(&mut self) -> Result<Statement, ZXError> {
@@ -14,10 +14,10 @@ impl Parser<'_> {
                 _ if self.is_eof => {
                     return Err(ZXError::SyntaxError {
                         message: "unclosed delimiter".to_string(),
-                        pos: left_curly_brackets.pos
+                        pos: left_curly_brackets.pos,
                     });
                 }
-                _ => statements.push(self.statement()?)
+                _ => statements.push(self.statement()?),
             }
         }
 
@@ -26,7 +26,7 @@ impl Parser<'_> {
         Ok(Statement::Block {
             left_curly_brackets,
             statements,
-            right_curly_brackets
+            right_curly_brackets,
         })
     }
 }
