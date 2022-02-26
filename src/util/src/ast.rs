@@ -1,4 +1,4 @@
-use crate::token::Token;
+use crate::token::{Literal, Token};
 
 #[derive(Debug)]
 pub enum Statement {
@@ -9,6 +9,7 @@ pub enum Statement {
         left_parentheses: Token,
         parameters: Vec<Parameter>,
         right_parentheses: Token,
+        return_type: Option<Expression>,
         block: Box<Statement>,
     },
     PublicFunctionDeclaration {
@@ -18,6 +19,7 @@ pub enum Statement {
         left_parentheses: Token,
         parameters: Vec<Parameter>,
         right_parentheses: Token,
+        return_type: Option<Expression>,
         block: Box<Statement>,
     },
     FunctionDeclaration {
@@ -26,12 +28,13 @@ pub enum Statement {
         left_parentheses: Token,
         parameters: Vec<Parameter>,
         right_parentheses: Token,
+        return_type: Option<Expression>,
         block: Box<Statement>,
     },
     VariableDeclaration {
         var_keyword: Token,
         colon: Option<Token>,
-        type_identifier: Option<Token>,
+        type_identifier: Option<Expression>,
         equal: Option<Token>,
         value: Option<Vec<Expression>>,
     },
@@ -49,6 +52,9 @@ pub enum Statement {
         statements: Vec<Statement>,
         right_curly_brackets: Token,
     },
+    Expression {
+        expression: Expression,
+    }
 }
 
 #[derive(Debug)]
@@ -58,18 +64,28 @@ pub enum Expression {
         left_parentheses: Token,
         arguments: Vec<Expression>,
         right_parentheses: Token,
-        next: Box<Expression>,
+        next: Box<Option<Expression>>,
     },
-    Value {},
+    Value {
+        kid: Literal,
+        content: Token,
+    },
     Path {
         identifier: Token,
         next: Box<Expression>,
     },
+    Type {
+        identifier: Token,
+        nullable: bool,
+    },
+    Identifier {
+        identifier: Token
+    }
 }
 
 #[derive(Debug)]
 pub struct Parameter {
     parameter_name: Token,
     colon: Token,
-    type_identifier: Token,
+    type_expression: Expression,
 }

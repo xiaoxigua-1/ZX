@@ -10,6 +10,10 @@ impl Parser<'_> {
         let left_parentheses = self.comparison(&Tokens::LeftParenthesesToken)?;
         // parse parameters
         let right_parentheses = self.comparison(&Tokens::RightParenthesesToken)?;
+        let type_expression = match self.currently.token_type {
+            Tokens::ColonToken => Some(self.type_syntax()?),
+            _ => None
+        };
         let block = self.block_syntax()?;
 
         Ok(Statement::FunctionDeclaration {
@@ -18,6 +22,7 @@ impl Parser<'_> {
             left_parentheses,
             parameters: vec![],
             right_parentheses,
+            return_type: type_expression,
             block: Box::new(block),
         })
     }
