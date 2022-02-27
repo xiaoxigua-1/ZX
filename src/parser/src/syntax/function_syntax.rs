@@ -50,7 +50,10 @@ impl Parser<'_> {
                             type_expression,
                         });
                     } else {
-                        let pos = if let Expression::Type { nullable, ref identifier } = parameters.last().unwrap().type_expression {
+                        let pos = if let Expression::Type {
+                            nullable,
+                            ref identifier
+                        } = parameters.last().unwrap().type_expression {
                             let pos = if nullable {
                                 identifier.pos.start + 1
                             } else {
