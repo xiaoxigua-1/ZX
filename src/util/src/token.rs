@@ -48,6 +48,8 @@ pub enum Tokens {
     AmpersandToken,
     // `%`
     PercentToken,
+    // `$`
+    MoneyToken,
     // `example`
     IdentifierToken {
         literal: String

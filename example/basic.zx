@@ -9,8 +9,8 @@ im math
 
 // program entry point
 fn main() {
-    // std is std library
-    std::print("hello world")
+    // $ is std library
+    $::print("hello world")
 
     // variable declaration example
     var example: i32 = 10
@@ -29,7 +29,7 @@ class ZanZanDianShen {
     var dian_shen: String
 
     static fn dian_ren() {
-        std::print("dian")
+        $::print("dian")
     }
 
     pub fn init(str: String) {

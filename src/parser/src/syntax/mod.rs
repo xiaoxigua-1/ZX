@@ -61,8 +61,8 @@ impl Parser<'_> {
                     next: Box::new(next)
                 })
             }
-            Tokens::IdentifierToken { .. } => {
-                let token = self.comparison_string(vec!["IdentifierToken"])?;
+            Tokens::IdentifierToken { .. } | Tokens::MoneyToken => {
+                let token = self.comparison_string(vec!["IdentifierToken", "MoneyToken"])?;
 
                 let expression = match self.currently.token_type {
                     Tokens::ColonToken => {

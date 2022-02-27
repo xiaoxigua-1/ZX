@@ -95,6 +95,7 @@ impl Lexer {
                         '&' => Tokens::AmpersandToken,
                         ',' => Tokens::CommaToken,
                         '%' => Tokens::PercentToken,
+                        '$' => Tokens::MoneyToken,
                         _ => {
                             self.push_syntax_error(
                                 "invalid syntax",
