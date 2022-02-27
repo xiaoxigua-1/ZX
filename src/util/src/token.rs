@@ -49,7 +49,7 @@ pub enum Tokens {
     // `%`
     PercentToken,
     // `$`
-    MoneyToken,
+    StdToken,
     // `example`
     IdentifierToken {
         literal: String

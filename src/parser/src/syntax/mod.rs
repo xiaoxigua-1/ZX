@@ -1,6 +1,7 @@
 mod block_syntax;
 mod function_syntax;
 mod type_syntax;
+mod return_syntax;
 
 use crate::Parser;
 use util::ast::{Expression, Statement};
@@ -26,8 +27,10 @@ impl Parser<'_> {
                         statement: Box::new(self.statement()?)
                     }
                 }
+                "return" => self.return_syntax()?,
                 _ => Statement::Expression { expression: self.expressions()? },
             };
+
             Ok(statement)
         } else if let Tokens::LeftCurlyBracketsToken = keyword.token_type {
              Ok(self.block_syntax()?)
@@ -61,8 +64,8 @@ impl Parser<'_> {
                     next: Box::new(next)
                 })
             }
-            Tokens::IdentifierToken { .. } | Tokens::MoneyToken => {
-                let token = self.comparison_string(vec!["IdentifierToken", "MoneyToken"])?;
+            Tokens::IdentifierToken { .. } | Tokens::StdToken => {
+                let token = self.comparison_string(vec!["IdentifierToken", "StdToken"])?;
 
                 let expression = match self.currently.token_type {
                     Tokens::ColonToken => {

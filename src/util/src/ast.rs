@@ -33,6 +33,10 @@ pub enum Statement {
     Else {},
     WhileLoop {},
     ForLoop {},
+    Return{
+        return_keyword: Token,
+        return_expression: Expression,
+    },
     Block {
         left_curly_brackets: Token,
         statements: Vec<Statement>,
