@@ -19,10 +19,11 @@ pub enum Statement {
     },
     VariableDeclaration {
         var_keyword: Token,
+        var_name: Token,
         colon: Option<Token>,
         type_identifier: Option<Expression>,
         equal: Option<Token>,
-        value: Option<Vec<Expression>>,
+        value: Option<Expression>,
     },
     Import {
         im_keyword: Token,

@@ -2,6 +2,7 @@ mod block_syntax;
 mod function_syntax;
 mod type_syntax;
 mod return_syntax;
+mod variable_declaration_syntax;
 
 use crate::Parser;
 use util::ast::{Expression, Statement};
@@ -28,6 +29,7 @@ impl Parser<'_> {
                     }
                 }
                 "return" => self.return_syntax()?,
+                "var" => self.variable_declaration_syntax()?,
                 _ => Statement::Expression { expression: self.expressions()? },
             };
 
@@ -37,11 +39,6 @@ impl Parser<'_> {
         } else {
             Ok(Statement::Expression { expression: self.expressions()? })
         };
-        //
-        // Err(ZXError::SyntaxError {
-        //     message: "without this keyword".to_string(),
-        //     pos: keyword.clone().pos,
-        // })
     }
 
     pub fn expressions(&mut self) -> Result<Expression, ZXError> {
