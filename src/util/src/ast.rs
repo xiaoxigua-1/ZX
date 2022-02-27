@@ -2,25 +2,11 @@ use crate::token::{Literal, Token};
 
 #[derive(Debug)]
 pub enum Statement {
-    StaticFunctionDeclaration {
-        static_keyword: Token,
-        fn_keyword: Token,
-        function_name: Token,
-        left_parentheses: Token,
-        parameters: Vec<Parameter>,
-        right_parentheses: Token,
-        return_type: Option<Expression>,
-        block: Box<Statement>,
+    Static {
+        statement: Box<Statement>
     },
-    PublicFunctionDeclaration {
-        pub_keyword: Option<Token>,
-        fn_keyword: Token,
-        function_name: Token,
-        left_parentheses: Token,
-        parameters: Vec<Parameter>,
-        right_parentheses: Token,
-        return_type: Option<Expression>,
-        block: Box<Statement>,
+    Public {
+        statement: Box<Statement>
     },
     FunctionDeclaration {
         fn_keyword: Token,

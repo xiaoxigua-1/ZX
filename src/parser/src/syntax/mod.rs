@@ -14,6 +14,18 @@ impl Parser<'_> {
         return if let Tokens::IdentifierToken { ref literal } = keyword.token_type {
             let statement = match literal.as_str() {
                 "fn" => self.function_syntax()?,
+                "pub" => {
+                    self.comparison_string(vec!["IdentifierToken"])?;
+                    Statement::Public {
+                        statement: Box::new(self.statement()?)
+                    }
+                }
+                "static" => {
+                    self.comparison_string(vec!["IdentifierToken"])?;
+                    Statement::Static {
+                        statement: Box::new(self.statement()?)
+                    }
+                }
                 _ => Statement::Expression { expression: self.expressions()? },
             };
             Ok(statement)
