@@ -1,4 +1,3 @@
-fn main() {
-    A::C()
-    B()::C
+fn main(a: Str?    b: Str?): Str? {
+
 }

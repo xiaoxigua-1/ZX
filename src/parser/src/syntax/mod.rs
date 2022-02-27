@@ -33,10 +33,20 @@ impl Parser<'_> {
         match &self.currently.token_type {
             Tokens::LiteralToken { kid, literal: _ } => {
                 let content = self.comparison_string(vec!["LiteralToken"])?;
+                let next = match &self.currently.token_type {
+                    Tokens::DotToken => {
+                        self.comparison(&Tokens::DotToken)?;
+                        Some(Expression::SubMember {
+                            sub_member: Box::new(self.expressions()?)
+                        })
+                    }
+                    _ => None
+                };
 
                 Ok(Expression::Value {
                     kid: kid.clone(),
-                    content
+                    content,
+                    next: Box::new(next)
                 })
             }
             Tokens::IdentifierToken { .. } => {
@@ -57,14 +67,23 @@ impl Parser<'_> {
                     // call expression
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
                     _ => Expression::Identifier {
-                        identifier: token
+                        identifier: token,
+                        next: Box::new(self.expressions()?)
                     }
                 };
 
                 Ok(expression)
             }
+            Tokens::DotToken => {
+                self.comparison(&Tokens::DotToken)?;
+                let sub_member = Box::new(self.expressions()?);
+
+                Ok(Expression::SubMember {
+                    sub_member
+                })
+            }
             _ => Err(ZXError::SyntaxError {
-                message: "".to_string(),
+                message: "ccc".to_string(),
                 pos: self.currently.pos.clone()
             })
         }
@@ -85,7 +104,7 @@ impl Parser<'_> {
                         comma = false;
                     } else {
                         return Err(ZXError::SyntaxError {
-                            message: "".to_string(),
+                            message: "abc".to_string(),
                             pos: self.currently.pos.clone()
                         })
                     }
@@ -100,6 +119,12 @@ impl Parser<'_> {
                 self.comparison(&Tokens::ColonToken)?;
                 self.comparison(&Tokens::ColonToken)?;
                 Some(self.expressions()?)
+            }
+            Tokens::DotToken => {
+                self.comparison(&Tokens::DotToken)?;
+                Some(Expression::SubMember {
+                    sub_member: Box::new(self.expressions()?),
+                })
             }
             _ => None
         };

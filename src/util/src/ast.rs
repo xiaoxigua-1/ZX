@@ -69,23 +69,27 @@ pub enum Expression {
     Value {
         kid: Literal,
         content: Token,
+        next: Box<Option<Expression>>
     },
     Path {
         identifier: Token,
         next: Box<Expression>,
+    },
+    SubMember {
+        sub_member: Box<Expression>
     },
     Type {
         identifier: Token,
         nullable: bool,
     },
     Identifier {
-        identifier: Token
+        identifier: Token,
+        next: Box<Expression>
     }
 }
 
 #[derive(Debug)]
 pub struct Parameter {
-    parameter_name: Token,
-    colon: Token,
-    type_expression: Expression,
+    pub parameter_name: Token,
+    pub type_expression: Expression,
 }

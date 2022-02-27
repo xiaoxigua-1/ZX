@@ -108,6 +108,7 @@ impl Parser<'_> {
                 self.asts.push(statement);
             } else if let Err(error) = statement {
                 self.add_error(error);
+                break
             }
         }
 
