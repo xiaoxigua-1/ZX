@@ -1,3 +1,1 @@
-fn main(a: Str?, b: Str?): Int? {
-    return "123".to_int()
-}
+if {} else if a() {}

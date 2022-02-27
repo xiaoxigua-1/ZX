@@ -3,6 +3,7 @@ mod function_syntax;
 mod type_syntax;
 mod return_syntax;
 mod variable_declaration_syntax;
+mod if_syntax;
 
 use crate::Parser;
 use util::ast::{Expression, Statement};
@@ -30,6 +31,7 @@ impl Parser<'_> {
                 }
                 "return" => self.return_syntax()?,
                 "var" => self.variable_declaration_syntax()?,
+                "if" => self.if_syntax()?,
                 _ => Statement::Expression { expression: self.expressions()? },
             };
 

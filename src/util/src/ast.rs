@@ -30,11 +30,19 @@ pub enum Statement {
         // idk
     },
     Class {},
-    If {},
-    Else {},
+    If {
+        if_keyword: Token,
+        condition: Expression,
+        block: Box<Statement>,
+        else_statement: Box<Option<Statement>>,
+    },
+    Else {
+        else_keyword: Token,
+        next: Box<Option<Statement>>,
+    },
     WhileLoop {},
     ForLoop {},
-    Return{
+    Return {
         return_keyword: Token,
         return_expression: Expression,
     },
@@ -45,7 +53,7 @@ pub enum Statement {
     },
     Expression {
         expression: Expression,
-    }
+    },
 }
 
 #[derive(Debug)]
@@ -60,7 +68,7 @@ pub enum Expression {
     Value {
         kid: Literal,
         content: Token,
-        next: Box<Option<Expression>>
+        next: Box<Option<Expression>>,
     },
     Path {
         identifier: Token,
@@ -75,8 +83,8 @@ pub enum Expression {
     },
     Identifier {
         identifier: Token,
-        next: Box<Expression>
-    }
+        next: Box<Expression>,
+    },
 }
 
 #[derive(Debug)]
