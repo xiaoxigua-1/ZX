@@ -124,6 +124,18 @@ impl Lexer {
             file_stream.next();
         }
 
+        if !identifier_string.is_empty() {
+            self.tokens.push(Token {
+                token_type: Tokens::IdentifierToken {
+                    literal: identifier_string,
+                },
+                pos: Position {
+                    start: file_stream.index,
+                    end: file_stream.index,
+                },
+            })
+        }
+
         let is_to_eof = self
             .reposts
             .iter()
