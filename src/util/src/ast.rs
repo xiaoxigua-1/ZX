@@ -85,9 +85,11 @@ pub enum Expression {
         identifier: Token,
         nullable: bool,
     },
+    Bool {
+        identifier: Token,
+    },
     Identifier {
         identifier: Token,
-        next: Box<Expression>,
     },
 }
 

@@ -9,7 +9,7 @@ impl Parser<'_> {
             Err(_) => {
                 return Err(ZXError::SyntaxError {
                     message: "missing condition".to_string(),
-                    pos: if_keyword.pos
+                    pos: while_keyword.pos
                 })
             }
             Ok(condition) => condition

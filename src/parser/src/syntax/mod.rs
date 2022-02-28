@@ -39,7 +39,7 @@ impl Parser<'_> {
 
             Ok(statement)
         } else if let Tokens::LeftCurlyBracketsToken = keyword.token_type {
-             Ok(self.block_syntax()?)
+            Ok(self.block_syntax()?)
         } else {
             Ok(Statement::Expression { expression: self.expressions()? })
         };
@@ -62,7 +62,7 @@ impl Parser<'_> {
                 Ok(Expression::Value {
                     kid: kid.clone(),
                     content,
-                    next: Box::new(next)
+                    next: Box::new(next),
                 })
             }
             Tokens::IdentifierToken { .. } | Tokens::StdToken => {
@@ -77,14 +77,13 @@ impl Parser<'_> {
 
                         Expression::Path {
                             identifier: token,
-                            next: Box::new(expression)
+                            next: Box::new(expression),
                         }
                     }
                     // call expression
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
                     _ => Expression::Identifier {
-                        identifier: token,
-                        next: Box::new(self.expressions()?)
+                        identifier: token
                     }
                 };
 
@@ -100,7 +99,7 @@ impl Parser<'_> {
             }
             _ => Err(ZXError::SyntaxError {
                 message: "ccc".to_string(),
-                pos: self.currently.pos.clone()
+                pos: self.currently.pos.clone(),
             })
         }
     }
@@ -121,8 +120,8 @@ impl Parser<'_> {
                     } else {
                         return Err(ZXError::SyntaxError {
                             message: "abc".to_string(),
-                            pos: self.currently.pos.clone()
-                        })
+                            pos: self.currently.pos.clone(),
+                        });
                     }
                 }
             }
@@ -130,7 +129,7 @@ impl Parser<'_> {
 
         let right_parentheses = self.comparison(&Tokens::RightParenthesesToken)?;
 
-        let next =  match self.currently.token_type {
+        let next = match self.currently.token_type {
             Tokens::ColonToken => {
                 self.comparison(&Tokens::ColonToken)?;
                 self.comparison(&Tokens::ColonToken)?;
@@ -150,7 +149,7 @@ impl Parser<'_> {
             left_parentheses,
             arguments,
             right_parentheses,
-            next: Box::new(next)
+            next: Box::new(next),
         })
     }
 }
