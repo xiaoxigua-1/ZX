@@ -40,7 +40,11 @@ pub enum Statement {
         else_keyword: Token,
         next: Box<Option<Statement>>,
     },
-    WhileLoop {},
+    WhileLoop {
+        while_keyword: Token,
+        condition: Expression,
+        block: Box<Statement>,
+    },
     ForLoop {},
     Return {
         return_keyword: Token,
