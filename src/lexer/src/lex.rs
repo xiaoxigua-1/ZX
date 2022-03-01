@@ -124,11 +124,11 @@ impl Lexer {
 
     pub fn lex_slash(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let start = string_stream.index;
-        string_stream.next();
 
-        match string_stream.get_currently() {
+        match string_stream.first() {
             // single line comment
             '/' => {
+                string_stream.next();
                 while !string_stream.is_eof && string_stream.get_currently() != '\n' {
                     string_stream.next();
                 }
@@ -137,19 +137,16 @@ impl Lexer {
             // multi line comment
             '*' => {
                 string_stream.next();
+                string_stream.next();
                 let mut end_comment = false;
 
                 // search close chars `*/`
                 while !string_stream.is_eof {
                     if string_stream.get_currently() == '*' {
-                        string_stream.next();
-
-                        if string_stream.get_currently() == '/' {
+                        if string_stream.first() == '/' {
                             end_comment = true;
                             string_stream.next();
                             break;
-                        } else {
-                            string_stream.back();
                         }
                     }
                     string_stream.next();
@@ -177,7 +174,6 @@ impl Lexer {
                     },
                 });
 
-                string_stream.back();
                 Ok(())
             }
         }
@@ -186,32 +182,28 @@ impl Lexer {
     pub fn lex_number(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let mut is_folat = false;
         let mut number_string = String::new();
-        let mut currently = string_stream.get_currently();
+        let currently = string_stream.get_currently();
         let start = string_stream.index;
 
-        if currently == '-' {
-            number_string.push(currently);
-            string_stream.next();
-        }
+        number_string.push(currently);
 
         while !string_stream.is_eof {
-            currently = string_stream.get_currently();
 
-            match currently {
+            match string_stream.first() {
                 '.' => {
+                    string_stream.next();
                     is_folat = true;
-                    number_string.push(currently);
+                    number_string.push(string_stream.get_currently());
                 }
                 '0'..='9' => {
-                    number_string.push(currently);
+                    string_stream.next();
+                    // println!("{}", string_stream.get_currently());
+                    number_string.push(string_stream.get_currently());
                 }
                 _ => {
-                    string_stream.back();
                     break;
                 }
             }
-
-            string_stream.next();
         }
 
         let pos = Position {

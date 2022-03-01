@@ -53,9 +53,7 @@ mod file_stream_test {
         assert_eq!('a', file_stream.get_currently());
         file_stream.next();
         assert_eq!('b', file_stream.get_currently());
-        file_stream.back();
-        assert_eq!('a', file_stream.get_currently());
-        file_stream.next();
+        assert_eq!('c', file_stream.first());
         assert_eq!('b', file_stream.get_currently());
         file_stream.next();
         assert_eq!('c', file_stream.get_currently());
