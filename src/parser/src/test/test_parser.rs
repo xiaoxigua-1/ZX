@@ -4,6 +4,7 @@ mod test_parser {
     use lexer::Lexer;
     use std::fs;
     use util::token::{Literal, Position, Token, Tokens};
+    use util::view_ast_tree::ViewASTTree;
 
     #[test]
     fn test_parser() {
@@ -34,7 +35,7 @@ mod test_parser {
         if let Ok(()) = lexer.lexer() {
             let mut parser = Parser::new(&lexer.tokens);
             parser.parse(&path, &source);
-            println!("{:#?}", parser.asts);
+            ViewASTTree { ast_tree: parser.asts }.main()
         }
     }
 }
