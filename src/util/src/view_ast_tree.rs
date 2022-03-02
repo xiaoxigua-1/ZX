@@ -28,7 +28,7 @@ impl ViewASTTree {
 
     fn line_start(&self, index: i32) -> String {
         let mut line_start = String::new();
-        (0..index).into_iter().for_each(|_| { line_start.push_str("|   ") });
+        (0..index).into_iter().for_each(|_| { line_start.push_str("|    ") });
         line_start
     }
 
@@ -37,19 +37,21 @@ impl ViewASTTree {
         println!("{line_start}├── Function {}", self.literal(function_name));
         self.function_parameters(parameters, index + 1);
         if let Some(type_expression) = return_type {
-            println!("{line_start}|   ├── Return Type");
+            println!("{line_start}|    ├── Return Type");
             self.expression(type_expression, index + 1);
         }
-        println!("{line_start}|   ├── Statements");
+        println!("{line_start}|    ├── Statements");
         self.statement(index + 2, block)
     }
 
     fn function_parameters(&self, parameters: &Vec<Parameter>, index: i32) {
         let line_start = self.line_start(index);
-        println!("{line_start}├── Parameters");
-        parameters.iter().for_each(|parameter| {
-            println!("{line_start}|    ├── {}", self.literal(&parameter.parameter_name));
-        })
+        if !parameters.is_empty() {
+            println!("{line_start}├── Parameters");
+            parameters.iter().for_each(|parameter| {
+                println!("{line_start}|    ├── {}", self.literal(&parameter.parameter_name));
+            })
+        }
     }
 
     fn expression(&self, expression: &Expression, index: i32) {
