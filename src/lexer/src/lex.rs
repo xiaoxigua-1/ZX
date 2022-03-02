@@ -4,7 +4,63 @@ use file_stream::StringStream;
 use util::error::ZXError;
 use util::token::{Literal, Position, Token, Tokens};
 
+pub fn is_whitespace(c: char) -> bool {
+    // This is Pattern_White_Space.
+    //
+    // Note that this set is stable (ie, it doesn't change with different
+    // Unicode versions), so it's ok to just hard-code the values.
+
+    matches!(
+        c,
+        // Usual ASCII suspects
+        '\u{0009}'   // \t
+        | '\u{000A}' // \n
+        | '\u{000B}' // vertical tab
+        | '\u{000C}' // form feed
+        | '\u{000D}' // \r
+        | '\u{0020}' // space
+
+        // NEXT LINE from latin1
+        | '\u{0085}'
+
+        // Bidi markers
+        | '\u{200E}' // LEFT-TO-RIGHT MARK
+        | '\u{200F}' // RIGHT-TO-LEFT MARK
+
+        // Dedicated whitespace characters from Unicode
+        | '\u{2028}' // LINE SEPARATOR
+        | '\u{2029}' // PARAGRAPH SEPARATOR
+    )
+}
+
 impl Lexer {
+    pub fn lex_identifier(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
+        let mut ident = String::from(string_stream.get_currently());
+        let start = string_stream.index;
+
+        while !string_stream.is_eof {
+            match string_stream.first() {
+                c if is_whitespace(c) => break,
+                ' '..='/' | ':'..='@' | '['..='^' | '{'..='~' | '`' => break,
+                c @ _ => {
+                    string_stream.next();
+                    ident.push(c)
+                }
+            }
+        }
+
+        self.tokens.push(Token {
+            token_type: Tokens::IdentifierToken {
+                literal: ident.clone()
+            },
+            pos: Position {
+                start: start,
+                end: start + ident.len()
+            }
+        });
+        Ok(())
+    }
+
     // lex string `"abc\"\n"`
     pub fn lex_string(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
         let mut string_content = String::new();

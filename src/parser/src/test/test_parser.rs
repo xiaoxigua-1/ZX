@@ -3,6 +3,7 @@ mod test_parser {
     use crate::Parser;
     use lexer::Lexer;
     use std::fs;
+    use util::repost::{Level, Repost};
     use util::token::{Literal, Position, Token, Tokens};
     use util::view_ast_tree::ViewASTTree;
 
@@ -30,12 +31,18 @@ mod test_parser {
     fn test_parser_function() {
         let path = "./test_data/function.zx".to_string();
         let source = fs::read_to_string(&path).expect("Something went wrong reading the file");
-        let mut lexer = Lexer::new(&path, &source);
+        let mut lexer = Lexer::new(&source);
+        match lexer.lexer() {
+            Ok(()) => {
+                println!("{:#?}", lexer.tokens);
+                let mut parser = Parser::new(&lexer.tokens);
+                parser.parse(&path, &source);
+                ViewASTTree { ast_tree: parser.asts }.main();
+            }
+            Err(error) => {
 
-        if let Ok(()) = lexer.lexer() {
-            let mut parser = Parser::new(&lexer.tokens);
-            parser.parse(&path, &source);
-            ViewASTTree { ast_tree: parser.asts }.main()
+                Repost { level: Level::Error, error }.print(&source, &path);
+            }
         }
     }
 }
