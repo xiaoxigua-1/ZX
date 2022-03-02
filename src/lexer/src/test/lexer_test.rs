@@ -2,15 +2,18 @@
 mod lexer_test {
     use crate::Lexer;
     use std::fs;
+    use util::repost::{Level, Repost};
     use util::token::{Literal, Tokens};
 
     #[test]
     fn test_lexer() {
         let path = "./test_data/test_data.zx".to_string();
         let source = fs::read_to_string(&path).expect("Something went wrong reading the file");
-        let mut lexer = Lexer::new(&path, &source);
+        let mut lexer = Lexer::new(&source);
         match lexer.lexer() {
-            Err(()) => {}
+            Err(error) => {
+                Repost { level: Level::Error, error }.print(&source, &path);
+            }
             Ok(()) => {}
         };
         for token in lexer.tokens {
