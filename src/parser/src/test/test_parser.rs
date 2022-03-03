@@ -34,7 +34,6 @@ mod test_parser {
         let mut lexer = Lexer::new(&source);
         match lexer.lexer() {
             Ok(()) => {
-                println!("{:#?}", lexer.tokens);
                 let mut parser = Parser::new(&lexer.tokens);
                 parser.parse(&path, &source);
                 ViewASTTree { ast_tree: parser.asts }.main();

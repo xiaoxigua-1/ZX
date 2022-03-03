@@ -20,7 +20,8 @@ impl ViewASTTree {
             FunctionDeclaration { function_name, parameters, return_type, block, .. } =>
                 self.function_declaration(function_name, parameters, return_type, block, index),
             Block { statements, .. } => {
-                statements.iter().for_each(|statement| { self.statement(index, statement)})
+                println!("{}├── Block", self.line_start(index));
+                statements.iter().for_each(|statement| { self.statement(index + 1, statement)})
             }
             _ => {}
         }
@@ -40,8 +41,7 @@ impl ViewASTTree {
             println!("{line_start}|    ├── Return Type");
             self.expression(type_expression, index + 1);
         }
-        println!("{line_start}|    ├── Statements");
-        self.statement(index + 2, block)
+        self.statement(index + 1, block)
     }
 
     fn function_parameters(&self, parameters: &Vec<Parameter>, index: i32) {
