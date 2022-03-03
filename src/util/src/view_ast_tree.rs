@@ -23,6 +23,8 @@ impl ViewASTTree {
                 println!("{}├── Block", self.line_start(index));
                 statements.iter().for_each(|statement| { self.statement(index + 1, statement)})
             }
+            VariableDeclaration { var_name, type_identifier, value, .. } =>
+                self.variable_declaration(index, var_name, type_identifier, value),
             _ => {}
         }
     }
@@ -61,15 +63,35 @@ impl ViewASTTree {
                 println!("{line_start}|    ├── {} type", self.literal(identifier));
                 println!("{line_start}|    └── nullable {}", nullable);
             }
+            Value { kid, next, content } => {
+                println!("{}├── Type {:?}", line_start, kid);
+                println!("{}├── value {}", line_start, self.literal(content));
+                if let Some(next) = &**next {
+                    println!("{}├── next", line_start);
+                    self.expression(&next, index + 1);
+                }
+            }
             _ => {}
         }
     }
 
+    fn variable_declaration(&self, index: i32, variable_name: &Token, type_identifier: &Option<Expression>, value: &Option<Expression>) {
+        let line_start = self.line_start(index);
+        println!("{}├── variable {}", line_start, self.literal(variable_name));
+        if let Some(expression) = type_identifier {
+            self.expression(expression, index + 1);
+        }
+        if let Some(value) = value {
+            self.expression(value, index + 1);
+        }
+
+    }
+
     fn literal(&self, token: &Token) -> String {
-        if let Tokens::IdentifierToken { ref literal } = token.token_type {
-            literal.to_string()
-        } else {
-            String::new()
+        match token.token_type {
+            Tokens::IdentifierToken { ref literal } => literal.to_string(),
+            Tokens::LiteralToken { ref literal, .. } => literal.to_string(),
+            _ => String::new()
         }
     }
 }

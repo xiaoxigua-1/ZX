@@ -29,19 +29,25 @@ mod test_parser {
 
     #[test]
     fn test_parser_function() {
-        let path = "./test_data/function.zx".to_string();
-        let source = fs::read_to_string(&path).expect("Something went wrong reading the file");
-        let mut lexer = Lexer::new(&source);
-        match lexer.lexer() {
-            Ok(()) => {
-                let mut parser = Parser::new(&lexer.tokens);
-                parser.parse(&path, &source);
-                ViewASTTree { ast_tree: parser.asts }.main();
-            }
-            Err(error) => {
+        let paths = fs::read_dir("./test_data").unwrap();
+        paths.into_iter().for_each(|dir| {
+            let path = dir.unwrap().path().display().to_string();
+            println!("Test {path} file");
+            let source = fs::read_to_string(&path).expect("Something went wrong reading the file");
+            let mut lexer = Lexer::new(&source);
 
-                Repost { level: Level::Error, error }.print(&source, &path);
+            match lexer.lexer() {
+                Ok(()) => {
+                    let mut parser = Parser::new(&lexer.tokens);
+                    parser.parse(&path, &source);
+                    ViewASTTree { ast_tree: parser.asts }.main();
+                }
+                Err(error) => {
+
+                    Repost { level: Level::Error, error }.print(&source, &path);
+                }
             }
-        }
+        });
+
     }
 }
