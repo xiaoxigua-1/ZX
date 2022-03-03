@@ -45,7 +45,11 @@ pub enum Statement {
         condition: Expression,
         block: Box<Statement>,
     },
-    ForLoop {},
+    ForLoop {
+        for_keyword: Token,
+        condition: Expression,
+        block: Box<Statement>,
+    },
     Return {
         return_keyword: Token,
         return_expression: Expression,
