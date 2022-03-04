@@ -4,7 +4,7 @@ fn main(args: Str): Str? {
     }
     {
         fn a() {
-            var a = 10
+            var a = "abc".to_int(123, 333)
         }
     }
 }

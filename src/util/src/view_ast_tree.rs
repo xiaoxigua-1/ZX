@@ -65,11 +65,22 @@ impl ViewASTTree {
             }
             Value { kid, next, content } => {
                 println!("{}├── Type {:?}", line_start, kid);
-                println!("{}├── value {}", line_start, self.literal(content));
+                println!("{}├── Value {}", line_start, self.literal(content));
                 if let Some(next) = &**next {
-                    println!("{}├── next", line_start);
+                    println!("{}├── Next", line_start);
                     self.expression(&next, index + 1);
                 }
+            }
+            Call { call_name, arguments, .. } => {
+                println!("{line_start}├── Call {}", self.literal(call_name));
+                arguments.into_iter().for_each(|argument| {
+                    println!("{line_start}|    ├── arg");
+                    self.expression(argument, index + 2);
+                })
+            }
+            SubMember { sub_member } => {
+                println!("{line_start}├── SubMember");
+                self.expression(&*sub_member, index + 1);
             }
             _ => {}
         }

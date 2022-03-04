@@ -112,7 +112,10 @@ impl Parser<'_> {
         loop {
             match self.currently.token_type {
                 Tokens::RightParenthesesToken => break,
-                Tokens::CommaToken => comma = true,
+                Tokens::CommaToken => {
+                    self.comparison(&Tokens::CommaToken)?;
+                    comma = true
+                },
                 _ => {
                     if comma {
                         arguments.push(self.expressions()?);
