@@ -55,8 +55,8 @@ impl Lexer {
             },
             pos: Position {
                 start: start,
-                end: start + ident.len()
-            }
+                end: start + ident.len(),
+            },
         });
         Ok(())
     }
@@ -244,21 +244,23 @@ impl Lexer {
         number_string.push(currently);
 
         while !string_stream.is_eof {
-
             match string_stream.first() {
                 '.' => {
                     string_stream.next();
-                    is_folat = true;
-                    number_string.push(string_stream.get_currently());
+                    match string_stream.first() {
+                        '0'..='9' => {
+                            is_folat = true;
+                            number_string.push(string_stream.get_currently());
+                        }
+                        _ => break
+                    }
                 }
                 '0'..='9' => {
                     string_stream.next();
                     // println!("{}", string_stream.get_currently());
                     number_string.push(string_stream.get_currently());
                 }
-                _ => {
-                    break;
-                }
+                _ => break
             }
         }
 
@@ -278,7 +280,18 @@ impl Lexer {
 
         if (is_folat && number_string.len() > 1) || (!is_folat && number_string.len() > 0) {
             self.tokens.push(Token { token_type, pos });
-
+            match string_stream.get_currently() {
+                '.' => {
+                    self.tokens.push(Token {
+                        token_type: Tokens::DotToken,
+                        pos: Position {
+                            start: string_stream.index,
+                            end: string_stream.index,
+                        }
+                    })
+                }
+                _ => {}
+            }
             Ok(())
         } else {
             Err(ZXError::SyntaxError {

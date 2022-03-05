@@ -1,10 +1,1 @@
-fn main(args: Str): Str? {
-    fn a() {
-
-    }
-    {
-        fn a() {
-            var a = "abc".to_int(123, 333)
-        }
-    }
-}
+var a = 123.to()
