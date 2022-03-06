@@ -5,6 +5,7 @@ mod return_syntax;
 mod variable_declaration_syntax;
 mod if_syntax;
 mod while_syntax;
+mod forloop_syntax;
 
 use crate::Parser;
 use util::ast::{Expression, Statement};
@@ -34,6 +35,7 @@ impl Parser<'_> {
                 "var" => self.variable_declaration_syntax()?,
                 "if" => self.if_syntax()?,
                 "while" => self.while_syntax()?,
+                "for" => self.for_syntax()?,
                 _ => Statement::Expression { expression: self.expressions()? },
             };
 
@@ -154,5 +156,9 @@ impl Parser<'_> {
             right_parentheses,
             next: Box::new(next),
         })
+    }
+
+    fn range_expression(&mut self, start: Expression) {
+
     }
 }

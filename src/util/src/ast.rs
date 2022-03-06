@@ -47,7 +47,9 @@ pub enum Statement {
     },
     ForLoop {
         for_keyword: Token,
-        condition: Expression,
+        for_var_name: Token,
+        for_in_keyword: Token,
+        iter: Expression,
         block: Box<Statement>,
     },
     Return {

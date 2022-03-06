@@ -15,6 +15,7 @@ impl Parser<'_> {
             Ok(condition) => condition
         };
         let block = self.block_syntax()?;
+
         Ok(Statement::WhileLoop {
             while_keyword,
             condition,
