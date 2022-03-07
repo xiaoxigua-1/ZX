@@ -25,6 +25,7 @@ impl ViewASTTree {
             }
             VariableDeclaration { var_name, type_identifier, value, .. } =>
                 self.variable_declaration(index, var_name, type_identifier, value),
+            Statement::Expression { expression } => self.expression(expression, index),
             _ => {}
         }
     }
@@ -82,18 +83,25 @@ impl ViewASTTree {
                 println!("{line_start}├── SubMember");
                 self.expression(&*sub_member, index + 1);
             }
+            Identifier { identifier, next } => {
+                println!("{line_start}├── Identifier {}", self.literal(identifier));
+                if let Some(next) = next {
+                    println!("{line_start}|    ├── next");
+                    self.expression(next, index + 2);
+                }
+            }
             _ => {}
         }
     }
 
-    fn variable_declaration(&self, index: i32, variable_name: &Token, type_identifier: &Option<Expression>, value: &Option<Expression>) {
+    fn variable_declaration(&self, index: i32, variable_name: &Token, type_identifier: &Option<Expression>, value: &Option<Box<Statement>>) {
         let line_start = self.line_start(index);
         println!("{}├── variable {}", line_start, self.literal(variable_name));
         if let Some(expression) = type_identifier {
             self.expression(expression, index + 1);
         }
         if let Some(value) = value {
-            self.expression(value, index + 1);
+            self.statement(index + 1, value);
         }
 
     }

@@ -23,7 +23,7 @@ pub enum Statement {
         colon: Option<Token>,
         type_identifier: Option<Expression>,
         equal: Option<Token>,
-        value: Option<Expression>,
+        value: Option<Box<Statement>>,
     },
     Import {
         im_keyword: Token,
@@ -49,12 +49,12 @@ pub enum Statement {
         for_keyword: Token,
         for_var_name: Token,
         for_in_keyword: Token,
-        iter: Expression,
+        iter: Box<Statement>,
         block: Box<Statement>,
     },
     Return {
         return_keyword: Token,
-        return_expression: Expression,
+        return_expression: Box<Statement>,
     },
     Block {
         left_curly_brackets: Token,
@@ -96,7 +96,8 @@ pub enum Expression {
     },
     Identifier {
         identifier: Token,
-    },
+        next: Option<Box<Expression>>
+    }
 }
 
 #[derive(Debug)]

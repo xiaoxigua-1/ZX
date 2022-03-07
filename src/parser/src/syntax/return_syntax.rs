@@ -5,11 +5,11 @@ use crate::Parser;
 impl Parser<'_> {
     pub fn return_syntax(&mut self) -> Result<Statement, ZXError> {
         let return_keyword = self.comparison_string(vec!["IdentifierToken"])?;
-        let return_expression = self.expressions()?;
+        let return_expression = self.statement()?;
 
         Ok(Statement::Return {
             return_keyword,
-            return_expression,
+            return_expression: Box::new(return_expression),
         })
     }
 }

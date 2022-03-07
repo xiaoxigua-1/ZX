@@ -35,7 +35,7 @@ impl Parser<'_> {
     pub fn comparison(&mut self, token: &Tokens) -> Result<Token, ZXError> {
         if self.currently.is_token_type(token) {
             let ret_token = self.currently.clone();
-            self.next_token();
+            self.next_token(if let Tokens::LineSeparatorToken = token { true } else { false });
             Ok(ret_token)
         } else {
             Err(ZXError::SyntaxError {
@@ -53,7 +53,7 @@ impl Parser<'_> {
         for token in &tokens {
             if self.currently.is_token_type_str(token) {
                 let ret_token = self.currently.clone();
-                self.next_token();
+                self.next_token(*token == "LineSeparatorToken");
                 return Ok(ret_token);
             }
         }
@@ -68,12 +68,12 @@ impl Parser<'_> {
         })
     }
 
-    pub fn next_token(&mut self) {
+    pub fn next_token(&mut self, line_separator_token: bool) {
         let token = loop {
             let token = self.tokens.next();
 
             if let Some(content) = token {
-                if !content.is_token_type(&Tokens::LineSeparatorToken) {
+                if !content.is_token_type(&Tokens::LineSeparatorToken) || line_separator_token {
                     break token;
                 }
             } else {

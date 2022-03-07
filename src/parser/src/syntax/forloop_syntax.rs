@@ -7,7 +7,7 @@ impl Parser<'_>{
         let for_keyword = self.comparison_string(vec!["IdentifierToken"])?;
         let for_var_name = self.comparison_string(vec!["IdentifierToken"])?;
         let for_in_keyword = self.comparison_string(vec!["IdentifierToken"])?;
-        let iter = self.expressions()?;
+        let iter = Box::new(self.statement()?);
         let block = self.block_syntax()?;
 
         Ok(Statement::ForLoop {

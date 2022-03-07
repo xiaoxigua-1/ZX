@@ -6,6 +6,7 @@ mod variable_declaration_syntax;
 mod if_syntax;
 mod while_syntax;
 mod forloop_syntax;
+mod range_expression;
 
 use crate::Parser;
 use util::ast::{Expression, Statement};
@@ -52,12 +53,7 @@ impl Parser<'_> {
             Tokens::LiteralToken { kid, literal: _ } => {
                 let content = self.comparison_string(vec!["LiteralToken"])?;
                 let next = match &self.currently.token_type {
-                    Tokens::DotToken => {
-                        self.comparison(&Tokens::DotToken)?;
-                        Some(Expression::SubMember {
-                            sub_member: Box::new(self.expressions()?)
-                        })
-                    }
+                    Tokens::DotToken => Some(self.expressions()?),
                     _ => None
                 };
 
@@ -84,8 +80,15 @@ impl Parser<'_> {
                     }
                     // call expression
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
-                    _ => Expression::Identifier {
-                        identifier: token
+                    _ => {
+                        let next = match &self.currently.token_type {
+                            Tokens::DotToken => Some(Box::new(self.expressions()?)),
+                            _ => None
+                        };
+                        Expression::Identifier {
+                            identifier: token,
+                            next
+                        }
                     }
                 };
 
@@ -156,9 +159,5 @@ impl Parser<'_> {
             right_parentheses,
             next: Box::new(next),
         })
-    }
-
-    fn range_expression(&mut self, start: Expression) {
-
     }
 }

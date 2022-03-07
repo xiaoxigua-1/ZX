@@ -24,7 +24,7 @@ impl Parser<'_> {
         let value = if equal.is_none() {
             None
         } else {
-            Some(self.expressions()?)
+            Some(Box::new(self.statement()?))
         };
 
         Ok(Statement::VariableDeclaration {
