@@ -29,6 +29,7 @@ impl ViewASTTree {
             If { condition, else_statement, block, .. } => self.if_statement(index, else_statement, block, condition),
             Else { next, .. } => self.else_statemtnt(index, next),
             WhileLoop { block, condition, .. } => self.while_loop(index, block, condition),
+            ForLoop { block, iter, for_var_name, .. } => self.for_loop(index, for_var_name, iter, block),
             _ => {}
         }
     }
@@ -129,9 +130,18 @@ impl ViewASTTree {
 
     fn while_loop(&self, index: i32, block: &Box<Statement>, condition: &Expression) {
         let line_start = self.line_start(index);
-        println!("{line_start}├── while loop");
+        println!("{line_start}├── While loop");
         self.expression(condition, index + 1);
         self.statement(index + 1, &**block);
+    }
+
+    fn for_loop(&self, index: i32, item_name: &Token, iter: &Box<Statement>, block: &Box<Statement>) {
+        let line_start = self.line_start(index);
+        println!("{line_start}├── For loop");
+        println!("{line_start}|    ├── Item name `{}`", self.literal(item_name));
+        println!("{line_start}|    ├── iter");
+        self.statement(index + 2, &**iter);
+        self.statement(index + 1, block);
     }
 
     fn literal(&self, token: &Token) -> String {

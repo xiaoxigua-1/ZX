@@ -18,4 +18,8 @@ fn main(args: Str): Str? {
     while a {
         
     }
+
+    for i in a {
+        
+    }
 }
