@@ -85,9 +85,15 @@ impl Parser<'_> {
                             Tokens::DotToken => Some(Box::new(self.expressions()?)),
                             _ => None
                         };
-                        Expression::Identifier {
-                            identifier: token,
-                            next
+
+                        match &token.token_type {
+                            Tokens::IdentifierToken { ref literal } if literal == "true" || literal == "false" => Expression::Bool {
+                                identifier: token,
+                            },
+                            _ => Expression::Identifier {
+                                identifier: token,
+                                next
+                            }
                         }
                     }
                 };

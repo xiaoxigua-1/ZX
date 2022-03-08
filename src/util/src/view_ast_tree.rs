@@ -88,11 +88,14 @@ impl ViewASTTree {
                 self.expression(&*sub_member, index + 1);
             }
             Identifier { identifier, next } => {
-                println!("{line_start}├── Identifier {}", self.literal(identifier));
+                println!("{line_start}├── Identifier `{}`", self.literal(identifier));
                 if let Some(next) = next {
                     println!("{line_start}|    ├── next");
                     self.expression(next, index + 2);
                 }
+            }
+            Bool { identifier } => {
+                println!("{line_start}├── Bool `{}`", self.literal(identifier));
             }
             _ => {}
         }
