@@ -6,6 +6,13 @@ fn main(args: Str): Str? {
         fn a() {
             var a = 123.3.to_string()
             abc.to_int()
+            if a {
+
+            } else if a {
+
+            } else {
+                
+            }
         }
     }
 }
