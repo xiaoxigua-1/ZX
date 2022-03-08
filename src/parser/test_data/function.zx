@@ -15,4 +15,7 @@ fn main(args: Str): Str? {
             }
         }
     }
+    while a {
+        
+    }
 }

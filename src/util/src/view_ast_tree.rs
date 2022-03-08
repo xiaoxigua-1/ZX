@@ -28,6 +28,7 @@ impl ViewASTTree {
             Statement::Expression { expression } => self.expression(expression, index),
             If { condition, else_statement, block, .. } => self.if_statement(index, else_statement, block, condition),
             Else { next, .. } => self.else_statemtnt(index, next),
+            WhileLoop { block, condition, .. } => self.while_loop(index, block, condition),
             _ => {}
         }
     }
@@ -116,7 +117,6 @@ impl ViewASTTree {
         if let Some(else_statement) = &**else_statement {
             self.statement(index + 1, &else_statement);
         }
-        // println!("{:?} {:?} {:?}", else_statement, block, condition);
     }
 
     fn else_statemtnt(&self, index: i32, next: &Box<Option<Statement>>) {
@@ -125,6 +125,13 @@ impl ViewASTTree {
          if let Some(next) = &**next {
             self.statement(index + 1, &next);
         }
+    }
+
+    fn while_loop(&self, index: i32, block: &Box<Statement>, condition: &Expression) {
+        let line_start = self.line_start(index);
+        println!("{line_start}├── while loop");
+        self.expression(condition, index + 1);
+        self.statement(index + 1, &**block);
     }
 
     fn literal(&self, token: &Token) -> String {
