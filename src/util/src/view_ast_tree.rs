@@ -26,6 +26,8 @@ impl ViewASTTree {
             VariableDeclaration { var_name, type_identifier, value, .. } =>
                 self.variable_declaration(index, var_name, type_identifier, value),
             Statement::Expression { expression } => self.expression(expression, index),
+            If { condition, else_statement, block, .. } => self.if_statement(index, else_statement, block, condition),
+            Else { next, .. } => self.else_statemtnt(index, next),
             _ => {}
         }
     }
@@ -103,7 +105,26 @@ impl ViewASTTree {
         if let Some(value) = value {
             self.statement(index + 1, value);
         }
+    }
 
+    fn if_statement(&self, index: i32, else_statement: &Box<Option<Statement>>, block: &Box<Statement>, condition: &Expression) {
+        let line_start = self.line_start(index);
+        println!("{line_start}├── if statement");
+        println!("{line_start}|    ├── condition");
+        self.expression(condition, index + 2);
+        self.statement(index + 1, &*block);
+        if let Some(else_statement) = &**else_statement {
+            self.statement(index + 1, &else_statement);
+        }
+        // println!("{:?} {:?} {:?}", else_statement, block, condition);
+    }
+
+    fn else_statemtnt(&self, index: i32, next: &Box<Option<Statement>>) {
+        let line_start = self.line_start(index);
+        println!("{line_start}├── else statement");
+         if let Some(next) = &**next {
+            self.statement(index + 1, &next);
+        }
     }
 
     fn literal(&self, token: &Token) -> String {
