@@ -27,9 +27,14 @@ pub enum Statement {
     },
     Import {
         im_keyword: Token,
-        // idk
     },
-    Class {},
+    Class {
+        class_keyword: Token,
+        class_name: Token,
+        clone: Option<Token>,
+        inherit: Option<Token>,
+        block: Box<Statement>,
+    },
     If {
         if_keyword: Token,
         condition: Expression,
