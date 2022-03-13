@@ -3,4 +3,4 @@
 ZX is simple programming language
 
 ## example
-- [basic](./example/basic.zx)ㄕ
+- [basic](./example/basic.zx)
