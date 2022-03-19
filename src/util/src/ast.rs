@@ -1,6 +1,6 @@
 use crate::token::{Literal, Token};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     Static {
         statement: Box<Statement>
@@ -71,7 +71,7 @@ pub enum Statement {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     Call {
         call_name: Token,
@@ -105,7 +105,7 @@ pub enum Expression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Parameter {
     pub parameter_name: Token,
     pub type_expression: Expression,

@@ -1,5 +1,4 @@
 use clap::{Parser, Subcommand};
-use std::ffi::OsString;
 use std::path::PathBuf;
 
 pub fn init() {

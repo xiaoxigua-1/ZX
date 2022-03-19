@@ -13,7 +13,7 @@ pub struct Parser<'a> {
     pub index: usize,
     currently: &'a Token,
     is_eof: bool,
-    asts: Vec<Statement>,
+    pub asts: Vec<Statement>,
     reposts: Vec<Repost>,
 }
 

@@ -3,11 +3,20 @@
 version = 3
 
 [[package]]
+name = "check"
+version = "0.1.0"
+dependencies = [
+ "util",
+]
+
+[[package]]
 name = "compiler"
 version = "0.1.0"
 dependencies = [
+ "check",
  "lexer",
  "parser",
+ "util",
 ]
 
 [[package]]

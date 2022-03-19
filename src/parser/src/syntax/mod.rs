@@ -5,8 +5,7 @@ mod return_syntax;
 mod variable_declaration_syntax;
 mod if_syntax;
 mod while_syntax;
-mod forloop_syntax;
-mod range_expression;
+mod for_loop_syntax;
 
 use crate::Parser;
 use util::ast::{Expression, Statement};

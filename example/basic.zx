@@ -1,10 +1,6 @@
 
 // This a simple example
 
-// built in library
-// math is file ?
-// pow is function ?
-// PI is const ?
 im math::{ pow, PI }
 im math
 

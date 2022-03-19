@@ -43,7 +43,6 @@ mod test_parser {
                     ViewASTTree { ast_tree: parser.asts }.main();
                 }
                 Err(error) => {
-
                     Repost { level: Level::Error, error }.print(&source, &path);
                 }
             }
