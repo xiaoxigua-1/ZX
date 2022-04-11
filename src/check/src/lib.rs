@@ -4,6 +4,7 @@ mod r#type;
 use util::ast::{Parameter, Statement, Expression};
 use util::ast::Statement::*;
 use util::ast::Expression::*;
+use util::error::ZXError;
 use util::repost::Repost;
 use util::token::Literal;
 use crate::r#type::ZXTyped;
@@ -80,16 +81,19 @@ impl Checker {
         }
     }
 
-    fn auto_type(&self, expression: Expression) -> ZXTyped {
+    fn auto_type(&self, expression: Expression) -> Result<ZXTyped, ZXError> {
         match expression {
             Value { kid, .. } => {
-                match kid {
+                Ok(match kid {
                     Literal::String => ZXTyped::String,
                     Literal::Char => ZXTyped::Char,
                     Literal::Integer => ZXTyped::Integer,
                     Literal::Float => ZXTyped::Float
-                }
+                })
             },
+            Call { call_name, next, .. } => {},
+            Path { identifier, next } => {},
+            SubMember { sub_member } => {},
             _ => {}
         }
     }
