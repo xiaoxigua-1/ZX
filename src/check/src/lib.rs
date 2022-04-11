@@ -1,9 +1,12 @@
 mod test;
+mod r#type;
 
 use util::ast::{Parameter, Statement, Expression};
 use util::ast::Statement::*;
 use util::ast::Expression::*;
 use util::repost::Repost;
+use util::token::Literal;
+use crate::r#type::ZXTyped;
 
 enum ScopeType {
     DefFunction { parameters: Vec<Parameter> },
@@ -74,6 +77,20 @@ impl Checker {
             Return { return_expression, .. } => {
 
             }
+        }
+    }
+
+    fn auto_type(&self, expression: Expression) -> ZXTyped {
+        match expression {
+            Value { kid, .. } => {
+                match kid {
+                    Literal::String => ZXTyped::String,
+                    Literal::Char => ZXTyped::Char,
+                    Literal::Integer => ZXTyped::Integer,
+                    Literal::Float => ZXTyped::Float
+                }
+            },
+            _ => {}
         }
     }
 }
