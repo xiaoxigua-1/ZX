@@ -18,4 +18,7 @@ pub enum ZXError {
         message: String,
         pos: Position
     },
+    UnknownError {
+        message: String
+    },
 }

@@ -32,58 +32,61 @@ impl Repost {
             Level::Debug => "\x1b[34m".to_string(),
         };
         let (message, pos) = match &self.error {
-            ZXError::SyntaxError { message, pos } => (message, pos),
-            ZXError::NameError { message, pos } => (message, pos),
-            ZXError::NullError { message, pos } => (message, pos),
-            ZXError::TypeError { message, pos } => (message, pos),
+            ZXError::SyntaxError { message, pos } => (message, Some(pos)),
+            ZXError::NameError { message, pos } => (message, Some(pos)),
+            ZXError::NullError { message, pos } => (message, Some(pos)),
+            ZXError::TypeError { message, pos } => (message, Some(pos)),
+            ZXError::UnknownError { message } => (message, None)
         };
 
         self.print_error_message(color_char, message.to_string());
 
-        for line_code in source.split('\n') {
-            if source_index + line_code.len() >= pos.start {
-                print_source.push(PrintSource {
-                    source: line_code.to_string(),
-                    line_number,
-                    arrow_position: Position {
-                        start: pos.start - source_index,
-                        end: if source_index + line_code.len() > pos.end {
-                            pos.end - source_index
-                        } else {
-                            source_index + line_code.len()
+        if let Some(pos) = pos {
+            for line_code in source.split('\n') {
+                if source_index + line_code.len() >= pos.start {
+                    print_source.push(PrintSource {
+                        source: line_code.to_string(),
+                        line_number,
+                        arrow_position: Position {
+                            start: pos.start - source_index,
+                            end: if source_index + line_code.len() > pos.end {
+                                pos.end - source_index
+                            } else {
+                                source_index + line_code.len()
+                            },
                         },
-                    },
-                });
+                    });
 
-                if source_index + line_code.len() > pos.end {
-                    break;
+                    if source_index + line_code.len() > pos.end {
+                        break;
+                    }
                 }
+
+                line_number += 1;
+                source_index += line_code.len() + 1;
             }
 
-            line_number += 1;
-            source_index += line_code.len() + 1;
-        }
+            let max_number = print_source
+                .iter()
+                .max_by(|a, b| a.line_number.cmp(&b.line_number))
+                .unwrap();
+            let max_number = format!("{}", max_number.line_number).len() + 1;
 
-        let max_number = print_source
-            .iter()
-            .max_by(|a, b| a.line_number.cmp(&b.line_number))
-            .unwrap();
-        let max_number = format!("{}", max_number.line_number).len() + 1;
+            let srcdir = PathBuf::from(path);
+            let path_string = fs::canonicalize(&srcdir).unwrap().into_os_string().into_string().unwrap();
 
-        let srcdir = PathBuf::from(path);
-        let path_string = fs::canonicalize(&srcdir).unwrap().into_os_string().into_string().unwrap();
-
-        for source in print_source {
-            println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start + 1);
-            println!("{:<width$}|", "", width = max_number);
-            println!("{:<width$}| {}", source.line_number, source.source, width = max_number);
-            println!("{space:<width$}| {space:>arrow_start$}{space:^>arrow_width$}",
-                space = "",
-                width = max_number,
-                arrow_start = source.arrow_position.start,
-                arrow_width = source.arrow_position.end - source.arrow_position.start + 1
-            );
-            println!("{:<width$}|", "", width = max_number);
+            for source in print_source {
+                println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start + 1);
+                println!("{:<width$}|", "", width = max_number);
+                println!("{:<width$}| {}", source.line_number, source.source, width = max_number);
+                println!("{space:<width$}| {space:>arrow_start$}{space:^>arrow_width$}",
+                         space = "",
+                         width = max_number,
+                         arrow_start = source.arrow_position.start,
+                         arrow_width = source.arrow_position.end - source.arrow_position.start + 1
+                );
+                println!("{:<width$}|", "", width = max_number);
+            }
         }
     }
 

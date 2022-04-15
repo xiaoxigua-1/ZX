@@ -19,7 +19,7 @@ impl Compiler {
             Ok(()) => {
                 let mut parser = Parser::new(&lexer.tokens);
                 parser.parse(&self.path, &source);
-                Checker::new(parser.asts);
+                Checker::new(parser.asts).check();
                 Ok(())
             }
             Err(error) => {
