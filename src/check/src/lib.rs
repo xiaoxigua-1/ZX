@@ -7,7 +7,7 @@ use util::ast::Statement::*;
 use util::ast::Expression::*;
 use util::error::ZXError;
 use util::repost::{Level, Repost};
-use util::token::{Literal};
+use util::token::{Literal, Tokens};
 use crate::r#type::ZXTyped;
 use crate::scope::{Scope, Scopes, ScopeType};
 
@@ -50,6 +50,8 @@ impl Checker {
                 }
             }
         }
+
+        println!("{:?}", self.scopes);
     }
 
     fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
@@ -57,7 +59,11 @@ impl Checker {
             FunctionDeclaration { function_name, parameters, block, return_type, .. } => {
                 // TODO: Check function block and parameters type and return type
                 Ok(Scope {
-                    name: function_name.token_type.to_string(),
+                    name: if let Tokens::IdentifierToken { literal } = function_name.token_type {
+                        literal
+                    } else {
+                        return Err(ZXError::UnknownError { message: "".to_string() })
+                    },
                     scope_type: ScopeType::DefFunction {
                         parameters,
                         return_type: if let Some(expression) = return_type {

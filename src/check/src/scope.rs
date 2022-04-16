@@ -1,14 +1,14 @@
 use util::ast::{Parameter, Statement};
 use crate::ZXTyped;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ScopeType {
     DefFunction { parameters: Vec<Parameter>, return_type: ZXTyped },
     DefVariable,
     DefClass,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Scope {
     pub(crate) name: String,
     pub(crate) scope_type: ScopeType,
@@ -16,6 +16,7 @@ pub struct Scope {
     pub(crate) block: Statement,
 }
 
+#[derive(Debug)]
 pub struct Scopes {
     scopes: Vec<Scope>,
 }

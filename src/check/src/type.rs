@@ -1,6 +1,6 @@
 use util::token::Token;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ZXTyped {
     String,
     Integer,
