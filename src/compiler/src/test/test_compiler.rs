@@ -4,6 +4,6 @@ mod test_compiler {
 
     #[test]
     fn test_compiler() {
-        Compiler { path: "./test_data/test.zx".to_string() }.compile();
+        Compiler { path: "./test_data/test.zx".to_string() }.compile().expect("sad");
     }
 }

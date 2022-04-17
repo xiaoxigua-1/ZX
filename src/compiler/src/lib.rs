@@ -15,17 +15,19 @@ impl Compiler {
         let source = fs::read_to_string(&self.path).expect("Something went wrong reading the file");
         let mut lexer = Lexer::new(&source);
 
-        match lexer.lexer() {
+        let mut check = match lexer.lexer() {
             Ok(()) => {
                 let mut parser = Parser::new(&lexer.tokens);
                 parser.parse(&self.path, &source);
-                Checker::new(parser.asts).check();
-                Ok(())
+                Checker::new(parser.asts)
             }
             Err(error) => {
                 Repost { level: Level::Error, error }.print(&source, &self.path);
-                Err(())
+                return Err(())
             }
-        }
+        };
+
+        check.check();
+        Ok(())
     }
 }

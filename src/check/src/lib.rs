@@ -20,7 +20,7 @@ struct File {
 pub struct Checker {
     ast: Vec<Statement>,
     files: Vec<File>,
-    scopes: Scopes,
+    global_scopes: Scopes,
     types: Vec<ZXTyped>,
     reposts: Vec<Repost>,
 }
@@ -30,7 +30,7 @@ impl Checker {
         Checker {
             ast,
             files: vec![],
-            scopes: Scopes::new(),
+            global_scopes: Scopes::new(),
             types: vec![],
             reposts: vec![],
         }
@@ -38,9 +38,9 @@ impl Checker {
 
     pub fn check(&mut self) {
         for statement in self.ast.clone() {
-            match self.statement(statement, vec![&self.scopes]) {
+            match self.statement(statement, vec![&self.global_scopes]) {
                 Ok(scope) => {
-                    self.scopes.add_scope(scope);
+                    self.global_scopes.add_scope(scope);
                 },
                 Err(error) => {
                     self.reposts.push(Repost {
@@ -51,7 +51,7 @@ impl Checker {
             }
         }
 
-        println!("{:?}", self.scopes);
+        println!("{:#?}", self.global_scopes);
     }
 
     fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
@@ -76,7 +76,7 @@ impl Checker {
                     block: *block,
                 })
             }
-            _ => Err(ZXError::UnknownError { message: String::from("") })
+            _ => Err(ZXError::UnknownError { message: String::from("Unknown statement.") })
         }
     }
 
@@ -111,7 +111,7 @@ impl Checker {
             // SubMember { sub_member } => {
             //     // TODO: sub　member type
             // },
-            _ => Err(ZXError::UnknownError { message: String::from("")})
+            _ => Err(ZXError::UnknownError { message: String::from("Unknown type")})
         }
     }
 
