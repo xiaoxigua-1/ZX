@@ -1,4 +1,3 @@
-use util::ast::Expression;
 use util::error::ZXError;
 use util::token::Position;
 

@@ -73,8 +73,8 @@ impl Report {
                 .unwrap();
             let max_number = format!("{}", max_number.line_number).len() + 1;
 
-            let srcDir = PathBuf::from(path);
-            let path_string = fs::canonicalize(&srcDir).unwrap().into_os_string().into_string().unwrap();
+            let src_dir = PathBuf::from(path);
+            let path_string = fs::canonicalize(&src_dir).unwrap().into_os_string().into_string().unwrap();
 
             for source in print_source {
                 println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start + 1);

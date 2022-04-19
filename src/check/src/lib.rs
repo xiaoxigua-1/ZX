@@ -2,7 +2,6 @@ mod test;
 mod r#type;
 mod scope;
 
-use std::fmt::format;
 use util::ast::{Parameter, Statement, Expression};
 use util::ast::Statement::*;
 use util::ast::Expression::*;

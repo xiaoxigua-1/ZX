@@ -2,7 +2,6 @@ use crate::Parser;
 use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::token::{Position, Tokens};
-use crate::syntax::util::set_error_message;
 
 impl Parser<'_> {
     pub fn function_syntax(&mut self) -> Result<Statement, ZXError> {
