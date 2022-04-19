@@ -2,6 +2,7 @@ mod test;
 mod r#type;
 mod scope;
 
+use std::fmt::format;
 use util::ast::{Parameter, Statement, Expression};
 use util::ast::Statement::*;
 use util::ast::Expression::*;
@@ -22,7 +23,7 @@ pub struct Checker {
     files: Vec<File>,
     global_scopes: Scopes,
     types: Vec<ZXTyped>,
-    reposts: Vec<Repost>,
+    pub reposts: Vec<Repost>,
 }
 
 impl Checker {
@@ -51,7 +52,12 @@ impl Checker {
             }
         }
 
-        println!("{:#?}", self.global_scopes);
+        self.reposts.push(Repost {
+            level: Level::Debug,
+            error: ZXError::Debug {
+                message: format!("global {:#?}", self.global_scopes)
+            }
+        })
     }
 
     fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {

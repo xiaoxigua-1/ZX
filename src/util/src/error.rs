@@ -4,21 +4,24 @@ use crate::token::Position;
 pub enum ZXError {
     SyntaxError {
         message: String,
-        pos: Position
+        pos: Position,
     },
     TypeError {
         message: String,
-        pos: Position
+        pos: Position,
     },
     NameError {
         message: String,
-        pos: Position
+        pos: Position,
     },
     NullError {
         message: String,
-        pos: Position
+        pos: Position,
     },
     UnknownError {
+        message: String
+    },
+    Debug {
         message: String
     },
 }

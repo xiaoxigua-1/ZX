@@ -28,6 +28,9 @@ impl Compiler {
         };
 
         check.check();
+        for repost in check.reposts.iter() {
+            repost.print(&source, &self.path)
+        }
         Ok(())
     }
 }

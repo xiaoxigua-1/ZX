@@ -18,7 +18,7 @@ struct PrintSource {
 
 pub struct Repost {
     pub level: Level,
-    pub error: ZXError
+    pub error: ZXError,
 }
 
 impl Repost {
@@ -36,7 +36,8 @@ impl Repost {
             ZXError::NameError { message, pos } => (message, Some(pos)),
             ZXError::NullError { message, pos } => (message, Some(pos)),
             ZXError::TypeError { message, pos } => (message, Some(pos)),
-            ZXError::UnknownError { message } => (message, None)
+            ZXError::UnknownError { message } => (message, None),
+            ZXError::Debug { message } => (message, None),
         };
 
         self.print_error_message(color_char, message.to_string());
@@ -72,8 +73,8 @@ impl Repost {
                 .unwrap();
             let max_number = format!("{}", max_number.line_number).len() + 1;
 
-            let srcdir = PathBuf::from(path);
-            let path_string = fs::canonicalize(&srcdir).unwrap().into_os_string().into_string().unwrap();
+            let srcDir = PathBuf::from(path);
+            let path_string = fs::canonicalize(&srcDir).unwrap().into_os_string().into_string().unwrap();
 
             for source in print_source {
                 println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start + 1);
