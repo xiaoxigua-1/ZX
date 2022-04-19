@@ -4,7 +4,7 @@ mod test;
 use std::slice::Iter;
 use util::ast::Statement;
 use util::error::ZXError;
-use util::repost::{Level, Report};
+use util::report::{Level, Report};
 use util::token::Token;
 use util::token::Tokens;
 

@@ -2,7 +2,7 @@
 mod lexer_test {
     use crate::Lexer;
     use std::fs;
-    use util::repost::{Level, Report};
+    use util::report::{Level, Report};
     use util::token::{Literal, Tokens};
 
     #[test]

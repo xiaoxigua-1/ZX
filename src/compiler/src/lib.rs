@@ -4,7 +4,7 @@ use std::fs;
 use lexer::Lexer;
 use parser::Parser;
 use check::Checker;
-use util::repost::{Report, Level};
+use util::report::{Report, Level};
 
 pub struct Compiler {
     path: String

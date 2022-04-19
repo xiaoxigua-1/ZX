@@ -7,7 +7,7 @@ use util::ast::{Parameter, Statement, Expression};
 use util::ast::Statement::*;
 use util::ast::Expression::*;
 use util::error::ZXError;
-use util::repost::{Level, Report};
+use util::report::{Level, Report};
 use util::token::{Literal, Tokens};
 use crate::r#type::ZXTyped;
 use crate::scope::{Scope, Scopes, ScopeType};
