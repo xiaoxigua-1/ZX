@@ -13,7 +13,7 @@ impl Parser<'_> {
                 token if token.is_token_type(&Tokens::RightCurlyBracketsToken) => break,
                 _ if self.is_eof => {
                     return Err(ZXError::SyntaxError {
-                        message: "unclosed delimiter".to_string(),
+                        message: "unclosed curly bracket".to_string(),
                         pos: left_curly_brackets.pos,
                     });
                 }

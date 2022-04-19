@@ -6,11 +6,12 @@ mod variable_declaration_syntax;
 mod if_syntax;
 mod while_syntax;
 mod for_loop_syntax;
+mod util;
 
 use crate::Parser;
-use util::ast::{Expression, Statement};
-use util::error::ZXError;
-use util::token::{Token, Tokens};
+use ::util::ast::{Expression, Statement};
+use ::util::error::ZXError;
+use ::util::token::{Token, Tokens};
 
 impl Parser<'_> {
     pub fn statement(&mut self) -> Result<Statement, ZXError> {
@@ -108,7 +109,7 @@ impl Parser<'_> {
                 })
             }
             _ => Err(ZXError::SyntaxError {
-                message: "ccc".to_string(),
+                message: "Unknown Token".to_string(),
                 pos: self.currently.pos.clone(),
             })
         }
@@ -164,5 +165,13 @@ impl Parser<'_> {
             right_parentheses,
             next: Box::new(next),
         })
+    }
+
+    fn operator_expression(&mut self) {
+
+    }
+
+    fn operator_brackets(&mut self) {
+
     }
 }

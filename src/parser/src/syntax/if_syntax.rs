@@ -1,20 +1,17 @@
 use util::ast::Statement;
 use util::error::ZXError;
 use util::token::{Tokens};
+use crate::syntax::util::set_error_message;
 use crate::Parser;
 
 impl Parser<'_> {
     pub fn if_syntax(&mut self) -> Result<Statement, ZXError> {
         let if_keyword = self.comparison_string(vec!["IdentifierToken"])?;
-        let condition = match self.expressions() {
-            Err(_) => {
-                return Err(ZXError::SyntaxError {
-                    message: "missing condition".to_string(),
-                    pos: if_keyword.pos
-                })
-            }
-            Ok(condition) => condition
-        };
+        let condition = set_error_message(
+            self.expressions(),
+            String::from("missing condition"),
+            &if_keyword.pos
+        )?;
         let block = self.block_syntax()?;
 
         let else_statement = match &self.currently.token_type {

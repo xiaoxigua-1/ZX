@@ -2,6 +2,7 @@ use crate::Parser;
 use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::token::{Position, Tokens};
+use crate::syntax::util::set_error_message;
 
 impl Parser<'_> {
     pub fn function_syntax(&mut self) -> Result<Statement, ZXError> {
@@ -30,7 +31,7 @@ impl Parser<'_> {
     fn parameters_parse(&mut self, left: Position) -> Result<Vec<Parameter>, ZXError> {
         let mut parameters: Vec<Parameter> = vec![];
         let mut comma = true;
-        let mut is_close = true;
+        let mut is_close = false;
 
         // parse parameters
         while !self.is_eof {
@@ -76,16 +77,17 @@ impl Parser<'_> {
                     self.comparison(&Tokens::CommaToken)?;
                     comma = true;
                 }
-                _ => return Err(ZXError::SyntaxError {
-                    message: format!("expected parameter name, found `{:?}`", self.currently.token_type),
-                    pos: left,
-                })
+                _ => break
+                //return Err(ZXError::SyntaxError {
+                //                     message: format!("expected parameter name, found `{:?}`", self.currently.token_type),
+                //                     pos: left,
+                //                 })
             }
         }
 
         if !is_close {
             Err(ZXError::SyntaxError {
-                message: "unclosed delimiter".to_string(),
+                message: "unclosed parenthese".to_string(),
                 pos: left,
             })
         } else {
