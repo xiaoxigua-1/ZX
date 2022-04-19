@@ -4,7 +4,7 @@ use std::fs;
 use lexer::Lexer;
 use parser::Parser;
 use check::Checker;
-use util::repost::{Repost, Level};
+use util::repost::{Report, Level};
 
 pub struct Compiler {
     path: String
@@ -22,15 +22,18 @@ impl Compiler {
                 Checker::new(parser.asts)
             }
             Err(error) => {
-                Repost { level: Level::Error, error }.print(&source, &self.path);
+                // report lexer error
+                Report { level: Level::Error, error }.print(&source, &self.path);
                 return Err(())
             }
         };
 
         check.check();
+
         for repost in check.reposts.iter() {
             repost.print(&source, &self.path)
         }
+
         Ok(())
     }
 }

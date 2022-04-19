@@ -2,7 +2,7 @@
 mod lexer_test {
     use crate::Lexer;
     use std::fs;
-    use util::repost::{Level, Repost};
+    use util::repost::{Level, Report};
     use util::token::{Literal, Tokens};
 
     #[test]
@@ -12,7 +12,7 @@ mod lexer_test {
         let mut lexer = Lexer::new(&source);
         match lexer.lexer() {
             Err(error) => {
-                Repost { level: Level::Error, error }.print(&source, &path);
+                Report { level: Level::Error, error }.print(&source, &path);
             }
             Ok(()) => {}
         };

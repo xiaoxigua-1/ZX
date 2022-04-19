@@ -3,7 +3,7 @@ mod test_parser {
     use crate::Parser;
     use lexer::Lexer;
     use std::fs;
-    use util::repost::{Level, Repost};
+    use util::repost::{Level, Report};
     use util::token::{Literal, Position, Token, Tokens};
     use util::view_ast_tree::ViewASTTree;
 
@@ -43,7 +43,7 @@ mod test_parser {
                     ViewASTTree { ast_tree: parser.asts }.main();
                 }
                 Err(error) => {
-                    Repost { level: Level::Error, error }.print(&source, &path);
+                    Report { level: Level::Error, error }.print(&source, &path);
                 }
             }
         });

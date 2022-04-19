@@ -16,12 +16,12 @@ struct PrintSource {
     arrow_position: Position,
 }
 
-pub struct Repost {
+pub struct Report {
     pub level: Level,
     pub error: ZXError,
 }
 
-impl Repost {
+impl Report {
     pub fn print(&self, source: &String, path: &String) {
         let mut source_index: usize = 0;
         let mut line_number = 1;

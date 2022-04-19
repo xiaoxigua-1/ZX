@@ -4,7 +4,7 @@ mod test;
 use std::slice::Iter;
 use util::ast::Statement;
 use util::error::ZXError;
-use util::repost::{Level, Repost};
+use util::repost::{Level, Report};
 use util::token::Token;
 use util::token::Tokens;
 
@@ -14,7 +14,7 @@ pub struct Parser<'a> {
     currently: &'a Token,
     is_eof: bool,
     pub asts: Vec<Statement>,
-    reposts: Vec<Repost>,
+    reposts: Vec<Report>,
 }
 
 impl Parser<'_> {
@@ -94,7 +94,7 @@ impl Parser<'_> {
     }
 
     fn add_error(&mut self, error: ZXError) {
-        self.reposts.push(Repost {
+        self.reposts.push(Report {
             level: Level::Error,
             error: error,
         });

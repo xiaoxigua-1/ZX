@@ -7,7 +7,7 @@ use util::ast::{Parameter, Statement, Expression};
 use util::ast::Statement::*;
 use util::ast::Expression::*;
 use util::error::ZXError;
-use util::repost::{Level, Repost};
+use util::repost::{Level, Report};
 use util::token::{Literal, Tokens};
 use crate::r#type::ZXTyped;
 use crate::scope::{Scope, Scopes, ScopeType};
@@ -23,7 +23,7 @@ pub struct Checker {
     files: Vec<File>,
     global_scopes: Scopes,
     types: Vec<ZXTyped>,
-    pub reposts: Vec<Repost>,
+    pub reposts: Vec<Report>,
 }
 
 impl Checker {
@@ -44,7 +44,7 @@ impl Checker {
                     self.global_scopes.add_scope(scope);
                 },
                 Err(error) => {
-                    self.reposts.push(Repost {
+                    self.reposts.push(Report {
                         level: Level::Error,
                         error
                     })
@@ -52,7 +52,7 @@ impl Checker {
             }
         }
 
-        self.reposts.push(Repost {
+        self.reposts.push(Report {
             level: Level::Debug,
             error: ZXError::Debug {
                 message: format!("global {:#?}", self.global_scopes)
