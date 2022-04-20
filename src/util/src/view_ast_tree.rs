@@ -20,8 +20,11 @@ impl ViewASTTree {
             FunctionDeclaration { function_name, parameters, return_type, block, .. } =>
                 self.function_declaration(function_name, parameters, return_type, block, index),
             Block { statements, .. } => {
-                println!("{}├── Block", self.line_start(index));
-                statements.iter().for_each(|statement| { self.statement(index + 1, statement)})
+                println!("{}{} Block",
+                         self.line_start(index),
+                         if statements.len() != 0 { "├──" } else { "└──" }
+                );
+                statements.iter().for_each(|statement| { self.statement(index + 1, statement) })
             }
             VariableDeclaration { var_name, type_identifier, value, .. } =>
                 self.variable_declaration(index, var_name, type_identifier, value),
@@ -90,7 +93,7 @@ impl ViewASTTree {
             Identifier { identifier, next } => {
                 println!("{line_start}├── Identifier `{}`", self.literal(identifier));
                 if let Some(next) = next {
-                    println!("{line_start}|    ├── next");
+                    println!("{line_start}|    └── next");
                     self.expression(next, index + 2);
                 }
             }
@@ -117,16 +120,16 @@ impl ViewASTTree {
         println!("{line_start}├── if statement");
         println!("{line_start}|    ├── condition");
         self.expression(condition, index + 2);
-        self.statement(index + 1, &*block);
         if let Some(else_statement) = &**else_statement {
             self.statement(index + 1, &else_statement);
         }
+        self.statement(index + 1, &*block);
     }
 
     fn else_statement(&self, index: i32, next: &Box<Option<Statement>>) {
         let line_start = self.line_start(index);
         println!("{line_start}├── else statement");
-         if let Some(next) = &**next {
+        if let Some(next) = &**next {
             self.statement(index + 1, &next);
         }
     }
@@ -176,7 +179,7 @@ mod token_tree_test {
     };
     const TOKEN: Token = Token {
         token_type: Tokens::EOF,
-        pos: POS
+        pos: POS,
     };
 
     #[test]
@@ -192,8 +195,8 @@ mod token_tree_test {
                 block: Box::new(Statement::Block {
                     left_curly_brackets: TOKEN,
                     statements: vec![],
-                    right_curly_brackets: TOKEN
-                })
+                    right_curly_brackets: TOKEN,
+                }),
             }
         ];
         let view = ViewASTTree { ast_tree: ast };
