@@ -27,7 +27,7 @@ impl ViewASTTree {
                 self.variable_declaration(index, var_name, type_identifier, value),
             Statement::Expression { expression } => self.expression(expression, index),
             If { condition, else_statement, block, .. } => self.if_statement(index, else_statement, block, condition),
-            Else { next, .. } => self.else_statemtnt(index, next),
+            Else { next, .. } => self.else_statement(index, next),
             WhileLoop { block, condition, .. } => self.while_loop(index, block, condition),
             ForLoop { block, iter, for_var_name, .. } => self.for_loop(index, for_var_name, iter, block),
             _ => {}
@@ -123,7 +123,7 @@ impl ViewASTTree {
         }
     }
 
-    fn else_statemtnt(&self, index: i32, next: &Box<Option<Statement>>) {
+    fn else_statement(&self, index: i32, next: &Box<Option<Statement>>) {
         let line_start = self.line_start(index);
         println!("{line_start}├── else statement");
          if let Some(next) = &**next {
