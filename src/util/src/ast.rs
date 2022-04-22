@@ -78,7 +78,7 @@ pub enum Expression {
         left_parentheses: Token,
         arguments: Vec<Expression>,
         right_parentheses: Token,
-        next: Box<Option<Expression>>,
+        next: Option<Box<Expression>>,
     },
     Value {
         kid: Literal,
@@ -86,7 +86,6 @@ pub enum Expression {
         next: Box<Option<Expression>>,
     },
     Path {
-        identifier: Token,
         next: Box<Expression>,
     },
     SubMember {
@@ -102,6 +101,9 @@ pub enum Expression {
     Identifier {
         identifier: Token,
         next: Option<Box<Expression>>
+    },
+    Operator {
+        operator: Operator
     }
 }
 
@@ -109,4 +111,10 @@ pub enum Expression {
 pub struct Parameter {
     pub parameter_name: Token,
     pub type_expression: Expression,
+}
+
+#[derive(Debug, Clone)]
+pub enum Operator {
+    Add,
+
 }

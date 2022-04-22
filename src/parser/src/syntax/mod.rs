@@ -10,6 +10,7 @@ mod util;
 
 use crate::Parser;
 use ::util::ast::{Expression, Statement};
+use ::util::ast::Operator;
 use ::util::error::ZXError;
 use ::util::token::{Token, Tokens};
 
@@ -67,17 +68,6 @@ impl Parser<'_> {
                 let token = self.comparison_string(vec!["IdentifierToken", "StdToken"])?;
 
                 let expression = match self.currently.token_type {
-                    Tokens::ColonToken => {
-                        self.comparison(&Tokens::ColonToken)?;
-                        self.comparison(&Tokens::ColonToken)?;
-
-                        let expression = self.expressions()?;
-
-                        Expression::Path {
-                            identifier: token,
-                            next: Box::new(expression),
-                        }
-                    }
                     // call expression
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
                     _ => {
@@ -106,6 +96,16 @@ impl Parser<'_> {
 
                 Ok(Expression::SubMember {
                     sub_member
+                })
+            }
+            Tokens::ColonToken => {
+                self.comparison(&Tokens::ColonToken)?;
+                self.comparison(&Tokens::ColonToken)?;
+
+                let expression = self.expressions()?;
+
+                Ok(Expression::Path {
+                    next: Box::new(expression),
                 })
             }
             _ => Err(ZXError::SyntaxError {
@@ -144,16 +144,8 @@ impl Parser<'_> {
         let right_parentheses = self.comparison(&Tokens::RightParenthesesToken)?;
 
         let next = match self.currently.token_type {
-            Tokens::ColonToken => {
-                self.comparison(&Tokens::ColonToken)?;
-                self.comparison(&Tokens::ColonToken)?;
-                Some(self.expressions()?)
-            }
-            Tokens::DotToken => {
-                self.comparison(&Tokens::DotToken)?;
-                Some(Expression::SubMember {
-                    sub_member: Box::new(self.expressions()?),
-                })
+            Tokens::ColonToken | Tokens::DotToken => {
+                Some(Box::new(self.expressions()?))
             }
             _ => None
         };
@@ -163,7 +155,7 @@ impl Parser<'_> {
             left_parentheses,
             arguments,
             right_parentheses,
-            next: Box::new(next),
+            next,
         })
     }
 
@@ -174,4 +166,10 @@ impl Parser<'_> {
     fn operator_brackets(&mut self) {
 
     }
+
+    // fn infix_binding_power(&mut self) -> (u8, u8) {
+    //     match Operator {
+    //         Operator::Add => (1, 2)
+    //     }
+    // }
 }

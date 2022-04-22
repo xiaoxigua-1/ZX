@@ -79,12 +79,16 @@ impl ViewASTTree {
                     self.expression(&next, index + 1);
                 }
             }
-            Call { call_name, arguments, .. } => {
+            Call { call_name, arguments, next, .. } => {
                 println!("{line_start}├── Call {}", self.literal(call_name));
                 arguments.into_iter().for_each(|argument| {
                     println!("{line_start}|    ├── arg");
                     self.expression(argument, index + 2);
-                })
+                });
+                if let Some(next) = next {
+                    println!("{line_start}|    └── next");
+                    self.expression(next, index + 2);
+                }
             }
             SubMember { sub_member } => {
                 println!("{line_start}├── SubMember");
@@ -96,6 +100,10 @@ impl ViewASTTree {
                     println!("{line_start}|    └── next");
                     self.expression(next, index + 2);
                 }
+            }
+            Path { next } => {
+                println!("{line_start}├── Path");
+                self.expression(next, index + 1);
             }
             Bool { identifier } => {
                 println!("{line_start}├── Bool `{}`", self.literal(identifier));

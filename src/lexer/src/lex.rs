@@ -54,7 +54,7 @@ impl Lexer {
                 literal: ident.clone()
             },
             pos: Position {
-                start: start,
+                start,
                 end: start + ident.len(),
             },
         });
