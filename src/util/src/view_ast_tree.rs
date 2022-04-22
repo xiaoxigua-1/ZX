@@ -60,6 +60,7 @@ impl ViewASTTree {
             println!("{line_start}├── Parameters");
             parameters.iter().for_each(|parameter| {
                 println!("{line_start}|    ├── {}", self.literal(&parameter.parameter_name));
+                self.expression(&parameter.type_expression, index + 1);
             })
         }
     }
@@ -80,7 +81,7 @@ impl ViewASTTree {
                 }
             }
             Call { call_name, arguments, next, .. } => {
-                println!("{line_start}├── Call {}", self.literal(call_name));
+                println!("{line_start}├── Call `{}`", self.literal(call_name));
                 arguments.into_iter().for_each(|argument| {
                     println!("{line_start}|    ├── arg");
                     self.expression(argument, index + 2);

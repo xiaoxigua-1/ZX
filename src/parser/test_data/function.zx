@@ -1,1 +1,3 @@
-c.d()::e.g().h
+fn main(args: Str?): String {
+    c.d()::e.g().h
+}
