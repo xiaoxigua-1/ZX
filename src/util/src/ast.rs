@@ -100,11 +100,16 @@ pub enum Expression {
     },
     Identifier {
         identifier: Token,
-        next: Option<Box<Expression>>
+        next: Option<Box<Expression>>,
     },
     Operator {
-        operator: Operator
-    }
+        operator_type: Operator,
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
+    Brackets {
+        content: Box<Expression>
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -116,5 +121,6 @@ pub struct Parameter {
 #[derive(Debug, Clone)]
 pub enum Operator {
     Add,
-
+    Sub,
+    Mul,
 }

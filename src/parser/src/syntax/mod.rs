@@ -10,9 +10,9 @@ mod util;
 
 use crate::Parser;
 use ::util::ast::{Expression, Statement};
-use ::util::ast::Operator;
 use ::util::error::ZXError;
 use ::util::token::{Token, Tokens};
+use crate::syntax::util::{infix_binding_power, is_operator, operator_type};
 
 impl Parser<'_> {
     pub fn statement(&mut self) -> Result<Statement, ZXError> {
@@ -72,7 +72,7 @@ impl Parser<'_> {
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
                     _ => {
                         let next = match &self.currently.token_type {
-                            Tokens::DotToken => Some(Box::new(self.expressions()?)),
+                            Tokens::DotToken | Tokens::ColonToken | Tokens::LeftParenthesesToken => Some(Box::new(self.expressions()?)),
                             _ => None
                         };
 
@@ -82,7 +82,7 @@ impl Parser<'_> {
                             },
                             _ => Expression::Identifier {
                                 identifier: token,
-                                next
+                                next,
                             }
                         }
                     }
@@ -108,6 +108,7 @@ impl Parser<'_> {
                     next: Box::new(expression),
                 })
             }
+            Tokens::LeftParenthesesToken => Ok(self.operator_brackets()?),
             _ => Err(ZXError::SyntaxError {
                 message: "Unknown Token".to_string(),
                 pos: self.currently.pos.clone(),
@@ -126,7 +127,7 @@ impl Parser<'_> {
                 Tokens::CommaToken => {
                     self.comparison(&Tokens::CommaToken)?;
                     comma = true
-                },
+                }
                 _ => {
                     if comma {
                         arguments.push(self.expressions()?);
@@ -159,17 +160,42 @@ impl Parser<'_> {
         })
     }
 
-    fn operator_expression(&mut self) {
+    fn operator_expression(&mut self, min_bp: u8) -> Result<Expression, ZXError> {
+        let mut left_expression = self.expressions()?;
 
+        loop {
+            let operator = match &self.currently.token_type {
+                token_type if is_operator(token_type) => operator_type(&self.currently)?,
+                _ => break
+            };
+
+            let bp = infix_binding_power(&operator);
+
+            if bp < min_bp {
+                break;
+            }
+
+            self.next(false);
+
+            let right_expression = self.operator_expression(bp + 1)?;
+
+            left_expression = Expression::Operator {
+                operator_type: operator,
+                left: Box::new(left_expression),
+                right: Box::new(right_expression),
+            }
+        }
+
+        Ok(left_expression)
     }
 
-    fn operator_brackets(&mut self) {
+    fn operator_brackets(&mut self) -> Result<Expression, ZXError> {
+        self.comparison(&Tokens::LeftParenthesesToken)?;
+        let operator = self.operator_expression(0)?;
+        self.comparison(&Tokens::RightParenthesesToken)?;
 
+        Ok(Expression::Brackets {
+            content: Box::new(operator)
+        })
     }
-
-    // fn infix_binding_power(&mut self) -> (u8, u8) {
-    //     match Operator {
-    //         Operator::Add => (1, 2)
-    //     }
-    // }
 }

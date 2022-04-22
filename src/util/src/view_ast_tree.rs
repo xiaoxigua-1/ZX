@@ -10,6 +10,7 @@ pub struct ViewASTTree {
 
 impl ViewASTTree {
     pub fn main(&self) {
+        println!("AST");
         for statement in self.ast_tree.iter() {
             self.statement(0, statement)
         }
@@ -74,7 +75,7 @@ impl ViewASTTree {
             }
             Value { kid, next, content } => {
                 println!("{}├── Type {:?}", line_start, kid);
-                println!("{}├── Value {}", line_start, self.literal(content));
+                println!("{}├── Value `{}`", line_start, self.literal(content));
                 if let Some(next) = &**next {
                     println!("{}├── Next", line_start);
                     self.expression(&next, index + 1);
@@ -163,6 +164,7 @@ impl ViewASTTree {
         match token.token_type {
             Tokens::IdentifierToken { ref literal } => literal.to_string(),
             Tokens::LiteralToken { ref literal, .. } => literal.to_string(),
+            Tokens::StdToken => String::from("std library"),
             _ => String::new()
         }
     }
