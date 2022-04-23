@@ -12,7 +12,7 @@ use crate::syntax::syntax_util::{infix_binding_power, is_operator, operator_type
 use crate::Parser;
 use util::ast::{Expression, Statement};
 use util::error::ZXError;
-use util::token::{Token, Tokens};
+use util::token::{Literal, Token, Tokens};
 
 impl Parser<'_> {
     pub fn statement(&mut self) -> Result<Statement, ZXError> {
@@ -127,6 +127,31 @@ impl Parser<'_> {
                 })
             }
             Tokens::LeftParenthesesToken => Ok(self.operator_brackets()?),
+            Tokens::MinusToken => {
+                self.comparison(&Tokens::MinusToken)?;
+                match &self.currently.token_type {
+                    Tokens::LiteralToken { kid, .. } => {
+                        match kid {
+                            Literal::PositiveInteger => {
+                                let content = self.comparison_string(vec!["LiteralToken"])?;
+                                Ok(Expression::Value {
+                                    kid: Literal::NegativeInteger,
+                                    content,
+                                    next: Box::new(None),
+                                })
+                            }
+                            _ => Err(ZXError::SyntaxError {
+                                message: "Unknown Token".to_string(),
+                                pos: self.currently.pos.clone(),
+                            })
+                        }
+                    }
+                    _ => Err(ZXError::SyntaxError {
+                        message: "Unknown Token".to_string(),
+                        pos: self.currently.pos.clone(),
+                    })
+                }
+            }
             _ => Err(ZXError::SyntaxError {
                 message: "Unknown Token".to_string(),
                 pos: self.currently.pos.clone(),

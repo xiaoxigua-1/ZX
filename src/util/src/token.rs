@@ -59,9 +59,10 @@ pub enum Tokens {
 #[derive(Display, Debug, Clone, EnumString)]
 pub enum Literal {
     String,
-    Integer,
+    PositiveInteger,
     Float,
     Char,
+    NegativeInteger
 }
 
 #[derive(Debug, Clone)]

@@ -25,7 +25,7 @@ mod lexer_test {
                 Tokens::LiteralToken { kid, literal } => match kid {
                     Literal::String => println!("string content: {}", literal),
                     Literal::Float => println!("float content: {}", literal),
-                    Literal::Integer => println!("integer content: {}", literal),
+                    Literal::PositiveInteger => println!("integer content: {}", literal),
                     Literal::Char => println!("char content: {}", literal),
                 },
                 Tokens::IdentifierToken { literal } => {

@@ -29,12 +29,12 @@ impl Lexer {
             let currently = file_stream.get_currently();
 
             match currently {
-                '"' | '/' | '\'' | '-' | '0'..='9' => {
+                '"' | '/' | '\'' | '0'..='9' => {
                     match currently {
                         '"' => self.lex_string(&mut file_stream)?,
                         '/' => self.lex_slash(&mut file_stream)?,
                         '\'' => self.lex_char(&mut file_stream)?,
-                        '-' | '0'..='9' => self.lex_number(&mut file_stream)?,
+                        '0'..='9' => self.lex_number(&mut file_stream)?,
                         _ => {}
                     };
                 }

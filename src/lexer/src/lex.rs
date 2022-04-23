@@ -236,7 +236,7 @@ impl Lexer {
     }
 
     pub fn lex_number(&mut self, string_stream: &mut StringStream) -> Result<(), ZXError> {
-        let mut is_folat = false;
+        let mut is_float = false;
         let mut number_string = String::new();
         let currently = string_stream.get_currently();
         let start = string_stream.index;
@@ -249,7 +249,7 @@ impl Lexer {
                     string_stream.next();
                     match string_stream.first() {
                         '0'..='9' => {
-                            is_folat = true;
+                            is_float = true;
                             number_string.push(string_stream.get_currently());
                         }
                         _ => break,
@@ -270,15 +270,15 @@ impl Lexer {
         };
 
         let token_type = Tokens::LiteralToken {
-            kid: if is_folat {
+            kid: if is_float {
                 Literal::Float
             } else {
-                Literal::Integer
+                Literal::PositiveInteger
             },
             literal: number_string.clone(),
         };
 
-        if (is_folat && number_string.len() > 1) || (!is_folat && number_string.len() > 0) {
+        if (is_float && number_string.len() > 1) || (!is_float && number_string.len() > 0) {
             self.tokens.push(Token { token_type, pos });
             match string_stream.get_currently() {
                 '.' => self.tokens.push(Token {

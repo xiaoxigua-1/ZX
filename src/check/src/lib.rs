@@ -108,7 +108,7 @@ impl Checker {
                 Ok(match kid {
                     Literal::String => ZXTyped::String,
                     Literal::Char => ZXTyped::Char,
-                    Literal::Integer => ZXTyped::Integer,
+                    Literal::PositiveInteger => ZXTyped::Integer,
                     Literal::Float => ZXTyped::Float,
                 })
             }
