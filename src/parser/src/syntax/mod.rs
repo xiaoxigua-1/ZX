@@ -19,6 +19,8 @@ impl Parser<'_> {
         let keyword = self.currently;
 
         return if let Tokens::IdentifierToken { ref literal } = keyword.token_type {
+            // Parse the statement according to the keyword
+            // The rest without a keyword is express
             let statement = match literal.as_str() {
                 "fn" => self.function_syntax()?,
                 "pub" => {
@@ -45,6 +47,7 @@ impl Parser<'_> {
 
             Ok(statement)
         } else if let Tokens::LeftCurlyBracketsToken = keyword.token_type {
+            // left curly brackets starts with block
             Ok(self.block_syntax()?)
         } else {
             Ok(Statement::Expression {
@@ -58,11 +61,13 @@ impl Parser<'_> {
             Tokens::LiteralToken { kid, literal: _ } => {
                 let content = self.comparison_string(vec!["LiteralToken"])?;
                 match &self.currently.token_type {
+                    // example: "20".to_int()
                     Tokens::DotToken => Ok(Expression::Value {
                         kid: kid.clone(),
                         content,
                         next: Box::new(Some(self.expressions(min_bp)?)),
                     }),
+                    // example: 10 * 20
                     token_type if is_operator(token_type) => Ok(self.operator_expression(
                         min_bp,
                         Expression::Value {
@@ -71,6 +76,7 @@ impl Parser<'_> {
                             next: Box::new(None),
                         },
                     )?),
+                    // The rest is value
                     _ => Ok(Expression::Value {
                         kid: kid.clone(),
                         content,
@@ -96,10 +102,8 @@ impl Parser<'_> {
 
                         match &token.token_type {
                             Tokens::IdentifierToken { ref literal }
-                                if literal == "true" || literal == "false" =>
-                            {
-                                Expression::Bool { identifier: token }
-                            }
+                            if literal == "true" || literal == "false" =>
+                                Expression::Bool { identifier: token },
                             _ => Expression::Identifier {
                                 identifier: token,
                                 next,
@@ -108,7 +112,12 @@ impl Parser<'_> {
                     }
                 };
 
-                Ok(expression)
+
+
+                Ok(match &self.currently.token_type {
+                    token_type if is_operator(token_type) => self.operator_expression(min_bp, expression)?,
+                    _ => expression
+                })
             }
             Tokens::DotToken => {
                 self.comparison(&Tokens::DotToken)?;
