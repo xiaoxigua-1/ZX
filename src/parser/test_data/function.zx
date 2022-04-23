@@ -1,1 +1,3 @@
-1 + a() * (c.b() + 5) * "123".to_int()
+fn main(args: Str): Int {
+    return 1 + a() * (c.b() + 5) * "123".to_int()
+}

@@ -62,6 +62,10 @@ impl ViewASTTree {
                 for_var_name,
                 ..
             } => self.for_loop(index, for_var_name, iter, block),
+            Return { return_expression, .. } => {
+                println!("{}├── Return", self.line_start(index));
+                self.statement(index + 1, return_expression);
+            }
             _ => {}
         }
     }
@@ -173,7 +177,6 @@ impl ViewASTTree {
                 println!("{line_start}├── Brackets");
                 self.expression(content, index + 1);
             }
-            _ => {}
         }
     }
 
