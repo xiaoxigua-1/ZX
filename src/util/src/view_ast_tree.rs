@@ -117,6 +117,10 @@ impl ViewASTTree {
                 println!("{line_start}|    ├── right");
                 self.expression(right, index + 2);
             }
+            Brackets { content } => {
+                println!("{line_start}├── Brackets");
+                self.expression(content, index + 1);
+            }
             _ => {}
         }
     }
