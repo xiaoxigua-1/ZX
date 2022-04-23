@@ -1,13 +1,13 @@
 mod test;
 
-use std::fs;
+use check::Checker;
 use lexer::Lexer;
 use parser::Parser;
-use check::Checker;
-use util::report::{Report, Level};
+use std::fs;
+use util::report::{Level, Report};
 
 pub struct Compiler {
-    path: String
+    path: String,
 }
 
 impl Compiler {
@@ -23,8 +23,12 @@ impl Compiler {
             }
             Err(error) => {
                 // report lexer error
-                Report { level: Level::Error, error }.print(&source, &self.path);
-                return Err(())
+                Report {
+                    level: Level::Error,
+                    error,
+                }
+                .print(&source, &self.path);
+                return Err(());
             }
         };
 

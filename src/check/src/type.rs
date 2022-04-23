@@ -6,8 +6,6 @@ pub enum ZXTyped {
     Integer,
     Char,
     Float,
-    Other {
-        type_name: Token,
-    },
-    Void
+    Other { type_name: Token },
+    Void,
 }

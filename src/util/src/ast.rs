@@ -3,10 +3,10 @@ use crate::token::{Literal, Token};
 #[derive(Debug, Clone)]
 pub enum Statement {
     Static {
-        statement: Box<Statement>
+        statement: Box<Statement>,
     },
     Public {
-        statement: Box<Statement>
+        statement: Box<Statement>,
     },
     FunctionDeclaration {
         fn_keyword: Token,
@@ -89,7 +89,7 @@ pub enum Expression {
         next: Box<Expression>,
     },
     SubMember {
-        sub_member: Box<Expression>
+        sub_member: Box<Expression>,
     },
     Type {
         identifier: Token,
@@ -108,7 +108,7 @@ pub enum Expression {
         right: Box<Expression>,
     },
     Brackets {
-        content: Box<Expression>
+        content: Box<Expression>,
     },
 }
 

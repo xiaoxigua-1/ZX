@@ -3,7 +3,5 @@ mod test {
     use crate::Checker;
 
     #[test]
-    fn test() {
-
-    }
+    fn test() {}
 }

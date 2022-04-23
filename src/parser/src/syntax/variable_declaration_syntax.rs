@@ -1,7 +1,7 @@
+use crate::Parser;
 use util::ast::Statement;
 use util::error::ZXError;
 use util::token::Tokens;
-use crate::Parser;
 
 impl Parser<'_> {
     pub fn variable_declaration_syntax(&mut self) -> Result<Statement, ZXError> {
@@ -10,7 +10,7 @@ impl Parser<'_> {
 
         let colon = match &self.currently.token_type {
             Tokens::ColonToken => Some(self.comparison(&Tokens::ColonToken)?),
-            _ => None
+            _ => None,
         };
         let type_identifier = if colon.is_none() {
             None
@@ -19,7 +19,7 @@ impl Parser<'_> {
         };
         let equal = match &self.currently.token_type {
             Tokens::EqualToken => Some(self.comparison(&Tokens::EqualToken)?),
-            _ => None
+            _ => None,
         };
         let value = if equal.is_none() {
             None
@@ -33,7 +33,7 @@ impl Parser<'_> {
             colon,
             type_identifier,
             equal,
-            value
+            value,
         })
     }
 }

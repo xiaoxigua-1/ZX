@@ -3,9 +3,9 @@ mod file_stream;
 mod lex;
 mod test;
 
+use crate::lex::is_whitespace;
 use file_stream::StringStream;
 use util::error::ZXError;
-use crate::lex::is_whitespace;
 use util::token::{Position, Token, Tokens};
 
 pub struct Lexer {
@@ -35,7 +35,7 @@ impl Lexer {
                         '/' => self.lex_slash(&mut file_stream)?,
                         '\'' => self.lex_char(&mut file_stream)?,
                         '-' | '0'..='9' => self.lex_number(&mut file_stream)?,
-                        _ => {},
+                        _ => {}
                     };
                 }
                 '!'..='.' | ':'..='@' | '['..='^' | '{'..='~' | '\n' | '`' => {
@@ -67,8 +67,8 @@ impl Lexer {
                                 message: "invalid syntax".to_string(),
                                 pos: Position {
                                     start: file_stream.index,
-                                    end: file_stream.index
-                                }
+                                    end: file_stream.index,
+                                },
                             });
                         }
                     };

@@ -51,14 +51,9 @@ pub enum Tokens {
     // `$`
     StdToken,
     // `example`
-    IdentifierToken {
-        literal: String
-    },
+    IdentifierToken { literal: String },
     // `'a'` or `"example"` or `123` or `.3` or `0.3`
-    LiteralToken {
-        kid: Literal,
-        literal: String
-    }
+    LiteralToken { kid: Literal, literal: String },
 }
 
 #[derive(Display, Debug, Clone, EnumString)]
@@ -66,7 +61,7 @@ pub enum Literal {
     String,
     Integer,
     Float,
-    Char
+    Char,
 }
 
 #[derive(Debug, Clone)]
@@ -83,7 +78,7 @@ pub struct Token {
 
 impl Token {
     pub fn is_token_type(&self, token_type: &Tokens) -> bool {
-            token_type.to_string() == self.token_type.to_string()
+        token_type.to_string() == self.token_type.to_string()
     }
 
     pub fn is_token_type_str(&self, token_type: &str) -> bool {

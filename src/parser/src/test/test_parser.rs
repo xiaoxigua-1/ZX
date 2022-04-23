@@ -40,13 +40,19 @@ mod test_parser {
                 Ok(()) => {
                     let mut parser = Parser::new(&lexer.tokens);
                     parser.parse(&path, &source);
-                    ViewASTTree { ast_tree: parser.asts }.main();
+                    ViewASTTree {
+                        ast_tree: parser.asts,
+                    }
+                    .main();
                 }
                 Err(error) => {
-                    Report { level: Level::Error, error }.print(&source, &path);
+                    Report {
+                        level: Level::Error,
+                        error,
+                    }
+                    .print(&source, &path);
                 }
             }
         });
-
     }
 }

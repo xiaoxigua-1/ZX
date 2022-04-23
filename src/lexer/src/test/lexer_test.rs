@@ -12,7 +12,11 @@ mod lexer_test {
         let mut lexer = Lexer::new(&source);
         match lexer.lexer() {
             Err(error) => {
-                Report { level: Level::Error, error }.print(&source, &path);
+                Report {
+                    level: Level::Error,
+                    error,
+                }
+                .print(&source, &path);
             }
             Ok(()) => {}
         };

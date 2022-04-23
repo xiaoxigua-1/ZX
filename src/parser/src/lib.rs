@@ -35,7 +35,11 @@ impl Parser<'_> {
     pub fn comparison(&mut self, token: &Tokens) -> Result<Token, ZXError> {
         if self.currently.is_token_type(token) {
             let ret_token = self.currently.clone();
-            self.next(if let Tokens::LineSeparatorToken = token { true } else { false });
+            self.next(if let Tokens::LineSeparatorToken = token {
+                true
+            } else {
+                false
+            });
             Ok(ret_token)
         } else {
             Err(ZXError::SyntaxError {
@@ -113,7 +117,7 @@ impl Parser<'_> {
                 self.asts.push(statement);
             } else if let Err(error) = statement {
                 self.add_error(error);
-                break
+                break;
             }
         }
 

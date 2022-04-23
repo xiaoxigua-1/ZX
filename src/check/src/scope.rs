@@ -1,9 +1,12 @@
-use util::ast::{Parameter, Statement};
 use crate::ZXTyped;
+use util::ast::{Parameter, Statement};
 
 #[derive(Clone, Debug)]
 pub enum ScopeType {
-    DefFunction { parameters: Vec<Parameter>, return_type: ZXTyped },
+    DefFunction {
+        parameters: Vec<Parameter>,
+        return_type: ZXTyped,
+    },
     DefVariable,
     DefClass,
 }
@@ -23,13 +26,11 @@ pub struct Scopes {
 
 impl Scopes {
     pub fn new() -> Scopes {
-        Scopes {
-            scopes: vec![]
-        }
+        Scopes { scopes: vec![] }
     }
 
     pub fn find_scope(&self, name: &String) -> Option<Scope> {
-        if let Some(find) = self.scopes.iter().find(|scope| { scope.name.eq(name) }) {
+        if let Some(find) = self.scopes.iter().find(|scope| scope.name.eq(name)) {
             Some(find.clone())
         } else {
             None

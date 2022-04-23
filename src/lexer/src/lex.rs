@@ -51,7 +51,7 @@ impl Lexer {
 
         self.tokens.push(Token {
             token_type: Tokens::IdentifierToken {
-                literal: ident.clone()
+                literal: ident.clone(),
             },
             pos: Position {
                 start,
@@ -252,7 +252,7 @@ impl Lexer {
                             is_folat = true;
                             number_string.push(string_stream.get_currently());
                         }
-                        _ => break
+                        _ => break,
                     }
                 }
                 '0'..='9' => {
@@ -260,7 +260,7 @@ impl Lexer {
                     // println!("{}", string_stream.get_currently());
                     number_string.push(string_stream.get_currently());
                 }
-                _ => break
+                _ => break,
             }
         }
 
@@ -281,15 +281,13 @@ impl Lexer {
         if (is_folat && number_string.len() > 1) || (!is_folat && number_string.len() > 0) {
             self.tokens.push(Token { token_type, pos });
             match string_stream.get_currently() {
-                '.' => {
-                    self.tokens.push(Token {
-                        token_type: Tokens::DotToken,
-                        pos: Position {
-                            start: string_stream.index,
-                            end: string_stream.index,
-                        }
-                    })
-                }
+                '.' => self.tokens.push(Token {
+                    token_type: Tokens::DotToken,
+                    pos: Position {
+                        start: string_stream.index,
+                        end: string_stream.index,
+                    },
+                }),
                 _ => {}
             }
             Ok(())

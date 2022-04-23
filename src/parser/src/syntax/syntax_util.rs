@@ -2,15 +2,17 @@ use util::ast::Operator;
 use util::error::ZXError;
 use util::token::{Position, Token, Tokens};
 
-pub fn set_error_message<T>(expression: Result<T, ZXError>, message: String, pos: &Position) -> Result<T, ZXError> {
+pub fn set_error_message<T>(
+    expression: Result<T, ZXError>,
+    message: String,
+    pos: &Position,
+) -> Result<T, ZXError> {
     match expression {
-        Err(_) => {
-            Err(ZXError::SyntaxError {
-                message,
-                pos: pos.clone(),
-            })
-        }
-        Ok(condition) => Ok(condition)
+        Err(_) => Err(ZXError::SyntaxError {
+            message,
+            pos: pos.clone(),
+        }),
+        Ok(condition) => Ok(condition),
     }
 }
 
@@ -19,17 +21,19 @@ pub fn operator_type(token: &Token) -> Result<Operator, ZXError> {
         Tokens::PlusToken => Operator::Add,
         Tokens::MultiplyToken => Operator::Mul,
         Tokens::MinusToken => Operator::Sub,
-        _ => return Err(ZXError::SyntaxError {
-            pos: token.pos.clone(),
-            message: "not an operator".to_string(),
-        }),
+        _ => {
+            return Err(ZXError::SyntaxError {
+                pos: token.pos.clone(),
+                message: "not an operator".to_string(),
+            })
+        }
     })
 }
 
 pub fn is_operator(token_type: &Tokens) -> bool {
     match token_type {
         Tokens::PlusToken | Tokens::MultiplyToken | Tokens::MinusToken => true,
-        _ => false
+        _ => false,
     }
 }
 

@@ -1,6 +1,6 @@
+use crate::Parser;
 use util::ast::Statement;
 use util::error::ZXError;
-use crate::Parser;
 
 impl Parser<'_> {
     pub fn return_syntax(&mut self) -> Result<Statement, ZXError> {

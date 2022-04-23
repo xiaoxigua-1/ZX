@@ -74,17 +74,32 @@ impl Report {
             let max_number = format!("{}", max_number.line_number).len() + 1;
 
             let src_dir = PathBuf::from(path);
-            let path_string = fs::canonicalize(&src_dir).unwrap().into_os_string().into_string().unwrap();
+            let path_string = fs::canonicalize(&src_dir)
+                .unwrap()
+                .into_os_string()
+                .into_string()
+                .unwrap();
 
             for source in print_source {
-                println!(" ===> {}:{}:{}", path_string, source.line_number, source.arrow_position.start + 1);
+                println!(
+                    " ===> {}:{}:{}",
+                    path_string,
+                    source.line_number,
+                    source.arrow_position.start + 1
+                );
                 println!("{:<width$}|", "", width = max_number);
-                println!("{:<width$}| {}", source.line_number, source.source, width = max_number);
-                println!("{space:<width$}| {space:>arrow_start$}{space:^>arrow_width$}",
-                         space = "",
-                         width = max_number,
-                         arrow_start = source.arrow_position.start,
-                         arrow_width = source.arrow_position.end - source.arrow_position.start + 1
+                println!(
+                    "{:<width$}| {}",
+                    source.line_number,
+                    source.source,
+                    width = max_number
+                );
+                println!(
+                    "{space:<width$}| {space:>arrow_start$}{space:^>arrow_width$}",
+                    space = "",
+                    width = max_number,
+                    arrow_start = source.arrow_position.start,
+                    arrow_width = source.arrow_position.end - source.arrow_position.start + 1
                 );
                 println!("{:<width$}|", "", width = max_number);
             }
@@ -92,6 +107,11 @@ impl Report {
     }
 
     fn print_error_message(&self, color_char: String, message: String) {
-        println!("{}{}: {}\x1b[0m", color_char, self.error.to_string(), message);
+        println!(
+            "{}{}: {}\x1b[0m",
+            color_char,
+            self.error.to_string(),
+            message
+        );
     }
 }

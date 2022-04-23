@@ -1,18 +1,18 @@
 mod block_syntax;
-mod function_syntax;
-mod type_syntax;
-mod return_syntax;
-mod variable_declaration_syntax;
-mod if_syntax;
-mod while_syntax;
 mod for_loop_syntax;
-mod util;
+mod function_syntax;
+mod if_syntax;
+mod return_syntax;
+mod syntax_util;
+mod type_syntax;
+mod variable_declaration_syntax;
+mod while_syntax;
 
+use crate::syntax::syntax_util::{infix_binding_power, is_operator, operator_type};
 use crate::Parser;
-use ::util::ast::{Expression, Statement};
-use ::util::error::ZXError;
-use ::util::token::{Token, Tokens};
-use crate::syntax::util::{infix_binding_power, is_operator, operator_type};
+use util::ast::{Expression, Statement};
+use util::error::ZXError;
+use util::token::{Token, Tokens};
 
 impl Parser<'_> {
     pub fn statement(&mut self) -> Result<Statement, ZXError> {
@@ -24,13 +24,13 @@ impl Parser<'_> {
                 "pub" => {
                     self.comparison_string(vec!["IdentifierToken"])?;
                     Statement::Public {
-                        statement: Box::new(self.statement()?)
+                        statement: Box::new(self.statement()?),
                     }
                 }
                 "static" => {
                     self.comparison_string(vec!["IdentifierToken"])?;
                     Statement::Static {
-                        statement: Box::new(self.statement()?)
+                        statement: Box::new(self.statement()?),
                     }
                 }
                 "return" => self.return_syntax()?,
@@ -38,14 +38,18 @@ impl Parser<'_> {
                 "if" => self.if_syntax()?,
                 "while" => self.while_syntax()?,
                 "for" => self.for_syntax()?,
-                _ => Statement::Expression { expression: self.expressions(0)? },
+                _ => Statement::Expression {
+                    expression: self.expressions(0)?,
+                },
             };
 
             Ok(statement)
         } else if let Tokens::LeftCurlyBracketsToken = keyword.token_type {
             Ok(self.block_syntax()?)
         } else {
-            Ok(Statement::Expression { expression: self.expressions(0)? })
+            Ok(Statement::Expression {
+                expression: self.expressions(0)?,
+            })
         };
     }
 
@@ -54,27 +58,24 @@ impl Parser<'_> {
             Tokens::LiteralToken { kid, literal: _ } => {
                 let content = self.comparison_string(vec!["LiteralToken"])?;
                 match &self.currently.token_type {
-                    Tokens::DotToken => {
-                        Ok(Expression::Value {
-                            kid: kid.clone(),
-                            content,
-                            next: Box::new(Some(self.expressions(min_bp)?)),
-                        })
-                    },
-                    token_type if is_operator(token_type) => {
-                        Ok(self.operator_expression(min_bp, Expression::Value {
-                            kid: kid.clone(),
-                            content,
-                            next: Box::new(None),
-                        })?)
-                    }
-                    _ => {
-                        Ok(Expression::Value {
+                    Tokens::DotToken => Ok(Expression::Value {
+                        kid: kid.clone(),
+                        content,
+                        next: Box::new(Some(self.expressions(min_bp)?)),
+                    }),
+                    token_type if is_operator(token_type) => Ok(self.operator_expression(
+                        min_bp,
+                        Expression::Value {
                             kid: kid.clone(),
                             content,
                             next: Box::new(None),
-                        })
-                    }
+                        },
+                    )?),
+                    _ => Ok(Expression::Value {
+                        kid: kid.clone(),
+                        content,
+                        next: Box::new(None),
+                    }),
                 }
             }
             Tokens::IdentifierToken { .. } | Tokens::StdToken => {
@@ -85,18 +86,24 @@ impl Parser<'_> {
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
                     _ => {
                         let next = match &self.currently.token_type {
-                            Tokens::DotToken | Tokens::ColonToken | Tokens::LeftParenthesesToken => Some(Box::new(self.expressions(min_bp)?)),
-                            _ => None
+                            Tokens::DotToken
+                            | Tokens::ColonToken
+                            | Tokens::LeftParenthesesToken => {
+                                Some(Box::new(self.expressions(min_bp)?))
+                            }
+                            _ => None,
                         };
 
                         match &token.token_type {
-                            Tokens::IdentifierToken { ref literal } if literal == "true" || literal == "false" => Expression::Bool {
-                                identifier: token,
-                            },
+                            Tokens::IdentifierToken { ref literal }
+                                if literal == "true" || literal == "false" =>
+                            {
+                                Expression::Bool { identifier: token }
+                            }
                             _ => Expression::Identifier {
                                 identifier: token,
                                 next,
-                            }
+                            },
                         }
                     }
                 };
@@ -107,9 +114,7 @@ impl Parser<'_> {
                 self.comparison(&Tokens::DotToken)?;
                 let sub_member = Box::new(self.expressions(min_bp)?);
 
-                Ok(Expression::SubMember {
-                    sub_member
-                })
+                Ok(Expression::SubMember { sub_member })
             }
             Tokens::ColonToken => {
                 self.comparison(&Tokens::ColonToken)?;
@@ -125,7 +130,7 @@ impl Parser<'_> {
             _ => Err(ZXError::SyntaxError {
                 message: "Unknown Token".to_string(),
                 pos: self.currently.pos.clone(),
-            })
+            }),
         }
     }
 
@@ -158,10 +163,8 @@ impl Parser<'_> {
         let right_parentheses = self.comparison(&Tokens::RightParenthesesToken)?;
 
         let next = match self.currently.token_type {
-            Tokens::ColonToken | Tokens::DotToken => {
-                Some(Box::new(self.expressions(0)?))
-            }
-            _ => None
+            Tokens::ColonToken | Tokens::DotToken => Some(Box::new(self.expressions(0)?)),
+            _ => None,
         };
 
         Ok(Expression::Call {
@@ -179,7 +182,7 @@ impl Parser<'_> {
         loop {
             let operator = match &self.currently.token_type {
                 token_type if is_operator(token_type) => operator_type(&self.currently)?,
-                _ => break
+                _ => break,
             };
 
             let bp = infix_binding_power(&operator);
@@ -209,7 +212,7 @@ impl Parser<'_> {
         self.comparison(&Tokens::RightParenthesesToken)?;
 
         Ok(Expression::Brackets {
-            content: Box::new(operator)
+            content: Box::new(operator),
         })
     }
 }

@@ -1,15 +1,15 @@
+mod scope;
 mod test;
 mod r#type;
-mod scope;
 
-use util::ast::{Parameter, Statement, Expression};
-use util::ast::Statement::*;
+use crate::r#type::ZXTyped;
+use crate::scope::{Scope, ScopeType, Scopes};
 use util::ast::Expression::*;
+use util::ast::Statement::*;
+use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
 use util::token::{Literal, Tokens};
-use crate::r#type::ZXTyped;
-use crate::scope::{Scope, Scopes, ScopeType};
 
 struct File {
     name: String,
@@ -41,33 +41,39 @@ impl Checker {
             match self.statement(statement, vec![&self.global_scopes]) {
                 Ok(scope) => {
                     self.global_scopes.add_scope(scope);
-                },
-                Err(error) => {
-                    self.reposts.push(Report {
-                        level: Level::Error,
-                        error
-                    })
                 }
+                Err(error) => self.reposts.push(Report {
+                    level: Level::Error,
+                    error,
+                }),
             }
         }
 
         self.reposts.push(Report {
             level: Level::Debug,
             error: ZXError::Debug {
-                message: format!("global {:#?}", self.global_scopes)
-            }
+                message: format!("global {:#?}", self.global_scopes),
+            },
         })
     }
 
     fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
         match statement {
-            FunctionDeclaration { function_name, parameters, block, return_type, .. } => {
+            FunctionDeclaration {
+                function_name,
+                parameters,
+                block,
+                return_type,
+                ..
+            } => {
                 // TODO: Check function block and parameters type and return type
                 Ok(Scope {
                     name: if let Tokens::IdentifierToken { literal } = function_name.token_type {
                         literal
                     } else {
-                        return Err(ZXError::UnknownError { message: "".to_string() })
+                        return Err(ZXError::UnknownError {
+                            message: "".to_string(),
+                        });
                     },
                     scope_type: ScopeType::DefFunction {
                         parameters,
@@ -75,13 +81,15 @@ impl Checker {
                             self.auto_type(expression)?
                         } else {
                             ZXTyped::Void
-                        }
+                        },
                     },
                     uses_num: 0,
                     block: *block,
                 })
             }
-            _ => Err(ZXError::UnknownError { message: String::from("Unknown statement.") })
+            _ => Err(ZXError::UnknownError {
+                message: String::from("Unknown statement."),
+            }),
         }
     }
 
@@ -101,22 +109,26 @@ impl Checker {
                     Literal::String => ZXTyped::String,
                     Literal::Char => ZXTyped::Char,
                     Literal::Integer => ZXTyped::Integer,
-                    Literal::Float => ZXTyped::Float
+                    Literal::Float => ZXTyped::Float,
                 })
-            },
-            Call { call_name, next, .. } => {
+            }
+            Call {
+                call_name, next, ..
+            } => {
                 // TODO: return type
                 Ok(ZXTyped::Other {
                     type_name: call_name,
                 })
-            },
+            }
             // Path { identifier, next } => {
             //     // TODO: path end type
             // },
             // SubMember { sub_member } => {
             //     // TODO: sub　member type
             // },
-            _ => Err(ZXError::UnknownError { message: String::from("Unknown type")})
+            _ => Err(ZXError::UnknownError {
+                message: String::from("Unknown type"),
+            }),
         }
     }
 

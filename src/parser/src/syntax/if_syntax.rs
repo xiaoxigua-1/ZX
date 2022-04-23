@@ -1,8 +1,8 @@
+use crate::syntax::syntax_util::set_error_message;
+use crate::Parser;
 use util::ast::Statement;
 use util::error::ZXError;
-use util::token::{Tokens};
-use crate::syntax::util::set_error_message;
-use crate::Parser;
+use util::token::Tokens;
 
 impl Parser<'_> {
     pub fn if_syntax(&mut self) -> Result<Statement, ZXError> {
@@ -10,7 +10,7 @@ impl Parser<'_> {
         let condition = set_error_message(
             self.expressions(0),
             String::from("missing condition"),
-            &if_keyword.pos
+            &if_keyword.pos,
         )?;
         let block = self.block_syntax()?;
 
@@ -22,14 +22,14 @@ impl Parser<'_> {
                     None
                 }
             }
-            _ => None
+            _ => None,
         };
 
         Ok(Statement::If {
             if_keyword,
             condition,
             block: Box::new(block),
-            else_statement: Box::new(else_statement)
+            else_statement: Box::new(else_statement),
         })
     }
 
@@ -44,12 +44,12 @@ impl Parser<'_> {
                     None
                 }
             }
-            _ => Some(self.block_syntax()?)
+            _ => Some(self.block_syntax()?),
         };
 
         Ok(Statement::Else {
             else_keyword,
-            next: Box::new(next)
+            next: Box::new(next),
         })
     }
 }

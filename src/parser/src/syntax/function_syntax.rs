@@ -12,7 +12,7 @@ impl Parser<'_> {
         let right_parentheses = self.comparison(&Tokens::RightParenthesesToken)?;
         let type_expression = match self.currently.token_type {
             Tokens::ColonToken => Some(self.type_syntax()?),
-            _ => None
+            _ => None,
         };
         let block = self.block_syntax()?;
 
@@ -52,8 +52,9 @@ impl Parser<'_> {
                     } else {
                         let pos = if let Expression::Type {
                             nullable,
-                            ref identifier
-                        } = parameters.last().unwrap().type_expression {
+                            ref identifier,
+                        } = parameters.last().unwrap().type_expression
+                        {
                             let pos = if nullable {
                                 identifier.pos.start + 1
                             } else {
@@ -76,11 +77,10 @@ impl Parser<'_> {
                     self.comparison(&Tokens::CommaToken)?;
                     comma = true;
                 }
-                _ => break
-                //return Err(ZXError::SyntaxError {
-                //                     message: format!("expected parameter name, found `{:?}`", self.currently.token_type),
-                //                     pos: left,
-                //                 })
+                _ => break, //return Err(ZXError::SyntaxError {
+                            //                     message: format!("expected parameter name, found `{:?}`", self.currently.token_type),
+                            //                     pos: left,
+                            //                 })
             }
         }
 
