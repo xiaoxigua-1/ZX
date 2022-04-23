@@ -38,31 +38,44 @@ impl Parser<'_> {
                 "if" => self.if_syntax()?,
                 "while" => self.while_syntax()?,
                 "for" => self.for_syntax()?,
-                _ => Statement::Expression { expression: self.expressions()? },
+                _ => Statement::Expression { expression: self.expressions(0)? },
             };
 
             Ok(statement)
         } else if let Tokens::LeftCurlyBracketsToken = keyword.token_type {
             Ok(self.block_syntax()?)
         } else {
-            Ok(Statement::Expression { expression: self.expressions()? })
+            Ok(Statement::Expression { expression: self.expressions(0)? })
         };
     }
 
-    pub fn expressions(&mut self) -> Result<Expression, ZXError> {
+    pub fn expressions(&mut self, min_bp: u8) -> Result<Expression, ZXError> {
         match &self.currently.token_type {
             Tokens::LiteralToken { kid, literal: _ } => {
                 let content = self.comparison_string(vec!["LiteralToken"])?;
-                let next = match &self.currently.token_type {
-                    Tokens::DotToken => Some(self.expressions()?),
-                    _ => None
-                };
-
-                Ok(Expression::Value {
-                    kid: kid.clone(),
-                    content,
-                    next: Box::new(next),
-                })
+                match &self.currently.token_type {
+                    Tokens::DotToken => {
+                        Ok(Expression::Value {
+                            kid: kid.clone(),
+                            content,
+                            next: Box::new(Some(self.expressions(min_bp)?)),
+                        })
+                    },
+                    token_type if is_operator(token_type) => {
+                        Ok(self.operator_expression(min_bp, Expression::Value {
+                            kid: kid.clone(),
+                            content,
+                            next: Box::new(None),
+                        })?)
+                    }
+                    _ => {
+                        Ok(Expression::Value {
+                            kid: kid.clone(),
+                            content,
+                            next: Box::new(None),
+                        })
+                    }
+                }
             }
             Tokens::IdentifierToken { .. } | Tokens::StdToken => {
                 let token = self.comparison_string(vec!["IdentifierToken", "StdToken"])?;
@@ -72,7 +85,7 @@ impl Parser<'_> {
                     Tokens::LeftParenthesesToken => self.call_expression(token)?,
                     _ => {
                         let next = match &self.currently.token_type {
-                            Tokens::DotToken | Tokens::ColonToken | Tokens::LeftParenthesesToken => Some(Box::new(self.expressions()?)),
+                            Tokens::DotToken | Tokens::ColonToken | Tokens::LeftParenthesesToken => Some(Box::new(self.expressions(min_bp)?)),
                             _ => None
                         };
 
@@ -92,7 +105,7 @@ impl Parser<'_> {
             }
             Tokens::DotToken => {
                 self.comparison(&Tokens::DotToken)?;
-                let sub_member = Box::new(self.expressions()?);
+                let sub_member = Box::new(self.expressions(min_bp)?);
 
                 Ok(Expression::SubMember {
                     sub_member
@@ -102,7 +115,7 @@ impl Parser<'_> {
                 self.comparison(&Tokens::ColonToken)?;
                 self.comparison(&Tokens::ColonToken)?;
 
-                let expression = self.expressions()?;
+                let expression = self.expressions(min_bp)?;
 
                 Ok(Expression::Path {
                     next: Box::new(expression),
@@ -130,7 +143,7 @@ impl Parser<'_> {
                 }
                 _ => {
                     if comma {
-                        arguments.push(self.expressions()?);
+                        arguments.push(self.expressions(0)?);
                         comma = false;
                     } else {
                         return Err(ZXError::SyntaxError {
@@ -146,7 +159,7 @@ impl Parser<'_> {
 
         let next = match self.currently.token_type {
             Tokens::ColonToken | Tokens::DotToken => {
-                Some(Box::new(self.expressions()?))
+                Some(Box::new(self.expressions(0)?))
             }
             _ => None
         };
@@ -160,8 +173,8 @@ impl Parser<'_> {
         })
     }
 
-    fn operator_expression(&mut self, min_bp: u8) -> Result<Expression, ZXError> {
-        let mut left_expression = self.expressions()?;
+    fn operator_expression(&mut self, min_bp: u8, left: Expression) -> Result<Expression, ZXError> {
+        let mut left_expression = left;
 
         loop {
             let operator = match &self.currently.token_type {
@@ -176,8 +189,8 @@ impl Parser<'_> {
             }
 
             self.next(false);
-
-            let right_expression = self.operator_expression(bp + 1)?;
+            let next = self.expressions(min_bp + 1)?;
+            let right_expression = self.operator_expression(bp + 1, next)?;
 
             left_expression = Expression::Operator {
                 operator_type: operator,
@@ -191,7 +204,8 @@ impl Parser<'_> {
 
     fn operator_brackets(&mut self) -> Result<Expression, ZXError> {
         self.comparison(&Tokens::LeftParenthesesToken)?;
-        let operator = self.operator_expression(0)?;
+        let next = self.expressions(0)?;
+        let operator = self.operator_expression(0, next)?;
         self.comparison(&Tokens::RightParenthesesToken)?;
 
         Ok(Expression::Brackets {

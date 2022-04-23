@@ -8,7 +8,7 @@ impl Parser<'_> {
     pub fn if_syntax(&mut self) -> Result<Statement, ZXError> {
         let if_keyword = self.comparison_string(vec!["IdentifierToken"])?;
         let condition = set_error_message(
-            self.expressions(),
+            self.expressions(0),
             String::from("missing condition"),
             &if_keyword.pos
         )?;

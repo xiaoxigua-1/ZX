@@ -36,6 +36,6 @@ pub fn is_operator(token_type: &Tokens) -> bool {
 pub fn infix_binding_power(operator_type: &Operator) -> u8 {
     match operator_type {
         Operator::Add | Operator::Sub => 1,
-        Operator::Mul => 2,
+        Operator::Mul => 3,
     }
 }

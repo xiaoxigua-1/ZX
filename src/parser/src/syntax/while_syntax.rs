@@ -8,7 +8,7 @@ impl Parser<'_> {
         let while_keyword = self.comparison_string(vec!["IdentifierToken"])?;
 
         let condition = set_error_message(
-            self.expressions(),
+            self.expressions(0),
             String::from("missing condition"),
             &while_keyword.pos
         )?;

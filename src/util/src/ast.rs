@@ -118,7 +118,7 @@ pub struct Parameter {
     pub type_expression: Expression,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Display)]
 pub enum Operator {
     Add,
     Sub,

@@ -110,6 +110,13 @@ impl ViewASTTree {
             Bool { identifier } => {
                 println!("{line_start}├── Bool `{}`", self.literal(identifier));
             }
+            Operator { left, right, operator_type } => {
+                println!("{line_start}├── {}", operator_type.to_string());
+                println!("{line_start}|    ├── left");
+                self.expression(left, index + 2);
+                println!("{line_start}|    ├── right");
+                self.expression(right, index + 2);
+            }
             _ => {}
         }
     }

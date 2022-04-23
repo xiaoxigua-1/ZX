@@ -1,4 +1,4 @@
-    #[derive(Display, Debug, Clone)]
+#[derive(Display, Debug, Clone)]
 pub enum Tokens {
     // End of file
     EOF,
