@@ -24,7 +24,7 @@ impl fmt::Display for GlobalVariableContext {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "@{} = dso_local {} {} {}, align {}\n",
+            "@{} = private dso_local {} {} {}, align {}\n",
             self.variable_name,
             if self.is_constant {
                 "constant"
