@@ -3,16 +3,23 @@ use std::fmt::Formatter;
 
 pub struct Value {
     pub context: String,
-    pub is_string: bool,
+    pub value_type: ValueType,
+}
+
+pub enum ValueType {
+    String,
+    Other,
+    RefString,
 }
 
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let value_string = if self.is_string {
-            format!(r#"c"{}\00""#, &self.context)
-        } else {
-            self.context.clone()
+        let value_string = match self.value_type {
+            ValueType::String => format!(r#"c"{}\00""#, &self.context),
+            ValueType::RefString => format!(r#""{}""#, &self.context),
+            ValueType::Other => self.context.clone()
         };
+
         write!(f, "{}", value_string)
     }
 }
@@ -20,13 +27,20 @@ impl fmt::Display for Value {
 pub fn create_string(value: String) -> Value {
     Value {
         context: value,
-        is_string: true,
+        value_type: ValueType::String,
     }
 }
 
-pub fn create_int(value: String) -> Value {
+pub fn create_ref_string(value: String) -> Value {
     Value {
         context: value,
-        is_string: false,
+        value_type: ValueType::RefString,
+    }
+}
+
+pub fn create_number(value: String) -> Value {
+    Value {
+        context: value,
+        value_type: ValueType::Other,
     }
 }

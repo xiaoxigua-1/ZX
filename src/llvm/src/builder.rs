@@ -1,6 +1,6 @@
 use crate::context::{GlobalVariableContext, LLVMContext, NamedMetadata};
 use crate::llvm_type::LLVMTypes;
-use crate::value::{create_int, create_string, Value};
+use crate::value::{create_number, create_string, Value};
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -34,7 +34,7 @@ impl LLVMBuilder {
             value: if let LLVMTypes::String { .. } = value_type {
                 create_string(value)
             } else {
-                create_int(value)
+                create_number(value)
             },
             value_type,
         });

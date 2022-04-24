@@ -3,7 +3,7 @@ mod context_test {
     use crate::builder::LLVMBuilder;
     use crate::context::{GlobalVariableContext, LLVMContext};
     use crate::llvm_type::LLVMTypes;
-    use crate::value::{create_int, Value};
+    use crate::value::{create_number, create_ref_string, Value, ValueType};
 
     #[test]
     fn global_variable_context() {
@@ -13,7 +13,7 @@ mod context_test {
             variable_name: "a".to_string(),
             value: Value {
                 context: "2".to_string(),
-                is_string: false,
+                value_type: ValueType::Other,
             },
             value_type: LLVMTypes::Int8,
         }
@@ -30,7 +30,7 @@ mod context_test {
             variable_name: "a".to_string(),
             value: Value {
                 context: "12".to_string(),
-                is_string: false,
+                value_type: ValueType::Other,
             },
             value_type: LLVMTypes::Int8,
         }];
@@ -70,9 +70,14 @@ mod context_test {
         let value = String::from("123");
 
         builder.crate_global_var("abc".to_string(), LLVMTypes::Int8, value, false, false);
-        builder.add_named_mata("0".to_string(), vec![
-            create_int("1".to_string())
+
+        builder.add_named_mata("llvm.ident".to_string(), vec![
+            create_number("0".to_string())
         ]);
+        builder.add_named_mata("0".to_string(), vec![
+            create_ref_string("zx version 1".to_string())
+        ]);
+
         let llvm_ir = builder.to_string();
         println!("{}", llvm_ir);
     }
