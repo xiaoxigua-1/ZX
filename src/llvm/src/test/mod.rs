@@ -3,11 +3,12 @@ mod context_test {
     use crate::builder::LLVMBuilder;
     use crate::context::{GlobalVariableContext, LLVMContext};
     use crate::llvm_type::LLVMTypes;
-    use crate::value::Value;
+    use crate::value::{create_int, Value};
 
     #[test]
     fn global_variable_context() {
         let str = GlobalVariableContext {
+            is_private: false,
             is_constant: false,
             variable_name: "a".to_string(),
             value: Value {
@@ -24,6 +25,7 @@ mod context_test {
     #[test]
     fn context_test() {
         let global_variables = vec![GlobalVariableContext {
+            is_private: false,
             is_constant: false,
             variable_name: "a".to_string(),
             value: Value {
@@ -38,13 +40,12 @@ mod context_test {
         let llvm_ir = LLVMContext {
             source_filename,
             global_variables,
+            named_metadata: vec![]
         }
         .to_string();
 
         println!("{}", llvm_ir);
     }
-
-    fn builder_global_var() {}
 
     #[test]
     fn builder_global_var_string_test() {
@@ -56,6 +57,7 @@ mod context_test {
             LLVMTypes::String { len: value.len() },
             value,
             false,
+            true,
         );
 
         let llvm_ir = builder.to_string();
@@ -67,8 +69,10 @@ mod context_test {
         let mut builder = LLVMBuilder::new("test.zx");
         let value = String::from("123");
 
-        builder.crate_global_var("abc".to_string(), LLVMTypes::Int8, value, false);
-
+        builder.crate_global_var("abc".to_string(), LLVMTypes::Int8, value, false, false);
+        builder.add_named_mata("0".to_string(), vec![
+            create_int("1".to_string())
+        ]);
         let llvm_ir = builder.to_string();
         println!("{}", llvm_ir);
     }

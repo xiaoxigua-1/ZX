@@ -1,6 +1,6 @@
-use crate::context::{GlobalVariableContext, LLVMContext};
+use crate::context::{GlobalVariableContext, LLVMContext, NamedMetadata};
 use crate::llvm_type::LLVMTypes;
-use crate::value::{create_int, create_string};
+use crate::value::{create_int, create_string, Value};
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -14,6 +14,7 @@ impl LLVMBuilder {
             context: LLVMContext {
                 source_filename: module_name.to_string(),
                 global_variables: vec![],
+                named_metadata: vec![]
             },
         }
     }
@@ -24,8 +25,10 @@ impl LLVMBuilder {
         value_type: LLVMTypes,
         value: String,
         is_constant: bool,
+        is_private: bool
     ) {
         self.context.global_variables.push(GlobalVariableContext {
+            is_private,
             is_constant,
             variable_name,
             value: if let LLVMTypes::String { .. } = value_type {
@@ -34,6 +37,13 @@ impl LLVMBuilder {
                 create_int(value)
             },
             value_type,
+        });
+    }
+
+    pub fn add_named_mata(&mut self, name: String, value: Vec<Value>) {
+        self.context.named_metadata.push(NamedMetadata {
+            name,
+            value
         });
     }
 }

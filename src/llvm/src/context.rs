@@ -1,31 +1,38 @@
 use crate::llvm_type::LLVMTypes;
-use crate::value::{Value, ValueType};
+use crate::value::{Value};
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Formatter};
 
 pub struct LLVMContext {
     pub source_filename: String,
     pub global_variables: Vec<GlobalVariableContext>,
+    pub named_metadata: Vec<NamedMetadata>
+}
+
+pub struct NamedMetadata {
+    pub name: String,
+    pub value: Vec<Value>,
 }
 
 pub struct GlobalVariableContext {
+    pub is_private: bool,
     pub is_constant: bool,
     pub variable_name: String,
     pub value: Value,
     pub value_type: LLVMTypes,
 }
 
-pub struct NamedMetadata {
-    pub name: String,
-    pub values: Vec<ValueType>,
-}
-
 impl fmt::Display for GlobalVariableContext {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "@{} = private dso_local {} {} {}, align {}\n",
+            "@{} ={} dso_local {} {} {}, align {}\n",
             self.variable_name,
+            if self.is_private {
+                " private"
+            } else {
+                ""
+            },
             if self.is_constant {
                 "constant"
             } else {
@@ -38,6 +45,20 @@ impl fmt::Display for GlobalVariableContext {
     }
 }
 
+impl fmt::Display for NamedMetadata {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let named_metadata_string = self.value
+            .iter()
+            .map(|value| {
+                let value_string = value.to_string();
+                format!("!{}", value_string)
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+        write!(f, "!{} = !{{{}}}", self.name, named_metadata_string)
+    }
+}
+
 impl fmt::Display for LLVMContext {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let global_variable_string = self
@@ -46,14 +67,25 @@ impl fmt::Display for LLVMContext {
             .map(|global_variable| global_variable.to_string())
             .collect::<Vec<String>>()
             .join("\n");
+        let named_metadata_string = self.named_metadata
+            .iter()
+            .map(|named_metadata| named_metadata.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
         write!(
             f,
             "\
 ; ModuleID = '{}'
 source_filename = \"{}\"
+
+{}
+
 {}
             ",
-            self.source_filename, self.source_filename, global_variable_string
+            self.source_filename,
+            self.source_filename,
+            global_variable_string,
+            named_metadata_string
         )
     }
 }
