@@ -10,3 +10,9 @@ impl fmt::Debug for LLVMError {
         write!(f, "\x1b[31m{}\x1b[0m", self.message)
     }
 }
+
+impl LLVMError {
+    pub fn print_error_message(&self) {
+        println!("\x1b[31merror: {}\x1b[0m", self.message)
+    }
+}
