@@ -1,6 +1,7 @@
 use std::fmt;
 use std::fmt::{Formatter};
 use crate::llvm_type::LLVMTypes;
+use crate::value::{Value, ValueType};
 
 pub struct LLVMContext {
     pub source_filename: String,
@@ -10,8 +11,13 @@ pub struct LLVMContext {
 pub struct GlobalVariableContext {
     pub is_constant: bool,
     pub variable_name: String,
-    pub value: String,
+    pub value: Value,
     pub value_type: LLVMTypes,
+}
+
+pub struct NamedMetadata {
+    pub name: String,
+    pub values: Vec<ValueType>
 }
 
 impl fmt::Display for GlobalVariableContext {

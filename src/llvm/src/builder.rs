@@ -2,6 +2,7 @@ use std::fmt;
 use std::fmt::{Formatter};
 use crate::context::{GlobalVariableContext, LLVMContext};
 use crate::llvm_type::LLVMTypes;
+use crate::value::{create_int, create_string};
 
 pub struct LLVMBuilder {
     context: LLVMContext
@@ -22,7 +23,11 @@ impl LLVMBuilder {
             GlobalVariableContext {
                 is_constant,
                 variable_name,
-                value,
+                value: if let LLVMTypes::String { .. } = value_type {
+                    create_string(value)
+                } else {
+                    create_int(value)
+                },
                 value_type
             }
         );
