@@ -1,58 +1,58 @@
 #[derive(Display, Debug, Clone)]
 pub enum Tokens {
-    // End of file
+    /// End of file
     EOF,
-    // `\n`
+    /// `\n`
     LineSeparatorToken,
-    // `,`
+    /// `,`
     CommaToken,
-    // `:`
+    /// `:`
     ColonToken,
-    // `{`
+    /// `{`
     LeftCurlyBracketsToken,
-    // `}`
+    /// `}`
     RightCurlyBracketsToken,
-    // `[`
+    /// `[`
     LeftSquareBracketsToken,
-    // `]`
+    /// `]`
     RightSquareBracketsToken,
-    // `(`
+    /// `(`
     LeftParenthesesToken,
-    // `)`
+    /// `)`
     RightParenthesesToken,
-    // `/`
+    /// `/`
     SlashToken,
-    // `\`
+    /// `\`
     BackslashToken,
-    // `+`
+    /// `+`
     PlusToken,
-    // `-`
+    /// `-`
     MinusToken,
-    // `*`
+    /// `*`
     MultiplyToken,
-    // `=`
+    /// `=`
     EqualToken,
-    // `.`
+    /// `.`
     DotToken,
-    // `<`
+    /// `<`
     LessToken,
-    // `>`
+    /// `>`
     MoreToken,
-    // `;`
+    /// `;`
     SemicolonToken,
-    // `!`
+    /// `!`
     ExclamationToken,
-    // `?`
+    /// `?`
     QuestionMarkToken,
-    // `&`
+    /// `&`
     AmpersandToken,
-    // `%`
+    /// `%`
     PercentToken,
-    // `$`
+    /// `$`
     StdToken,
-    // `example`
+    /// `example`
     IdentifierToken { literal: String },
-    // `'a'` or `"example"` or `123` or `.3` or `0.3`
+    ///`'a'` or `"example"` or `123` or `.3` or `0.3`
     LiteralToken { kid: Literal, literal: String },
 }
 
