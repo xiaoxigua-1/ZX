@@ -8,9 +8,7 @@ pub enum LLVMTypes {
     Int64,
     Float,
     Double,
-    String {
-        len: usize
-    },
+    String { len: usize },
 }
 
 impl LLVMTypes {
@@ -26,14 +24,18 @@ impl LLVMTypes {
 
 impl fmt::Display for LLVMTypes {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            Int8 => "i8".to_string(),
-            Int16 => "i16".to_string(),
-            Int32 => "i32".to_string(),
-            Int64 => "i64".to_string(),
-            Float => "float".to_string(),
-            Double => "double".to_string(),
-            String { len } => format!("[{} x i8]", len + 1)
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Int8 => "i8".to_string(),
+                Int16 => "i16".to_string(),
+                Int32 => "i32".to_string(),
+                Int64 => "i64".to_string(),
+                Float => "float".to_string(),
+                Double => "double".to_string(),
+                String { len } => format!("[{} x i8]", len + 1),
+            }
+        )
     }
 }

@@ -18,14 +18,9 @@ impl fmt::Display for Value {
         } else {
             self.context.clone()
         };
-        write!(
-            f,
-            "{}",
-            value_string
-        )
+        write!(f, "{}", value_string)
     }
 }
-
 
 pub fn create_string(value: String) -> Value {
     Value {

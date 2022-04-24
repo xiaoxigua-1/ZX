@@ -1,7 +1,7 @@
-use std::fmt;
-use std::fmt::{Formatter};
 use crate::llvm_type::LLVMTypes;
 use crate::value::{Value, ValueType};
+use std::fmt;
+use std::fmt::Formatter;
 
 pub struct LLVMContext {
     pub source_filename: String,
@@ -17,7 +17,7 @@ pub struct GlobalVariableContext {
 
 pub struct NamedMetadata {
     pub name: String,
-    pub values: Vec<ValueType>
+    pub values: Vec<ValueType>,
 }
 
 impl fmt::Display for GlobalVariableContext {
@@ -26,7 +26,11 @@ impl fmt::Display for GlobalVariableContext {
             f,
             "@{} = dso_local {} {} {}, align {}\n",
             self.variable_name,
-            if self.is_constant { "constant" } else { "global" },
+            if self.is_constant {
+                "constant"
+            } else {
+                "global"
+            },
             self.value_type.to_string(),
             self.value,
             self.value_type.get_align()
@@ -36,9 +40,10 @@ impl fmt::Display for GlobalVariableContext {
 
 impl fmt::Display for LLVMContext {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let global_variable_string = self.global_variables
+        let global_variable_string = self
+            .global_variables
             .iter()
-            .map(|global_variable| { global_variable.to_string() })
+            .map(|global_variable| global_variable.to_string())
             .collect::<Vec<String>>()
             .join("\n");
         write!(
@@ -48,9 +53,7 @@ impl fmt::Display for LLVMContext {
 source_filename = \"{}\"
 {}
             ",
-            self.source_filename,
-            self.source_filename,
-            global_variable_string
+            self.source_filename, self.source_filename, global_variable_string
         )
     }
 }
