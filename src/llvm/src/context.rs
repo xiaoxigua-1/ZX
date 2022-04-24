@@ -2,6 +2,7 @@ use crate::llvm_type::LLVMTypes;
 use crate::value::{Value};
 use std::fmt;
 use std::fmt::{Formatter};
+use crate::linkage_types::LinkageTypes;
 
 pub struct LLVMContext {
     pub source_filename: String,
@@ -15,7 +16,7 @@ pub struct NamedMetadata {
 }
 
 pub struct GlobalVariableContext {
-    pub is_private: bool,
+    pub linkage: LinkageTypes,
     pub is_constant: bool,
     pub variable_name: String,
     pub value: Value,
@@ -26,13 +27,9 @@ impl fmt::Display for GlobalVariableContext {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "@{} ={} dso_local {} {} {}, align {}\n",
+            "@{} ={} dso_local {} {} {}, align {}",
             self.variable_name,
-            if self.is_private {
-                " private"
-            } else {
-                ""
-            },
+            self.linkage.to_string(),
             if self.is_constant {
                 "constant"
             } else {

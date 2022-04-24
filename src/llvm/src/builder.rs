@@ -3,6 +3,8 @@ use crate::llvm_type::LLVMTypes;
 use crate::value::{create_number, create_string, Value};
 use std::fmt;
 use std::fmt::Formatter;
+use crate::linkage_types::LinkageTypes;
+use crate::llvm_util::LLVMError;
 
 pub struct LLVMBuilder {
     context: LLVMContext,
@@ -21,23 +23,33 @@ impl LLVMBuilder {
 
     pub fn crate_global_var(
         &mut self,
+        linkage: LinkageTypes,
         variable_name: String,
         value_type: LLVMTypes,
         value: String,
-        is_constant: bool,
-        is_private: bool
-    ) {
-        self.context.global_variables.push(GlobalVariableContext {
-            is_private,
-            is_constant,
-            variable_name,
-            value: if let LLVMTypes::String { .. } = value_type {
-                create_string(value)
-            } else {
-                create_number(value)
-            },
-            value_type,
-        });
+        is_constant: bool
+    ) -> Result<(), LLVMError> {
+        if self.context.global_variables
+            .iter()
+            .find(|var| { var.variable_name.eq(&variable_name) })
+            .is_none() {
+            self.context.global_variables.push(GlobalVariableContext {
+                linkage,
+                is_constant,
+                variable_name,
+                value: if let LLVMTypes::String { .. } = value_type {
+                    create_string(value)
+                } else {
+                    create_number(value)
+                },
+                value_type,
+            });
+            Ok(())
+        } else {
+            Err(LLVMError {
+                message: format!("redefinition of global variable '{}'", variable_name)
+            })
+        }
     }
 
     pub fn add_named_mata(&mut self, name: String, value: Vec<Value>) {

@@ -15,7 +15,11 @@ pub enum ValueType {
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let value_string = match self.value_type {
-            ValueType::String => format!(r#"c"{}\00""#, &self.context),
+            ValueType::String => if self.context.is_empty() {
+                String::from("zeroinitializer")
+            } else {
+                format!(r#"c"{}\00""#, &self.context)
+            },
             ValueType::RefString => format!(r#""{}""#, &self.context),
             ValueType::Other => self.context.clone()
         };
