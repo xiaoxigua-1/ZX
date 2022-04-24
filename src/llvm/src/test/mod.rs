@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod context_test {
+    use crate::builder::LLVMBuilder;
     use crate::context::{GlobalVariableContext, LLVMContext};
     use crate::llvm_type::LLVMTypes;
 
@@ -34,6 +35,20 @@ mod context_test {
             global_variables
         }.to_string();
 
+        println!("{}", llvm_ir);
+    }
+
+    #[test]
+    fn builder_test() {
+        let mut builder = LLVMBuilder::new("test.zx");
+        builder.crate_global_var(
+            "abc".to_string(),
+            LLVMTypes::Int8,
+            "2".to_string(),
+            false
+        );
+
+        let llvm_ir = builder.to_string();
         println!("{}", llvm_ir);
     }
 }
