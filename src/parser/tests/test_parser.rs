@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test_parser {
-    use crate::Parser;
+    use parser::Parser;
     use lexer::Lexer;
     use std::fs;
     use util::report::{Level, Report};
