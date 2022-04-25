@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod lexer_test {
-    use crate::Lexer;
+    use lexer::Lexer;
     use std::fs;
     use util::report::{Level, Report};
     use util::token::{Literal, Tokens};

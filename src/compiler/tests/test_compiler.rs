@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test_compiler {
-    use crate::Compiler;
+    use compiler::Compiler;
 
     #[test]
     fn test_compiler() {

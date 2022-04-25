@@ -7,7 +7,7 @@ use std::fs;
 use util::report::{Level, Report};
 
 pub struct Compiler {
-    path: String,
+    pub path: String,
 }
 
 impl Compiler {
