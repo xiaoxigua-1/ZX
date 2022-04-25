@@ -28,6 +28,8 @@ impl fmt::Display for Value {
     }
 }
 
+/// create string
+/// Example: `c"abc\00"`
 pub fn create_string(value: String) -> Value {
     Value {
         context: value,
@@ -35,6 +37,8 @@ pub fn create_string(value: String) -> Value {
     }
 }
 
+/// create reference string
+/// Example: `"abc"`
 pub fn create_ref_string(value: String) -> Value {
     Value {
         context: value,
@@ -42,6 +46,8 @@ pub fn create_ref_string(value: String) -> Value {
     }
 }
 
+/// create number
+/// Example: `123`
 pub fn create_number(value: String) -> Value {
     Value {
         context: value,

@@ -2,9 +2,13 @@ use std::fmt;
 use LLVMTypes::*;
 
 pub enum LLVMTypes {
+    /// integer 8 bits type
     Int8,
+    /// integer 16 bits type
     Int16,
+    /// integer 32 bits type
     Int32,
+    /// integer 64 bits type
     Int64,
     Float,
     Double,
