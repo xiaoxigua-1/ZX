@@ -12,7 +12,9 @@ pub enum LLVMTypes {
     Int64,
     Float,
     Double,
-    String { len: usize },
+    String {
+        len: usize,
+    },
 }
 
 impl LLVMTypes {

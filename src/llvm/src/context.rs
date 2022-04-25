@@ -1,13 +1,13 @@
-use crate::llvm_type::LLVMTypes;
-use crate::value::{Value};
-use std::fmt;
-use std::fmt::{Formatter};
 use crate::linkage_types::LinkageTypes;
+use crate::llvm_type::LLVMTypes;
+use crate::value::Value;
+use std::fmt;
+use std::fmt::Formatter;
 
 pub struct LLVMContext {
     pub source_filename: String,
     pub global_variables: Vec<GlobalVariableContext>,
-    pub named_metadata: Vec<NamedMetadata>
+    pub named_metadata: Vec<NamedMetadata>,
 }
 
 pub struct NamedMetadata {
@@ -44,7 +44,8 @@ impl fmt::Display for GlobalVariableContext {
 
 impl fmt::Display for NamedMetadata {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let named_metadata_string = self.value
+        let named_metadata_string = self
+            .value
             .iter()
             .map(|value| {
                 let value_string = value.to_string();
@@ -64,7 +65,8 @@ impl fmt::Display for LLVMContext {
             .map(|global_variable| global_variable.to_string())
             .collect::<Vec<String>>()
             .join("\n");
-        let named_metadata_string = self.named_metadata
+        let named_metadata_string = self
+            .named_metadata
             .iter()
             .map(|named_metadata| named_metadata.to_string())
             .collect::<Vec<String>>()

@@ -2,7 +2,7 @@ use std::fmt;
 use std::fmt::Formatter;
 
 pub struct LLVMError {
-    pub message: String
+    pub message: String,
 }
 
 impl fmt::Debug for LLVMError {
