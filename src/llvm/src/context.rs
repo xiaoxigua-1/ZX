@@ -78,7 +78,7 @@ source_filename = \"{}\"
 {}
 
 {}
-            ",
+",
             self.source_filename,
             self.source_filename,
             global_variable_string,
