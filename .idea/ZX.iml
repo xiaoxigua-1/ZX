@@ -10,6 +10,9 @@
       <sourceFolder url="file://$MODULE_DIR$/src/util/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/check/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/llvm/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/compiler/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/lexer/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/parser/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/cli/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/lexer/target" />
