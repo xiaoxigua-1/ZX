@@ -1,6 +1,7 @@
 use std::fmt;
 use LLVMTypes::*;
 
+#[derive(Clone)]
 pub enum LLVMTypes {
     /// integer 8-bits type
     Int8,
