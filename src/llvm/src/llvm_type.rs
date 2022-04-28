@@ -16,6 +16,11 @@ pub enum LLVMTypes {
     String {
         len: usize,
     },
+    Void,
+    Array {
+        arr_type: Box<LLVMTypes>,
+        len: usize
+    }
 }
 
 impl LLVMTypes {
@@ -25,6 +30,8 @@ impl LLVMTypes {
             Int16 => 2,
             Int32 | Float => 4,
             Int64 | Double => 8,
+            Void => 0,
+            Array { arr_type, .. } => arr_type.get_align()
         }
     }
 }
@@ -41,7 +48,9 @@ impl fmt::Display for LLVMTypes {
                 Int64 => "i64".to_string(),
                 Float => "float".to_string(),
                 Double => "double".to_string(),
+                Void => "void".to_string(),
                 String { len } => format!("[{} x i8]", len + 1),
+                Array { arr_type, len } => format!("[{} x {}]", len, arr_type.to_string())
             }
         )
     }

@@ -8,8 +8,8 @@ pub struct Value {
 
 pub enum ValueType {
     String,
-    Other,
     RefString,
+    Other,
 }
 
 impl fmt::Display for Value {
@@ -54,5 +54,23 @@ pub fn create_number(value: String) -> Value {
     Value {
         context: value,
         value_type: ValueType::Other,
+    }
+}
+
+/// create local variable
+/// Example: `%1`
+pub fn create_local_variable(name: String) -> Value {
+    Value {
+        context: format!("%{}", name),
+        value_type: ValueType::Other
+    }
+}
+
+/// create global variable
+/// Example: `@abc`
+pub fn create_global_variable(name: String) -> Value {
+    Value {
+        context: format!("@{}", name),
+        value_type: ValueType::Other
     }
 }

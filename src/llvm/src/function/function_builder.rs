@@ -27,4 +27,8 @@ impl FunctionBuilder {
 
         id
     }
+
+    fn create_block(&mut self) {
+        
+    }
 }
