@@ -62,7 +62,7 @@ pub fn create_number(value: String) -> Value {
 pub fn create_local_variable(name: String) -> Value {
     Value {
         context: format!("%{}", name),
-        value_type: ValueType::Other
+        value_type: ValueType::Other,
     }
 }
 
@@ -71,6 +71,6 @@ pub fn create_local_variable(name: String) -> Value {
 pub fn create_global_variable(name: String) -> Value {
     Value {
         context: format!("@{}", name),
-        value_type: ValueType::Other
+        value_type: ValueType::Other,
     }
 }
