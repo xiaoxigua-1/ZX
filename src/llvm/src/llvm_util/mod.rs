@@ -13,6 +13,6 @@ impl <T: fmt::Display> fmt::Debug for LLVMError<T> {
 
 impl <T: fmt::Display> LLVMError<T> {
     pub fn print_error_message(&self) {
-        println!("\x1b[31merror: {}\x1b[0m", self.message)
+        println!("\x1b[31mLLVM IR error: {}\x1b[0m", self.message)
     }
 }
