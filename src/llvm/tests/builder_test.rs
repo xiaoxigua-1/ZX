@@ -29,13 +29,11 @@ fn builder_global_var_int_test() {
 
     builder.crate_global_var(
         LinkageTypes::Private,
-        "abc".to_string(),
+        "a".to_string(),
         LLVMTypes::Int32,
         value,
         false,
-    ).unwrap_or_else(|error| {
-        error.print_error_message()
-    });
+    ).unwrap();
     let value = String::new();
 
     builder.crate_global_var(
