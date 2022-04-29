@@ -28,7 +28,7 @@ impl LLVMBuilder {
         value_type: LLVMTypes,
         value: String,
         is_constant: bool,
-    ) -> Result<(), LLVMError> {
+    ) -> Result<(), LLVMError<String>> {
         if self
             .context
             .global_variables

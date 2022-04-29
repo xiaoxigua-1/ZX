@@ -24,6 +24,7 @@ impl fmt::Display for Instructions {
             "{}",
             match &self {
                 Alloca { result, alloca_type, align } => alloca_content(result, alloca_type, align),
+                Ret { ret_type, value } => ret_content(ret_type, value),
                 _ => String::new()
             }
         )
@@ -32,4 +33,11 @@ impl fmt::Display for Instructions {
 
 fn alloca_content(result: &String, alloca_type: &LLVMTypes, align: &i8) -> String {
     format!("%{} = {}, align {}", result, alloca_type.to_string(), align)
+}
+
+fn ret_content(ret_type: &LLVMTypes, value: &Value) -> String {
+    match ret_type {
+        LLVMTypes::Void => format!("ret void"),
+        _ => format!("ret {} {}", ret_type.to_string(), value.to_string())
+    }
 }

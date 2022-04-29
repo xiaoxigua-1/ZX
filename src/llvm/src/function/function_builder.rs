@@ -37,7 +37,7 @@ impl FunctionBuilder<'_> {
         id
     }
 
-    pub fn get_nth_param(&mut self, index: usize) -> Result<usize, LLVMError> {
+    pub fn get_nth_param(&mut self, index: usize) -> Result<usize, LLVMError<&str>> {
         if index < self.arguments.len() {
             self.alloca_list.push(Instructions::Alloca {
                 result: index.to_string(),
@@ -47,7 +47,7 @@ impl FunctionBuilder<'_> {
 
             Ok(index)
         } else {
-            Err(LLVMError { message: String::from("No such thing") })
+            Err(LLVMError { message: "No such thing" })
         }
     }
 

@@ -14,7 +14,9 @@ fn builder_global_var_string_test() {
         LLVMTypes::String { len: value.len() },
         value,
         false,
-    ).unwrap();
+    ).unwrap_or_else(|error| {
+        error.print_error_message()
+    });
 
     let llvm_ir = builder.to_string();
     println!("{}", llvm_ir);
@@ -27,11 +29,13 @@ fn builder_global_var_int_test() {
 
     builder.crate_global_var(
         LinkageTypes::Private,
-        "a".to_string(),
+        "abc".to_string(),
         LLVMTypes::Int32,
         value,
         false,
-    ).unwrap();
+    ).unwrap_or_else(|error| {
+        error.print_error_message()
+    });
     let value = String::new();
 
     builder.crate_global_var(
