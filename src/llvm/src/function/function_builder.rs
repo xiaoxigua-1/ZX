@@ -1,6 +1,7 @@
 use std::fmt;
 use std::fmt::Formatter;
-use crate::function::instruction::Instructions;
+use crate::function::instruction::terminator_instruction::TerminatorInstructions;
+
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
 use crate::value::Value;
@@ -9,7 +10,7 @@ pub struct FunctionBuilder<'a> {
     name: &'a str,
     arguments: &'a [LLVMTypes],
     index: usize,
-    alloca_list: Vec<Instructions>,
+    alloca_list: Vec<TerminatorInstructions>,
     ret_type: LLVMTypes
 }
 
@@ -28,7 +29,7 @@ impl FunctionBuilder<'_> {
         let id = self.index.clone();
         self.index += 1;
 
-        self.alloca_list.push(Instructions::Alloca {
+        self.alloca_list.push(TerminatorInstructions::Alloca {
             result: id.to_string(),
             alloca_type: variable_type.clone(),
             align: variable_type.get_align()
@@ -39,7 +40,7 @@ impl FunctionBuilder<'_> {
 
     pub fn get_nth_param(&mut self, index: usize) -> Result<usize, LLVMError<&str>> {
         if index < self.arguments.len() {
-            self.alloca_list.push(Instructions::Alloca {
+            self.alloca_list.push(TerminatorInstructions::Alloca {
                 result: index.to_string(),
                 alloca_type: self.arguments[index].clone(),
                 align: self.arguments[index].get_align()
@@ -60,7 +61,9 @@ impl fmt::Display for FunctionBuilder<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "define dso_local {} @{}({}) {{\n\n}}",
+            "define dso_local {} @{}({}) {{
+  {}
+}}",
             self.ret_type.to_string(),
             self.name,
             self.arguments
@@ -70,7 +73,11 @@ impl fmt::Display for FunctionBuilder<'_> {
                     format!("{} %{}", arg.to_string(), index)
                 })
                 .collect::<Vec<String>>()
-                .join("")
+                .join(""),
+            self.alloca_list.iter()
+                .map(|alloca| { alloca.to_string() })
+                .collect::<Vec<String>>()
+                .join("\n")
         )
     }
 }
