@@ -25,8 +25,7 @@ impl LLVMBuilder {
         &mut self,
         linkage: LinkageTypes,
         variable_name: String,
-        value_type: LLVMTypes,
-        value: String,
+        value: Value,
         is_constant: bool,
     ) -> Result<(), LLVMError<String>> {
         if self
@@ -40,12 +39,11 @@ impl LLVMBuilder {
                 linkage,
                 is_constant,
                 variable_name,
-                value: if let LLVMTypes::String { .. } = value_type {
-                    create_string(value)
+                value: if let LLVMTypes::String { .. } = &value.value_type {
+                    create_string(value.context)
                 } else {
-                    create_number(value)
+                    create_number(value.context, value.value_type)
                 },
-                value_type,
             });
             Ok(())
         } else {

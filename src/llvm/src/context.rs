@@ -1,5 +1,4 @@
 use crate::linkage_types::LinkageTypes;
-use crate::llvm_type::LLVMTypes;
 use crate::value::Value;
 use std::fmt;
 use std::fmt::Formatter;
@@ -20,7 +19,6 @@ pub struct GlobalVariableContext {
     pub is_constant: bool,
     pub variable_name: String,
     pub value: Value,
-    pub value_type: LLVMTypes,
 }
 
 impl fmt::Display for GlobalVariableContext {
@@ -35,9 +33,9 @@ impl fmt::Display for GlobalVariableContext {
             } else {
                 "global"
             },
-            self.value_type.to_string(),
-            self.value,
-            self.value_type.get_align()
+            self.value.value_type,
+            self.value.context,
+            self.value.value_type.get_align()
         )
     }
 }
@@ -48,7 +46,7 @@ impl fmt::Display for NamedMetadata {
             .value
             .iter()
             .map(|value| {
-                let value_string = value.to_string();
+                let value_string = &value.context;
                 format!("!{}", value_string)
             })
             .collect::<Vec<String>>()

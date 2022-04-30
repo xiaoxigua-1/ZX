@@ -50,6 +50,6 @@ impl fmt::Display for TerminatorInstructions {
 fn ret_content(ret_type: &LLVMTypes, value: &Value) -> String {
     match ret_type {
         LLVMTypes::Void => format!("  ret void"),
-        _ => format!("  ret {} {}", ret_type.to_string(), value.to_string()),
+        _ => format!("  ret {} {}", ret_type.to_string(), value.context),
     }
 }

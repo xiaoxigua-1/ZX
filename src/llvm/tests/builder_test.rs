@@ -1,18 +1,16 @@
 use llvm::builder::LLVMBuilder;
 use llvm::linkage_types::LinkageTypes;
 use llvm::llvm_type::LLVMTypes;
-use llvm::value::{create_number, create_ref_string};
+use llvm::value::{create_number, create_ref_string, create_string};
 
 #[test]
 fn builder_global_var_string_test() {
     let mut builder = LLVMBuilder::new("test.zx");
-    let value = String::from("你好");
 
     builder.crate_global_var(
         LinkageTypes::Private,
         "abc".to_string(),
-        LLVMTypes::String { len: value.len() },
-        value,
+        create_string("你好"),
         false,
     ).unwrap_or_else(|error| {
         error.print_error_message()
@@ -25,27 +23,23 @@ fn builder_global_var_string_test() {
 #[test]
 fn builder_global_var_int_test() {
     let mut builder = LLVMBuilder::new("test.zx");
-    let value = String::from("123");
 
     builder.crate_global_var(
         LinkageTypes::Private,
         "a".to_string(),
-        LLVMTypes::Int32,
-        value,
+        create_number("123", LLVMTypes::Int32),
         false,
     ).unwrap();
-    let value = String::new();
 
     builder.crate_global_var(
         LinkageTypes::Private,
         "abc".to_string(),
-        LLVMTypes::Int64,
-        value,
+        create_number("", LLVMTypes::Int64),
         false,
     ).unwrap();
 
     builder.add_named_mata("llvm.ident".to_string(), vec![
-        create_number("0".to_string())
+        create_number("0".to_string(), LLVMTypes::Int8)
     ]);
 
     builder.add_named_mata("0".to_string(), vec![

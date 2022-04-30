@@ -1,7 +1,7 @@
 use llvm::context::{GlobalVariableContext, LLVMContext};
 use llvm::linkage_types::LinkageTypes;
 use llvm::llvm_type::LLVMTypes;
-use llvm::value::{Value, ValueType};
+use llvm::value::{Value};
 
 #[test]
 fn global_variable_context() {
@@ -11,9 +11,8 @@ fn global_variable_context() {
         variable_name: "a".to_string(),
         value: Value {
             context: "2".to_string(),
-            value_type: ValueType::Other,
+            value_type: LLVMTypes::Int8,
         },
-        value_type: LLVMTypes::Int8,
     }
         .to_string();
 
@@ -30,9 +29,8 @@ fn context_test() {
         variable_name: "a".to_string(),
         value: Value {
             context: "12".to_string(),
-            value_type: ValueType::Other,
+            value_type: LLVMTypes::Int8,
         },
-        value_type: LLVMTypes::Int8,
     }];
 
     let source_filename = "test.zx".to_string();

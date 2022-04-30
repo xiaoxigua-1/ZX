@@ -32,21 +32,22 @@ impl FunctionBuilder<'_> {
         }
     }
 
-    pub fn create_local_variable(&mut self, value: Value, variable_type: LLVMTypes) -> usize {
+    pub fn create_local_variable(&mut self, value: Value) -> usize {
         let id = self.index.clone();
-        let align = Some(variable_type.get_align());
+        let align = Some(value.value_type.get_align());
+        let value_type = value.value_type.clone();
         self.index += 1;
 
         self.alloca_list.push(MemoryAccess::Alloca {
             result: id.to_string(),
-            alloca_type: variable_type.clone(),
+            alloca_type: value_type.clone(),
             num: None,
             align,
         });
         self.instructions.push(TerminatorInstructions::MemoryAccess {
             instruction: MemoryAccess::Store {
                 value,
-                value_type: variable_type,
+                value_type,
                 pointer: id.to_string(),
                 align,
             }
@@ -69,7 +70,7 @@ impl FunctionBuilder<'_> {
             });
             self.instructions.push(TerminatorInstructions::MemoryAccess {
                 instruction: MemoryAccess::Store {
-                    value: create_local_variable(index.to_string()),
+                    value: create_local_variable(index.to_string(), type_string.clone()),
                     value_type: type_string.clone(),
                     pointer: id.to_string(),
                     align,

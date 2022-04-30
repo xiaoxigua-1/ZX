@@ -106,7 +106,7 @@ fn store_content(
     format!(
         "  store {} {}, {}* %{}{}",
         load_type_string,
-        value.to_string(),
+        value.context,
         load_type_string,
         pointer,
         align_string
