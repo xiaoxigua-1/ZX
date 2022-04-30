@@ -1,4 +1,5 @@
 use std::fmt;
+use std::fmt::Formatter;
 use LLVMTypes::*;
 
 #[derive(Clone)]
@@ -21,6 +22,11 @@ pub enum LLVMTypes {
         arr_type: Box<LLVMTypes>,
         len: usize,
     },
+}
+
+#[derive(Clone)]
+pub struct PointerType {
+    llvm_type: LLVMTypes,
 }
 
 impl LLVMTypes {
@@ -52,6 +58,16 @@ impl fmt::Display for LLVMTypes {
                 String { len } => format!("[{} x i8]", len + 1),
                 Array { arr_type, len } => format!("[{} x {}]", len, arr_type.to_string()),
             }
+        )
+    }
+}
+
+impl fmt::Display for PointerType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}*",
+            self.llvm_type.to_string()
         )
     }
 }

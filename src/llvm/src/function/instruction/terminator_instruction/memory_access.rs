@@ -74,7 +74,7 @@ fn alloca_content(
     let align_string = align_content(align);
 
     format!(
-        "%{} = alloca {}{}{}",
+        "  %{} = alloca {}{}{}",
         result, type_string, num_elements_string, align_string
     )
 }
@@ -89,7 +89,7 @@ fn load_content(
     let align_string = align_content(align);
 
     format!(
-        "${} = load {}, {}* {}{}",
+        "  ${} = load {}, {}* {}{}",
         result, load_type_string, load_type_string, pointer, align_string
     )
 }
@@ -102,8 +102,9 @@ fn store_content(
 ) -> String {
     let load_type_string = value_type.to_string();
     let align_string = align_content(align);
+
     format!(
-        "store {} {}, {}* %{}{}",
+        "  store {} {}, {}* %{}{}",
         load_type_string,
         value.to_string(),
         load_type_string,

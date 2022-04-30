@@ -32,34 +32,34 @@ impl fmt::Display for Value {
 
 /// create string
 /// Example: `c"abc\00"`
-pub fn create_string(value: String) -> Value {
+pub fn create_string<T: fmt::Display>(value: T) -> Value {
     Value {
-        context: value,
+        context: value.to_string(),
         value_type: ValueType::String,
     }
 }
 
 /// create reference string
 /// Example: `"abc"`
-pub fn create_ref_string(value: String) -> Value {
+pub fn create_ref_string<T: fmt::Display>(value: T) -> Value {
     Value {
-        context: value,
+        context: value.to_string(),
         value_type: ValueType::RefString,
     }
 }
 
 /// create number
 /// Example: `123`
-pub fn create_number(value: String) -> Value {
+pub fn create_number<T: fmt::Display>(value: T) -> Value {
     Value {
-        context: value,
+        context: value.to_string(),
         value_type: ValueType::Other,
     }
 }
 
 /// create local variable
 /// Example: `%1`
-pub fn create_local_variable(name: String) -> Value {
+pub fn create_local_variable<T: fmt::Display>(name: T) -> Value {
     Value {
         context: format!("%{}", name),
         value_type: ValueType::Other,
@@ -68,9 +68,16 @@ pub fn create_local_variable(name: String) -> Value {
 
 /// create global variable
 /// Example: `@abc`
-pub fn create_global_variable(name: String) -> Value {
+pub fn create_global_variable<T: fmt::Display>(name: T) -> Value {
     Value {
         context: format!("@{}", name),
+        value_type: ValueType::Other,
+    }
+}
+
+pub fn create_void() -> Value {
+    Value {
+        context: String::from("void"),
         value_type: ValueType::Other,
     }
 }

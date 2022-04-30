@@ -1,4 +1,3 @@
-use crate::function::instruction::terminator_instruction::memory_access;
 use crate::function::instruction::terminator_instruction::TerminatorInstructions;
 use std::fmt;
 use std::fmt::Formatter;
@@ -6,13 +5,13 @@ use crate::function::instruction::terminator_instruction::memory_access::MemoryA
 
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
-use crate::value::Value;
+use crate::value::{create_local_variable, create_void, Value};
 
 pub struct FunctionBuilder<'a> {
     name: &'a str,
     arguments: &'a [LLVMTypes],
     index: usize,
-    alloca_list: Vec<memory_access::MemoryAccess>,
+    alloca_list: Vec<MemoryAccess>,
     instructions: Vec<TerminatorInstructions>,
     ret_type: LLVMTypes,
 }
@@ -58,19 +57,42 @@ impl FunctionBuilder<'_> {
 
     pub fn get_nth_param(&mut self, index: usize) -> Result<usize, LLVMError<&str>> {
         if index < self.arguments.len() {
+            let id = self.index.clone();
+            let type_string = &self.arguments[index];
+            let align = Some(self.arguments[index].get_align());
+            self.index += 1;
             self.alloca_list.push(MemoryAccess::Alloca {
-                result: index.to_string(),
-                alloca_type: self.arguments[index].clone(),
+                result: id.to_string(),
+                alloca_type: type_string.clone(),
                 num: None,
-                align: Some(self.arguments[index].get_align()),
+                align,
+            });
+            self.instructions.push(TerminatorInstructions::MemoryAccess {
+                instruction: MemoryAccess::Store {
+                    value: create_local_variable(index.to_string()),
+                    value_type: type_string.clone(),
+                    pointer: id.to_string(),
+                    align,
+                }
             });
 
-            Ok(index)
+            Ok(id)
         } else {
             Err(LLVMError {
                 message: "No such thing",
             })
         }
+    }
+
+    pub fn build(&mut self) -> String {
+        match &self.ret_type {
+            LLVMTypes::Void => self.instructions.push(TerminatorInstructions::Ret {
+                ret_type: LLVMTypes::Void,
+                value: create_void()
+            }),
+            _ => {}
+        };
+        self.to_string()
     }
 }
 
@@ -79,8 +101,8 @@ impl fmt::Display for FunctionBuilder<'_> {
         write!(
             f,
             "define dso_local {} @{}({}) {{
-  {}
-  {}
+{}
+{}
 }}",
             self.ret_type.to_string(),
             self.name,

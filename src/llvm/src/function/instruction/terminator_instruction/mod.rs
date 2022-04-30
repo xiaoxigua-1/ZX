@@ -36,12 +36,12 @@ impl fmt::Display for TerminatorInstructions {
             match &self {
                 Ret { ret_type, value } => ret_content(ret_type, value),
                 MemoryAccess { instruction } => instruction.to_string(),
-                UnconditionalBr { dest } => format!("br %{}", dest),
+                UnconditionalBr { dest } => format!("  br %{}", dest),
                 Br {
                     cond,
                     if_false,
                     if_true,
-                } => format!("br i1 %{}, label %{}, label %{}", cond, if_true, if_false),
+                } => format!("  br i1 %{}, label %{}, label %{}", cond, if_true, if_false),
             }
         )
     }
@@ -49,7 +49,7 @@ impl fmt::Display for TerminatorInstructions {
 
 fn ret_content(ret_type: &LLVMTypes, value: &Value) -> String {
     match ret_type {
-        LLVMTypes::Void => format!("ret void"),
-        _ => format!("ret {} {}", ret_type.to_string(), value.to_string()),
+        LLVMTypes::Void => format!("  ret void"),
+        _ => format!("  ret {} {}", ret_type.to_string(), value.to_string()),
     }
 }
