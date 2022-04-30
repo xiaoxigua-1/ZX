@@ -1,4 +1,5 @@
 pub mod memory_access;
+pub mod create_function;
 
 use crate::llvm_type::LLVMTypes;
 use crate::value::Value;
@@ -6,6 +7,9 @@ use std::fmt;
 use std::fmt::Formatter;
 use TerminatorInstructions::*;
 
+/// As mentioned previously, every basic block in a program ends with a “Terminator” instruction, which indicates which block should be executed after the current block is finished.
+/// These terminator instructions typically yield a ‘void’ value: they produce control flow, not values (the one exception being the ‘invoke’ instruction).
+// The terminator instructions are: ‘ret’, ‘br’, ‘switch’, ‘indirectbr’, ‘invoke’, ‘callbr’ ‘resume’, ‘catchswitch’, ‘catchret’, ‘cleanupret’, and ‘unreachable’.
 pub enum TerminatorInstructions {
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     // There are two forms of the ‘ret’ instruction: one that returns a value and then causes control flow, and one that just causes control flow to occur.
@@ -26,6 +30,10 @@ pub enum TerminatorInstructions {
     MemoryAccess {
         instruction: memory_access::MemoryAccess,
     },
+    /// A basic block
+    Block {
+        name: String
+    }
 }
 
 impl fmt::Display for TerminatorInstructions {
@@ -42,6 +50,7 @@ impl fmt::Display for TerminatorInstructions {
                     if_false,
                     if_true,
                 } => format!("  br i1 %{}, label %{}, label %{}", cond, if_true, if_false),
+                Block { name } => format!("{}:", name)
             }
         )
     }

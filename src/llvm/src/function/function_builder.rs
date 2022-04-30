@@ -3,6 +3,7 @@ use crate::function::instruction::terminator_instruction::TerminatorInstructions
 use crate::function::location::LLVMLocation;
 use std::fmt;
 use std::fmt::Formatter;
+use crate::function::instruction::terminator_instruction::TerminatorInstructions::Block;
 
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
@@ -11,7 +12,7 @@ use crate::value::{create_local_variable, create_void, Value};
 pub struct FunctionBuilder<'a> {
     name: &'a str,
     arguments: &'a [LLVMTypes],
-    index: usize,
+    pub index: usize,
     alloca_list: Vec<MemoryAccess>,
     instructions: Vec<TerminatorInstructions>,
     ret_type: LLVMTypes,
@@ -26,7 +27,7 @@ impl FunctionBuilder<'_> {
         FunctionBuilder {
             name,
             arguments,
-            index: arguments.len() + 1,
+            index: arguments.len() + 2,
             alloca_list: vec![],
             instructions: vec![],
             ret_type,
@@ -34,7 +35,7 @@ impl FunctionBuilder<'_> {
     }
 
     pub fn create_local_variable(&mut self, value: Value) -> LLVMLocation {
-        let id = self.index.clone();
+        let id = self.alloca_list.len() + self.arguments.len() + 1;
         let align = Some(value.value_type.get_align());
         let value_type = value.value_type.clone();
 
@@ -59,9 +60,13 @@ impl FunctionBuilder<'_> {
         }
     }
 
+    pub fn add_basic_block<T: fmt::Display>(&mut self, id: T) {
+        self.instructions.push(Block { name: id.to_string() });
+    }
+
     pub fn get_nth_param(&mut self, index: usize) -> Result<LLVMLocation, LLVMError<&str>> {
         if index < self.arguments.len() {
-            let id = self.index.clone();
+            let id = self.alloca_list.len() + self.arguments.len() + 1;
             let argument_type = &self.arguments[index];
             let align = Some(self.arguments[index].get_align());
             self.index += 1;
@@ -89,6 +94,10 @@ impl FunctionBuilder<'_> {
                 message: "No such thing",
             })
         }
+    }
+
+    pub fn add_instruction(&mut self, instruction: TerminatorInstructions) {
+        self.instructions.push(instruction);
     }
 
     pub fn build(&mut self) -> String {
