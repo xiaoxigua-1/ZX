@@ -37,8 +37,8 @@ impl FunctionBuilder<'_> {
         let id = self.index.clone();
         let align = Some(value.value_type.get_align());
         let value_type = value.value_type.clone();
-        self.index += 1;
 
+        self.index += 1;
         self.alloca_list.push(MemoryAccess::Alloca {
             result: id.to_string(),
             alloca_type: value_type.clone(),
@@ -100,6 +100,7 @@ impl FunctionBuilder<'_> {
             }),
             _ => {}
         };
+
         self.to_string()
     }
 }
@@ -108,10 +109,12 @@ impl fmt::Display for FunctionBuilder<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "define dso_local {} @{}({}) {{
+            "
+define dso_local {} @{}({}) {{
 {}
 {}
-}}",
+}}
+",
             self.ret_type.to_string(),
             self.name,
             self.arguments

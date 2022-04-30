@@ -2,11 +2,13 @@ use crate::linkage_types::LinkageTypes;
 use crate::value::Value;
 use std::fmt;
 use std::fmt::Formatter;
+use crate::function::function_builder::FunctionBuilder;
 
-pub struct LLVMContext {
+pub struct LLVMContext<'a> {
     pub source_filename: String,
     pub global_variables: Vec<GlobalVariableContext>,
     pub named_metadata: Vec<NamedMetadata>,
+    pub functions: Vec<FunctionBuilder<'a>>
 }
 
 pub struct NamedMetadata {
@@ -55,8 +57,8 @@ impl fmt::Display for NamedMetadata {
     }
 }
 
-impl fmt::Display for LLVMContext {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+impl LLVMContext <'_> {
+    pub fn to_string(&mut self) -> String {
         let global_variable_string = self
             .global_variables
             .iter()
@@ -69,19 +71,24 @@ impl fmt::Display for LLVMContext {
             .map(|named_metadata| named_metadata.to_string())
             .collect::<Vec<String>>()
             .join("\n");
-        write!(
-            f,
+        let functions_string = self.functions
+            .iter_mut()
+            .map(|function| { function.build() })
+            .collect::<Vec<String>>()
+            .join("\n");
+        format!(
             "\
 ; ModuleID = '{}'
 source_filename = \"{}\"
 
 {}
-
+{}
 {}
 ",
             self.source_filename,
             self.source_filename,
             global_variable_string,
+            functions_string,
             named_metadata_string
         )
     }

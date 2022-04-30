@@ -1,4 +1,5 @@
 use llvm::builder::LLVMBuilder;
+use llvm::function::function_builder::FunctionBuilder;
 use llvm::linkage_types::LinkageTypes;
 use llvm::llvm_type::LLVMTypes;
 use llvm::value::{create_number, create_ref_string, create_string};
@@ -58,4 +59,18 @@ source_filename = "test.zx"
 !0 = !{!"zx version 1"}
 "##;
     assert_eq!(expect_test, &llvm_ir);
+}
+
+#[test]
+fn builder_function_test() {
+    let mut builder = LLVMBuilder::new("test");
+    let mut function = FunctionBuilder::new("main", &[], LLVMTypes::Int32);
+    function.create_local_variable(create_number("123.123", LLVMTypes::Float));
+    builder.add_function(function);
+    builder
+        .crate_global_var(LinkageTypes::Private, "a", create_string("abc"), true)
+        .unwrap();
+    let llvm_ir = builder.to_string();
+
+    println!("{}", llvm_ir);
 }

@@ -1,33 +1,35 @@
+use std::fmt;
 use crate::context::{GlobalVariableContext, LLVMContext, NamedMetadata};
 use crate::linkage_types::LinkageTypes;
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
 use crate::value::{create_number, create_string, Value};
-use std::fmt;
-use std::fmt::Formatter;
+use crate::function::function_builder::FunctionBuilder;
 
-pub struct LLVMBuilder {
-    context: LLVMContext,
+pub struct LLVMBuilder<'a> {
+    context: LLVMContext<'a>,
 }
 
-impl LLVMBuilder {
+impl <'a> LLVMBuilder<'a> {
     pub fn new(module_name: &str) -> LLVMBuilder {
         LLVMBuilder {
             context: LLVMContext {
                 source_filename: module_name.to_string(),
                 global_variables: vec![],
                 named_metadata: vec![],
+                functions: vec![],
             },
         }
     }
 
-    pub fn crate_global_var(
+    pub fn crate_global_var<T: fmt::Display>(
         &mut self,
         linkage: LinkageTypes,
-        variable_name: String,
+        variable_name: T,
         value: Value,
         is_constant: bool,
     ) -> Result<(), LLVMError<String>> {
+        let variable_name = variable_name.to_string();
         if self
             .context
             .global_variables
@@ -58,10 +60,14 @@ impl LLVMBuilder {
             .named_metadata
             .push(NamedMetadata { name, value });
     }
+
+    pub fn add_function(&mut self, function: FunctionBuilder<'a>) {
+        self.context.functions.push(function)
+    }
 }
 
-impl fmt::Display for LLVMBuilder {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.context.to_string())
+impl LLVMBuilder <'_> {
+    pub fn to_string(&mut self) -> String {
+        format!("{}", self.context.to_string())
     }
 }
