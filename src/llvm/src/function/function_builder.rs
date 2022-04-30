@@ -2,6 +2,7 @@ use crate::function::instruction::terminator_instruction::TerminatorInstructions
 use std::fmt;
 use std::fmt::Formatter;
 use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
+use crate::function::location::LLVMLocation;
 
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
@@ -32,7 +33,7 @@ impl FunctionBuilder<'_> {
         }
     }
 
-    pub fn create_local_variable(&mut self, value: Value) -> usize {
+    pub fn create_local_variable(&mut self, value: Value) -> LLVMLocation {
         let id = self.index.clone();
         let align = Some(value.value_type.get_align());
         let value_type = value.value_type.clone();
@@ -47,37 +48,41 @@ impl FunctionBuilder<'_> {
         self.instructions.push(TerminatorInstructions::MemoryAccess {
             instruction: MemoryAccess::Store {
                 value,
-                value_type,
                 pointer: id.to_string(),
                 align,
             }
         });
 
-        id
+        LLVMLocation {
+            location: id,
+            result_type: value_type.clone()
+        }
     }
 
-    pub fn get_nth_param(&mut self, index: usize) -> Result<usize, LLVMError<&str>> {
+    pub fn get_nth_param(&mut self, index: usize) -> Result<LLVMLocation, LLVMError<&str>> {
         if index < self.arguments.len() {
             let id = self.index.clone();
-            let type_string = &self.arguments[index];
+            let argument_type = &self.arguments[index];
             let align = Some(self.arguments[index].get_align());
             self.index += 1;
             self.alloca_list.push(MemoryAccess::Alloca {
                 result: id.to_string(),
-                alloca_type: type_string.clone(),
+                alloca_type: argument_type.clone(),
                 num: None,
                 align,
             });
             self.instructions.push(TerminatorInstructions::MemoryAccess {
                 instruction: MemoryAccess::Store {
-                    value: create_local_variable(index.to_string(), type_string.clone()),
-                    value_type: type_string.clone(),
+                    value: create_local_variable(index.to_string(), argument_type.clone()),
                     pointer: id.to_string(),
                     align,
                 }
             });
 
-            Ok(id)
+            Ok(LLVMLocation {
+                location: id,
+                result_type: argument_type.clone()
+            })
         } else {
             Err(LLVMError {
                 message: "No such thing",

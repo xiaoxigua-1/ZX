@@ -24,7 +24,6 @@ pub enum MemoryAccess {
     /// The ‘store’ instruction is used to write to memory.
     Store {
         value: Value,
-        value_type: LLVMTypes,
         pointer: String,
         align: Option<i8>,
     },
@@ -50,10 +49,9 @@ impl fmt::Display for MemoryAccess {
                 } => load_content(result, load_type, pointer, align),
                 Store {
                     value,
-                    value_type,
                     pointer,
                     align,
-                } => store_content(value, value_type, pointer, align),
+                } => store_content(value, &value.value_type.clone(), pointer, align),
             }
         )
     }
