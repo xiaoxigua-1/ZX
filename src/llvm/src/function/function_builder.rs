@@ -1,8 +1,8 @@
+use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
 use crate::function::instruction::terminator_instruction::TerminatorInstructions;
+use crate::function::location::LLVMLocation;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
-use crate::function::location::LLVMLocation;
 
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
@@ -45,17 +45,18 @@ impl FunctionBuilder<'_> {
             num: None,
             align,
         });
-        self.instructions.push(TerminatorInstructions::MemoryAccess {
-            instruction: MemoryAccess::Store {
-                value,
-                pointer: id.to_string(),
-                align,
-            }
-        });
+        self.instructions
+            .push(TerminatorInstructions::MemoryAccess {
+                instruction: MemoryAccess::Store {
+                    value,
+                    pointer: id.to_string(),
+                    align,
+                },
+            });
 
         LLVMLocation {
             location: id,
-            result_type: value_type.clone()
+            result_type: value_type.clone(),
         }
     }
 
@@ -71,17 +72,18 @@ impl FunctionBuilder<'_> {
                 num: None,
                 align,
             });
-            self.instructions.push(TerminatorInstructions::MemoryAccess {
-                instruction: MemoryAccess::Store {
-                    value: create_local_variable(index.to_string(), argument_type.clone()),
-                    pointer: id.to_string(),
-                    align,
-                }
-            });
+            self.instructions
+                .push(TerminatorInstructions::MemoryAccess {
+                    instruction: MemoryAccess::Store {
+                        value: create_local_variable(index.to_string(), argument_type.clone()),
+                        pointer: id.to_string(),
+                        align,
+                    },
+                });
 
             Ok(LLVMLocation {
                 location: id,
-                result_type: argument_type.clone()
+                result_type: argument_type.clone(),
             })
         } else {
             Err(LLVMError {
@@ -94,7 +96,7 @@ impl FunctionBuilder<'_> {
         match &self.ret_type {
             LLVMTypes::Void => self.instructions.push(TerminatorInstructions::Ret {
                 ret_type: LLVMTypes::Void,
-                value: create_void()
+                value: create_void(),
             }),
             _ => {}
         };

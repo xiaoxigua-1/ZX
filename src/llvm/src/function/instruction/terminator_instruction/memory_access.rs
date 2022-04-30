@@ -103,10 +103,6 @@ fn store_content(
 
     format!(
         "  store {} {}, {}* %{}{}",
-        load_type_string,
-        value.context,
-        load_type_string,
-        pointer,
-        align_string
+        load_type_string, value.context, load_type_string, pointer, align_string
     )
 }

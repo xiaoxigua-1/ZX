@@ -64,10 +64,6 @@ impl fmt::Display for LLVMTypes {
 
 impl fmt::Display for PointerType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}*",
-            self.llvm_type.to_string()
-        )
+        write!(f, "{}*", self.llvm_type.to_string())
     }
 }

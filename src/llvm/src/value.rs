@@ -1,5 +1,5 @@
-use std::fmt;
 use crate::llvm_type::LLVMTypes;
+use std::fmt;
 
 pub struct Value {
     pub context: String,
@@ -11,7 +11,9 @@ pub struct Value {
 pub fn create_string<T: fmt::Display>(value: T) -> Value {
     Value {
         context: format!(r#"c"{}\00""#, value.to_string()),
-        value_type: LLVMTypes::String { len: value.to_string().len() },
+        value_type: LLVMTypes::String {
+            len: value.to_string().len(),
+        },
     }
 }
 
@@ -20,7 +22,9 @@ pub fn create_string<T: fmt::Display>(value: T) -> Value {
 pub fn create_ref_string<T: fmt::Display>(value: T) -> Value {
     Value {
         context: format!(r#""{}""#, value.to_string()),
-        value_type: LLVMTypes::String { len: value.to_string().len() },
+        value_type: LLVMTypes::String {
+            len: value.to_string().len(),
+        },
     }
 }
 
