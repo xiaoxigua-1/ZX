@@ -55,9 +55,10 @@ pub fn create_global_variable<T: fmt::Display>(name: T, global_variable_type: LL
     }
 }
 
+/// void
 pub fn create_void() -> Value {
     Value {
-        context: String::from("void"),
+        context: String::new(),
         value_type: LLVMTypes::Void,
     }
 }

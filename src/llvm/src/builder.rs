@@ -3,7 +3,7 @@ use crate::context::{GlobalVariableContext, LLVMContext, NamedMetadata};
 use crate::linkage_types::LinkageTypes;
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
-use crate::value::{create_number, create_string, Value};
+use crate::value::{create_number, Value};
 use crate::function::function_builder::FunctionBuilder;
 
 pub struct LLVMBuilder<'a> {
@@ -42,7 +42,7 @@ impl <'a> LLVMBuilder<'a> {
                 is_constant,
                 variable_name,
                 value: if let LLVMTypes::String { .. } = &value.value_type {
-                    create_string(value.context)
+                    value
                 } else {
                     create_number(value.context, value.value_type)
                 },

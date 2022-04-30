@@ -36,7 +36,7 @@ impl fmt::Display for TerminatorInstructions {
             match &self {
                 Ret { ret_type, value } => ret_content(ret_type, value),
                 MemoryAccess { instruction } => instruction.to_string(),
-                UnconditionalBr { dest } => format!("  br %{}", dest),
+                UnconditionalBr { dest } => format!("  br label %{}", dest),
                 Br {
                     cond,
                     if_false,
