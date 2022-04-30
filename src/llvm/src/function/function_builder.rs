@@ -53,7 +53,6 @@ impl FunctionBuilder<'_> {
                     align,
                 },
             });
-
         LLVMLocation {
             location: id,
             result_type: value_type.clone(),

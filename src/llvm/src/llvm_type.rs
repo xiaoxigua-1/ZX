@@ -27,6 +27,16 @@ pub enum LLVMTypes {
 #[derive(Clone)]
 pub struct PointerType {
     llvm_type: LLVMTypes,
+    num: usize
+}
+
+impl PointerType {
+    pub fn new(llvm_type: LLVMTypes, num: usize) -> PointerType {
+        PointerType {
+            llvm_type,
+            num
+        }
+    }
 }
 
 impl LLVMTypes {
@@ -43,7 +53,7 @@ impl LLVMTypes {
 }
 
 impl fmt::Display for LLVMTypes {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
             "{}",
@@ -64,6 +74,11 @@ impl fmt::Display for LLVMTypes {
 
 impl fmt::Display for PointerType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}*", self.llvm_type.to_string())
+        let mut pointer_string = format!("{}", self.llvm_type.to_string());
+        for _ in 0..=self.num {
+            pointer_string.push_str("*");
+        }
+
+        write!(f, "{}", pointer_string)
     }
 }

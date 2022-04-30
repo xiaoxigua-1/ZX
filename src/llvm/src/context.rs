@@ -3,12 +3,14 @@ use crate::value::Value;
 use std::fmt;
 use std::fmt::Formatter;
 use crate::function::function_builder::FunctionBuilder;
+use crate::llvm_type::LLVMTypes;
 
 pub struct LLVMContext<'a> {
     pub source_filename: String,
     pub global_variables: Vec<GlobalVariableContext>,
     pub named_metadata: Vec<NamedMetadata>,
-    pub functions: Vec<FunctionBuilder<'a>>
+    pub functions: Vec<FunctionBuilder<'a>>,
+    pub declarations: Vec<Declaration<'a>>,
 }
 
 pub struct NamedMetadata {
@@ -21,6 +23,14 @@ pub struct GlobalVariableContext {
     pub is_constant: bool,
     pub variable_name: String,
     pub value: Value,
+}
+
+#[derive(Clone)]
+pub struct Declaration<'a> {
+    pub name: String,
+    pub ret_type: LLVMTypes,
+    pub args_types: &'a[LLVMTypes],
+    pub varargs: bool,
 }
 
 impl fmt::Display for GlobalVariableContext {
@@ -38,6 +48,27 @@ impl fmt::Display for GlobalVariableContext {
             self.value.value_type,
             self.value.context,
             self.value.value_type.get_align()
+        )
+    }
+}
+
+impl fmt::Display for Declaration<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "declare dso_local {} @{}({}{})",
+            self.ret_type.to_string(),
+            self.name,
+            self.args_types
+                .iter()
+                .map(|arg| { format!("{}*", arg.to_string()) })
+                .collect::<Vec<String>>()
+                .join(", "),
+            if self.varargs {
+                String::from(", ...")
+            } else {
+                String::new()
+            }
         )
     }
 }
@@ -76,6 +107,11 @@ impl LLVMContext <'_> {
             .map(|function| { function.build() })
             .collect::<Vec<String>>()
             .join("\n");
+        let declarations_string = self.declarations
+            .iter()
+            .map(|declaration| { declaration.to_string() })
+            .collect::<Vec<String>>()
+            .join("\n");
         format!(
             "\
 ; ModuleID = '{}'
@@ -84,11 +120,13 @@ source_filename = \"{}\"
 {}
 {}
 {}
+{}
 ",
             self.source_filename,
             self.source_filename,
             global_variable_string,
             functions_string,
+            declarations_string,
             named_metadata_string
         )
     }

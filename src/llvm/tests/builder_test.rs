@@ -70,6 +70,7 @@ fn builder_function_test() {
     builder
         .crate_global_var(LinkageTypes::Private, "a", create_string("abc"), true)
         .unwrap();
+    builder.get_insert_function("printf", LLVMTypes::Int32, &[LLVMTypes::Int8], true);
     let llvm_ir = builder.to_string();
 
     println!("{}", llvm_ir);

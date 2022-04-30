@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::context::{GlobalVariableContext, LLVMContext, NamedMetadata};
+use crate::context::{Declaration, GlobalVariableContext, LLVMContext, NamedMetadata};
 use crate::linkage_types::LinkageTypes;
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
@@ -18,6 +18,7 @@ impl <'a> LLVMBuilder<'a> {
                 global_variables: vec![],
                 named_metadata: vec![],
                 functions: vec![],
+                declarations: vec![]
             },
         }
     }
@@ -63,6 +64,17 @@ impl <'a> LLVMBuilder<'a> {
 
     pub fn add_function(&mut self, function: FunctionBuilder<'a>) {
         self.context.functions.push(function)
+    }
+
+    pub fn get_insert_function<T: fmt::Display>(&mut self, name: T, ret_type: LLVMTypes, args_types: &'a [LLVMTypes], varargs: bool) -> Declaration {
+        let declaration = Declaration {
+            name: name.to_string(),
+            ret_type,
+            args_types,
+            varargs
+        };
+        self.context.declarations.push(declaration.clone());
+        declaration
     }
 }
 

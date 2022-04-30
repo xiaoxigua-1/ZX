@@ -1,4 +1,5 @@
 use llvm::function::function_builder::FunctionBuilder;
+use llvm::function::instruction::basic_block::BasicBlock;
 use llvm::llvm_type::LLVMTypes;
 use llvm::value::{create_number};
 

@@ -39,12 +39,15 @@ fn context_test() {
         source_filename,
         global_variables,
         named_metadata: vec![],
+        functions: vec![],
+        declarations: vec![]
     }
         .to_string();
     let expect_test = r##"; ModuleID = 'test.zx'
 source_filename = "test.zx"
 
 @a = dso_local global i8 12, align 1
+
 
 
 "##;
