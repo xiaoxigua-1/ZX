@@ -5,6 +5,7 @@ use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
 use crate::value::{create_number, Value};
 use crate::function::function_builder::FunctionBuilder;
+use crate::function::info::FunctionInfo;
 
 pub struct LLVMBuilder<'a> {
     context: LLVMContext<'a>,
@@ -63,18 +64,16 @@ impl <'a> LLVMBuilder<'a> {
     }
 
     pub fn add_function(&mut self, function: FunctionBuilder<'a>) {
-        self.context.functions.push(function)
+        self.context.functions.push(function.clone())
     }
 
-    pub fn get_insert_function<T: fmt::Display>(&mut self, name: T, ret_type: LLVMTypes, args_types: &'a [LLVMTypes], varargs: bool) -> Declaration {
-        let declaration = Declaration {
-            name: name.to_string(),
-            ret_type,
-            args_types,
-            varargs
-        };
-        self.context.declarations.push(declaration.clone());
-        declaration
+    pub fn add_insert_function(&mut self, function_info: &'a FunctionInfo) {
+        self.context.declarations.push(Declaration {
+            name: function_info.name.to_string(),
+            ret_type: function_info.ret_type.clone(),
+            args_types: function_info.args_types,
+            varargs: function_info.varargs
+        });
     }
 }
 

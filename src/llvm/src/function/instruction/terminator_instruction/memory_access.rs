@@ -8,6 +8,7 @@ use MemoryAccess::*;
 /// A key design point of an SSA-based representation is how it represents memory.
 /// In LLVM, no memory locations are in SSA form, which makes things very simple.
 /// This section describes how to read, write, and allocate memory in LLVM.
+#[derive(Clone)]
 pub enum MemoryAccess {
     /// The ‘alloca’ instruction allocates memory on the stack frame of the currently executing function, to be automatically released when this function returns to its caller.
     /// If the address space is not explicitly specified, the object is allocated in the alloca address space from the datalayout string.

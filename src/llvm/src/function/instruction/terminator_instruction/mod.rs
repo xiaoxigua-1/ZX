@@ -1,16 +1,19 @@
 pub mod memory_access;
 pub mod create_function;
+pub mod other;
 
 use crate::llvm_type::LLVMTypes;
 use crate::value::Value;
 use std::fmt;
 use std::fmt::Formatter;
 use TerminatorInstructions::*;
+use crate::function::instruction::terminator_instruction::other::OtherInstruction;
 
 /// As mentioned previously, every basic block in a program ends with a “Terminator” instruction, which indicates which block should be executed after the current block is finished.
 /// These terminator instructions typically yield a ‘void’ value: they produce control flow, not values (the one exception being the ‘invoke’ instruction).
 // The terminator instructions are: ‘ret’, ‘br’, ‘switch’, ‘indirectbr’, ‘invoke’, ‘callbr’ ‘resume’, ‘catchswitch’, ‘catchret’, ‘cleanupret’, and ‘unreachable’.
-pub enum TerminatorInstructions {
+#[derive(Clone)]
+pub enum TerminatorInstructions<'a> {
     /// The ‘ret’ instruction is used to return control flow (and optionally a value) from a function back to the caller.
     // There are two forms of the ‘ret’ instruction: one that returns a value and then causes control flow, and one that just causes control flow to occur.
     Ret { ret_type: LLVMTypes, value: Value },
@@ -30,13 +33,16 @@ pub enum TerminatorInstructions {
     MemoryAccess {
         instruction: memory_access::MemoryAccess,
     },
+    Other {
+        instruction: OtherInstruction<'a>
+    },
     /// A basic block
     Block {
         name: String
     }
 }
 
-impl fmt::Display for TerminatorInstructions {
+impl fmt::Display for TerminatorInstructions<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -44,6 +50,7 @@ impl fmt::Display for TerminatorInstructions {
             match &self {
                 Ret { ret_type, value } => ret_content(ret_type, value),
                 MemoryAccess { instruction } => instruction.to_string(),
+                Other { instruction } => instruction.to_string(),
                 UnconditionalBr { dest } => format!("  br label %{}", dest),
                 Br {
                     cond,

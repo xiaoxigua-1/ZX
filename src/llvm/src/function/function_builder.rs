@@ -1,24 +1,26 @@
 use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
 use crate::function::instruction::terminator_instruction::TerminatorInstructions;
-use crate::function::location::LLVMLocation;
+use crate::function::info::{FunctionInfo, LLVMLocation};
 use std::fmt;
 use std::fmt::Formatter;
-use crate::function::instruction::terminator_instruction::TerminatorInstructions::Block;
+use crate::function::instruction::terminator_instruction::other::OtherInstruction;
+use crate::function::instruction::terminator_instruction::TerminatorInstructions::{Block, Other};
 
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
-use crate::value::{create_local_variable, create_void, Value};
+use crate::value::{create_local_variable, create_void};
 
+#[derive(Clone)]
 pub struct FunctionBuilder<'a> {
     name: &'a str,
     arguments: &'a [LLVMTypes],
     pub index: usize,
     alloca_list: Vec<MemoryAccess>,
-    instructions: Vec<TerminatorInstructions>,
+    instructions: Vec<TerminatorInstructions<'a>>,
     ret_type: LLVMTypes,
 }
 
-impl FunctionBuilder<'_> {
+impl <'b> FunctionBuilder<'b> {
     pub fn new<'a>(
         name: &'a str,
         arguments: &'a [LLVMTypes],
@@ -27,36 +29,42 @@ impl FunctionBuilder<'_> {
         FunctionBuilder {
             name,
             arguments,
-            index: arguments.len() + 2,
+            index: arguments.len(),
             alloca_list: vec![],
             instructions: vec![],
             ret_type,
         }
     }
 
-    pub fn create_local_variable(&mut self, value: Value) -> LLVMLocation {
+    pub fn add_alloca(&mut self, alloca_type: LLVMTypes) -> LLVMLocation {
         let id = self.alloca_list.len() + self.arguments.len() + 1;
-        let align = Some(value.value_type.get_align());
-        let value_type = value.value_type.clone();
+        let align = Some(alloca_type.get_align());
 
-        self.index += 1;
         self.alloca_list.push(MemoryAccess::Alloca {
             result: id.to_string(),
-            alloca_type: value_type.clone(),
+            alloca_type: alloca_type.clone(),
             num: None,
             align,
         });
-        self.instructions
-            .push(TerminatorInstructions::MemoryAccess {
-                instruction: MemoryAccess::Store {
-                    value,
-                    pointer: id.to_string(),
-                    align,
-                },
-            });
         LLVMLocation {
             location: id,
-            result_type: value_type.clone(),
+            result_type: alloca_type.clone(),
+        }
+    }
+
+    pub fn create_call(&mut self, call_function_info: &'b FunctionInfo) -> LLVMLocation {
+        let id = self.get_id() + 1;
+        self.index += 1;
+        self.instructions.push(Other {
+            instruction: OtherInstruction::Call {
+                result: id.to_string(),
+                function_info: call_function_info.clone(),
+            }
+        });
+
+        LLVMLocation {
+            location: id.clone(),
+            result_type: call_function_info.ret_type.clone()
         }
     }
 
@@ -96,7 +104,11 @@ impl FunctionBuilder<'_> {
         }
     }
 
-    pub fn add_instruction(&mut self, instruction: TerminatorInstructions) {
+    pub fn get_id(&self) -> usize {
+        self.index + self.arguments.len() + 1
+    }
+
+    pub fn add_instruction(&mut self, instruction: TerminatorInstructions<'b>) {
         self.instructions.push(instruction);
     }
 

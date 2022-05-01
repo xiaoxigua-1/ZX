@@ -1,6 +1,7 @@
 use crate::llvm_type::LLVMTypes;
 use std::fmt;
 
+#[derive(Clone)]
 pub struct Value {
     pub context: String,
     pub value_type: LLVMTypes,

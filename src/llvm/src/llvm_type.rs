@@ -22,20 +22,8 @@ pub enum LLVMTypes {
         arr_type: Box<LLVMTypes>,
         len: usize,
     },
-}
-
-#[derive(Clone)]
-pub struct PointerType {
-    llvm_type: LLVMTypes,
-    num: usize
-}
-
-impl PointerType {
-    pub fn new(llvm_type: LLVMTypes, num: usize) -> PointerType {
-        PointerType {
-            llvm_type,
-            num
-        }
+    Pointer {
+        llvm_type: Box<LLVMTypes>
     }
 }
 
@@ -48,6 +36,7 @@ impl LLVMTypes {
             Int64 | Double => 8,
             Void => 0,
             Array { arr_type, .. } => arr_type.get_align(),
+            Pointer { llvm_type } => llvm_type.get_align(),
         }
     }
 }
@@ -67,18 +56,8 @@ impl fmt::Display for LLVMTypes {
                 Void => "void".to_string(),
                 String { len } => format!("[{} x i8]", len + 1),
                 Array { arr_type, len } => format!("[{} x {}]", len, arr_type.to_string()),
+                Pointer { llvm_type } => format!("{}*", llvm_type)
             }
         )
-    }
-}
-
-impl fmt::Display for PointerType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut pointer_string = format!("{}", self.llvm_type.to_string());
-        for _ in 0..=self.num {
-            pointer_string.push_str("*");
-        }
-
-        write!(f, "{}", pointer_string)
     }
 }
