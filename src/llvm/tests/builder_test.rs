@@ -66,9 +66,9 @@ source_filename = "test.zx"
 #[test]
 fn builder_function_test() {
     let mut builder = LLVMBuilder::new("test");
-    let mut function = FunctionBuilder::new("main", &[], LLVMTypes::Int32);
+    let mut function = FunctionBuilder::new("main", &[], LLVMTypes::Void);
     let value_location = function.add_alloca(LLVMTypes::Float);
-    function.add_instruction(create_store_value(value_location, create_number("123.123", LLVMTypes::Float)));
+    function.add_instruction(create_store_value(value_location, create_number("1.5", LLVMTypes::Float)));
     let printf_fn = create_insert_function("printf", LLVMTypes::Int32, &[LLVMTypes::Int8], true);
 
     builder.add_insert_function(&printf_fn);

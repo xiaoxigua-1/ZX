@@ -1,6 +1,7 @@
-use std::fmt;
+use std::{fmt};
 use std::fmt::Formatter;
-use std::process::Command;
+use std::io::{Write};
+use std::process::{Command, Stdio};
 
 pub struct LLVMError<T> {
     pub message: T,
@@ -25,9 +26,15 @@ pub fn align_content(align: &Option<i8>) -> String {
         String::new()
     }
 }
+
 pub fn jit(llvm_ir: String) {
-    Command::new("lli")
-        .args(["<".to_string(), llvm_ir])
-        .output()
-        .expect("failed to execute process");
+    let mut put_command = Command::new("lli")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn().unwrap();
+    let mut stdin = put_command.stdin.take().expect("Failed to open stdin");
+    std::thread::spawn(move || {
+        stdin.write_all(llvm_ir.as_bytes()).expect("Failed to write to stdin");
+    });
+    put_command.wait_with_output().expect("Failed to read stdout");
 }
