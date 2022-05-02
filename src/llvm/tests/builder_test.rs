@@ -10,14 +10,12 @@ use llvm::value::{create_number, create_ref_string, create_string};
 fn builder_global_var_string_test() {
     let mut builder = LLVMBuilder::new("test.zx");
 
-    builder.crate_global_var(
+    builder.create_global_var(
         LinkageTypes::Private,
         "abc".to_string(),
         create_string("你好"),
         false,
-    ).unwrap_or_else(|error| {
-        error.print_error_message()
-    });
+    ).unwrap();
 
     let llvm_ir = builder.to_string();
     println!("{}", llvm_ir);
@@ -27,14 +25,14 @@ fn builder_global_var_string_test() {
 fn builder_global_var_int_test() {
     let mut builder = LLVMBuilder::new("test.zx");
 
-    builder.crate_global_var(
+    builder.create_global_var(
         LinkageTypes::Private,
         "a".to_string(),
         create_number("123", LLVMTypes::Int32),
         false,
     ).unwrap();
 
-    builder.crate_global_var(
+    builder.create_global_var(
         LinkageTypes::Private,
         "abc".to_string(),
         create_number("", LLVMTypes::Int64),
@@ -67,16 +65,20 @@ source_filename = "test.zx"
 fn builder_function_test() {
     let mut builder = LLVMBuilder::new("test");
     let mut function = FunctionBuilder::new("main", &[], LLVMTypes::Void);
-    let value_location = function.add_alloca(LLVMTypes::Float);
-    function.add_instruction(create_store_value(value_location, create_number("1.5", LLVMTypes::Float)));
-    let printf_fn = create_insert_function("printf", LLVMTypes::Int32, &[LLVMTypes::Int8], true);
+    let str_var = builder.create_global_var(LinkageTypes::Private, "str", create_string("Hello, world!, %i"), true).unwrap();
+    let value_location = function.add_alloca(LLVMTypes::Int8);
+    let str_var = function.create_getelementptr(str_var);
+    let fun_args = [LLVMTypes::get_pointer(LLVMTypes::Int8)];
+    let parameters = [str_var];
+    let printf_fn = create_insert_function("printf", LLVMTypes::Int32, &fun_args, true);
 
+    function.add_instruction(create_store_value(value_location, create_number("10", LLVMTypes::Int8)));
     builder.add_insert_function(&printf_fn);
-    function.create_call(&printf_fn);
+    function.create_call(&printf_fn, &parameters);
     builder.add_function(function);
 
     builder
-        .crate_global_var(LinkageTypes::Private, "a", create_string("abc"), true)
+        .create_global_var(LinkageTypes::Private, "a", create_string("abc"), true)
         .unwrap();
 
     let llvm_ir = builder.to_string();

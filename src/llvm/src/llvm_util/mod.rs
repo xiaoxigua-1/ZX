@@ -36,5 +36,7 @@ pub fn jit(llvm_ir: String) {
     std::thread::spawn(move || {
         stdin.write_all(llvm_ir.as_bytes()).expect("Failed to write to stdin");
     });
-    put_command.wait_with_output().expect("Failed to read stdout");
+    let output = put_command.wait_with_output().expect("Failed to read stdout");
+    let str = String::from_utf8(output.stdout).unwrap();
+    println!("{}", str);
 }

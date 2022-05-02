@@ -17,6 +17,9 @@ fn function_builder_test() {
     function_builder.add_basic_block(basic_block);
     let value = create_number(123, LLVMTypes::Int64);
     function_builder.add_instruction(create_store_value(value_location2, value));
+    let basic_block = create_basic_block(&mut function_builder);
+    function_builder.add_basic_block(basic_block);
+    function_builder.add_instruction(unconditional_br(basic_block));
     let llvm_ir = function_builder.build();
     println!("{}", llvm_ir);
 }

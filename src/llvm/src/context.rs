@@ -61,7 +61,7 @@ impl fmt::Display for Declaration<'_> {
             self.name,
             self.args_types
                 .iter()
-                .map(|arg| { format!("{}*", arg.to_string()) })
+                .map(|arg| { format!("{}", arg.to_string()) })
                 .collect::<Vec<String>>()
                 .join(", "),
             if self.varargs {

@@ -5,7 +5,7 @@ use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
 use crate::value::{create_number, Value};
 use crate::function::function_builder::FunctionBuilder;
-use crate::function::info::FunctionInfo;
+use crate::function::info::{FunctionInfo, LLVMVariable};
 
 pub struct LLVMBuilder<'a> {
     context: LLVMContext<'a>,
@@ -24,13 +24,13 @@ impl <'a> LLVMBuilder<'a> {
         }
     }
 
-    pub fn crate_global_var<T: fmt::Display>(
+    pub fn create_global_var<T: fmt::Display>(
         &mut self,
         linkage: LinkageTypes,
         variable_name: T,
         value: Value,
         is_constant: bool,
-    ) -> Result<(), LLVMError<String>> {
+    ) -> Result<LLVMVariable, LLVMError<String>> {
         let variable_name = variable_name.to_string();
         if self
             .context
@@ -42,14 +42,19 @@ impl <'a> LLVMBuilder<'a> {
             self.context.global_variables.push(GlobalVariableContext {
                 linkage,
                 is_constant,
-                variable_name,
+                variable_name: variable_name.clone(),
                 value: if let LLVMTypes::String { .. } = &value.value_type {
-                    value
+                    value.clone()
                 } else {
-                    create_number(value.context, value.value_type)
+                    create_number(value.context, value.value_type.clone())
                 },
             });
-            Ok(())
+
+            Ok(LLVMVariable {
+                variable_name,
+                result_type: value.value_type,
+                is_global: true
+            })
         } else {
             Err(LLVMError {
                 message: format!("redefinition of global variable '{}'", variable_name),

@@ -39,6 +39,12 @@ impl LLVMTypes {
             Pointer { llvm_type } => llvm_type.get_align(),
         }
     }
+
+    pub fn get_pointer(llvm_type: LLVMTypes) -> LLVMTypes {
+        LLVMTypes::Pointer {
+            llvm_type: Box::new(llvm_type)
+        }
+    }
 }
 
 impl fmt::Display for LLVMTypes {

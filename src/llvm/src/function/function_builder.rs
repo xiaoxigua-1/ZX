@@ -1,6 +1,6 @@
 use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
-use crate::function::instruction::terminator_instruction::TerminatorInstructions;
-use crate::function::info::{FunctionInfo, LLVMLocation};
+use crate::function::instruction::terminator_instruction::{TerminatorInstructions};
+use crate::function::info::{FunctionInfo, LLVMVariable};
 use std::fmt;
 use std::fmt::Formatter;
 use crate::function::instruction::terminator_instruction::other::OtherInstruction;
@@ -36,7 +36,7 @@ impl <'b> FunctionBuilder<'b> {
         }
     }
 
-    pub fn add_alloca(&mut self, alloca_type: LLVMTypes) -> LLVMLocation {
+    pub fn add_alloca(&mut self, alloca_type: LLVMTypes) -> LLVMVariable {
         let id = self.alloca_list.len() + self.arguments.len() + 1;
         let align = Some(alloca_type.get_align());
 
@@ -46,25 +46,48 @@ impl <'b> FunctionBuilder<'b> {
             num: None,
             align,
         });
-        LLVMLocation {
-            location: id,
+        LLVMVariable {
+            variable_name: id.to_string(),
             result_type: alloca_type.clone(),
+            is_global: false
         }
     }
 
-    pub fn create_call(&mut self, call_function_info: &'b FunctionInfo) -> LLVMLocation {
-        let id = self.get_id() + 1;
+    pub fn create_call(&mut self, call_function_info: &'b FunctionInfo, parameters: &'b [LLVMVariable]) -> LLVMVariable {
+        let id = self.get_id();
         self.index += 1;
         self.instructions.push(Other {
             instruction: OtherInstruction::Call {
                 result: id.to_string(),
                 function_info: call_function_info.clone(),
+                parameters
             }
         });
 
-        LLVMLocation {
-            location: id.clone(),
-            result_type: call_function_info.ret_type.clone()
+        LLVMVariable {
+            variable_name: id.to_string().clone(),
+            result_type: call_function_info.ret_type.clone(),
+            is_global: false
+        }
+    }
+
+    pub fn create_getelementptr(&mut self, variable: LLVMVariable) -> LLVMVariable {
+        let result = self.get_id().to_string();
+        self.instructions.push(TerminatorInstructions::MemoryAccess {
+            instruction: MemoryAccess::Getelementptr {
+                result: result.clone(),
+                variable: variable.clone()
+            }
+        });
+
+        LLVMVariable {
+            variable_name: result,
+            result_type: match &variable.result_type {
+                LLVMTypes::String { .. } => LLVMTypes::Pointer { llvm_type: Box::new(LLVMTypes::Int8) },
+                LLVMTypes::Array { arr_type, .. } => LLVMTypes::Pointer { llvm_type: arr_type.clone() },
+                _ => variable.result_type
+            },
+            is_global: false
         }
     }
 
@@ -72,7 +95,7 @@ impl <'b> FunctionBuilder<'b> {
         self.instructions.push(Block { name: id.to_string() });
     }
 
-    pub fn get_nth_param(&mut self, index: usize) -> Result<LLVMLocation, LLVMError<&str>> {
+    pub fn get_nth_param(&mut self, index: usize) -> Result<LLVMVariable, LLVMError<&str>> {
         if index < self.arguments.len() {
             let id = self.alloca_list.len() + self.arguments.len() + 1;
             let argument_type = &self.arguments[index];
@@ -93,9 +116,10 @@ impl <'b> FunctionBuilder<'b> {
                     },
                 });
 
-            Ok(LLVMLocation {
-                location: id,
+            Ok(LLVMVariable {
+                variable_name: id.to_string(),
                 result_type: argument_type.clone(),
+                is_global: false
             })
         } else {
             Err(LLVMError {
@@ -104,7 +128,8 @@ impl <'b> FunctionBuilder<'b> {
         }
     }
 
-    pub fn get_id(&self) -> usize {
+    pub fn get_id(&mut self) -> usize {
+        self.index += 1;
         self.index + self.arguments.len() + 1
     }
 
