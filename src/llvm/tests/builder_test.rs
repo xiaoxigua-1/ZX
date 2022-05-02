@@ -1,6 +1,6 @@
 use llvm::builder::LLVMBuilder;
 use llvm::function::function_builder::FunctionBuilder;
-use llvm::function::instruction::terminator_instruction::create_function::{create_insert_function, create_store_value};
+use llvm::function::instruction::terminator_instruction::create_function::{create_insert_function};
 use llvm::linkage_types::LinkageTypes;
 use llvm::llvm_type::LLVMTypes;
 use llvm::llvm_util::jit;
@@ -65,23 +65,18 @@ source_filename = "test.zx"
 fn builder_function_test() {
     let mut builder = LLVMBuilder::new("test");
     let mut function = FunctionBuilder::new("main", &[], LLVMTypes::Void);
-    let str_var = builder.create_global_var(LinkageTypes::Private, "str", create_string("Hello, world!, %i"), true).unwrap();
-    let value_location = function.add_alloca(LLVMTypes::Int8);
+    let str_var = builder.create_global_var(LinkageTypes::Private, "str", create_string("Hello, world!"), true).unwrap();
     let str_var = function.create_getelementptr(str_var);
     let fun_args = [LLVMTypes::get_pointer(LLVMTypes::Int8)];
     let parameters = [str_var];
     let printf_fn = create_insert_function("printf", LLVMTypes::Int32, &fun_args, true);
 
-    function.add_instruction(create_store_value(value_location, create_number("10", LLVMTypes::Int8)));
     builder.add_insert_function(&printf_fn);
     function.create_call(&printf_fn, &parameters);
     builder.add_function(function);
 
-    builder
-        .create_global_var(LinkageTypes::Private, "a", create_string("abc"), true)
-        .unwrap();
 
     let llvm_ir = builder.to_string();
-    println!("{}", &llvm_ir);
+    // println!("{}", &llvm_ir);
     jit(llvm_ir);
 }

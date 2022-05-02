@@ -38,6 +38,7 @@ impl <'b> FunctionBuilder<'b> {
 
     pub fn add_alloca(&mut self, alloca_type: LLVMTypes) -> LLVMVariable {
         let id = self.alloca_list.len() + self.arguments.len() + 1;
+        self.index += 1;
         let align = Some(alloca_type.get_align());
 
         self.alloca_list.push(MemoryAccess::Alloca {
@@ -130,7 +131,7 @@ impl <'b> FunctionBuilder<'b> {
 
     pub fn get_id(&mut self) -> usize {
         self.index += 1;
-        self.index + self.arguments.len() + 1
+        self.index + self.arguments.len()
     }
 
     pub fn add_instruction(&mut self, instruction: TerminatorInstructions<'b>) {
