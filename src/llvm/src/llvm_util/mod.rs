@@ -27,7 +27,7 @@ pub fn align_content(align: &Option<i8>) -> String {
     }
 }
 
-pub fn jit(llvm_ir: String) {
+pub fn jit(llvm_ir: String) -> String {
     let mut put_command = Command::new("lli")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -39,4 +39,5 @@ pub fn jit(llvm_ir: String) {
     let output = put_command.wait_with_output().expect("Failed to read stdout");
     let str = String::from_utf8(output.stdout).unwrap();
     println!("{}", str);
+    str
 }

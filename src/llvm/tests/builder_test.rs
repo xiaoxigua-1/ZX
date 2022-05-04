@@ -77,6 +77,7 @@ fn builder_function_test() {
 
 
     let llvm_ir = builder.to_string();
-    // println!("{}", &llvm_ir);
-    jit(llvm_ir);
+
+    let run_string = jit(llvm_ir);
+    assert_eq!("Hello, world!", run_string);
 }
