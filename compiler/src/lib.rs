@@ -1,5 +1,3 @@
-mod test;
-
 use check::Checker;
 use lexer::Lexer;
 use parser::Parser;

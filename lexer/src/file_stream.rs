@@ -6,7 +6,7 @@ pub struct StringStream<'a> {
     currently: char,
     prev: char,
     pub(crate) index: usize,
-    pub(crate) is_eof: bool,
+    pub is_eof: bool,
 }
 
 impl StringStream<'_> {

@@ -27,6 +27,7 @@ mod lexer_test {
                     Literal::Float => println!("float content: {}", literal),
                     Literal::PositiveInteger => println!("integer content: {}", literal),
                     Literal::Char => println!("char content: {}", literal),
+                    _ => {}
                 },
                 Tokens::IdentifierToken { literal } => {
                     println!("identifier content: {}", literal);
@@ -41,7 +42,7 @@ mod lexer_test {
 
 #[cfg(test)]
 mod file_stream_test {
-    use crate::StringStream;
+    use lexer::file_stream::StringStream;
 
     #[test]
     fn test_file_stream() {

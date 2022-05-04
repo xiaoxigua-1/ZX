@@ -1,7 +1,6 @@
 mod escapes;
-mod file_stream;
+pub mod file_stream;
 mod lex;
-mod test;
 
 use crate::lex::is_whitespace;
 use file_stream::StringStream;

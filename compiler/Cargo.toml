@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 lexer = { path = "../lexer" }
 parser = { path = "../parser" }
-check = { path = "../check"}
+check = { path = "../check" }
 util = { path = "../util" }
 llvm = { path = "../llvm" }

@@ -1,5 +1,4 @@
 mod syntax;
-mod test;
 
 use std::slice::Iter;
 use util::ast::Statement;
