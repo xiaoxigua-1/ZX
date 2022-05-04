@@ -55,6 +55,7 @@ source_filename = "test.zx"
 @a = private dso_local global i32 123, align 4
 @abc = private dso_local global i64 , align 8
 
+
 !llvm.ident = !{!0}
 !0 = !{!"zx version 1"}
 "##;
