@@ -27,11 +27,11 @@ pub fn align_content(align: &Option<i8>) -> String {
     }
 }
 
-pub fn jit(llvm_ir: String) -> String {
+pub fn jit(llvm_ir: String) -> Result<String, std::io::Error> {
     let mut put_command = Command::new("lli")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .spawn().unwrap();
+        .spawn()?;
     let mut stdin = put_command.stdin.take().expect("Failed to open stdin");
     std::thread::spawn(move || {
         stdin.write_all(llvm_ir.as_bytes()).expect("Failed to write to stdin");
@@ -39,5 +39,5 @@ pub fn jit(llvm_ir: String) -> String {
     let output = put_command.wait_with_output().expect("Failed to read stdout");
     let str = String::from_utf8(output.stdout).unwrap();
     println!("{}", str);
-    str
+    Ok(str)
 }
