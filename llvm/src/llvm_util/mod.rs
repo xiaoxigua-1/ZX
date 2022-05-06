@@ -1,6 +1,6 @@
-use std::{fmt};
+use std::fmt;
 use std::fmt::Formatter;
-use std::io::{Write};
+use std::io::Write;
 use std::process::{Command, Stdio};
 
 pub struct LLVMError<T> {
@@ -34,9 +34,13 @@ pub fn jit(llvm_ir: String) -> Result<String, std::io::Error> {
         .spawn()?;
     let mut stdin = put_command.stdin.take().expect("Failed to open stdin");
     std::thread::spawn(move || {
-        stdin.write_all(llvm_ir.as_bytes()).expect("Failed to write to stdin");
+        stdin
+            .write_all(llvm_ir.as_bytes())
+            .expect("Failed to write to stdin");
     });
-    let output = put_command.wait_with_output().expect("Failed to read stdout");
+    let output = put_command
+        .wait_with_output()
+        .expect("Failed to read stdout");
     let str = String::from_utf8(output.stdout).unwrap();
     println!("{}", str);
     Ok(str)

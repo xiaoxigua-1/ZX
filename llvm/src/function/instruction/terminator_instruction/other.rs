@@ -1,15 +1,15 @@
+use crate::function::info::{FunctionInfo, LLVMVariable};
 use std::fmt;
 use std::fmt::Formatter;
 use OtherInstruction::*;
-use crate::function::info::{FunctionInfo, LLVMVariable};
 
 #[derive(Clone)]
 pub enum OtherInstruction<'a> {
     Call {
         result: String,
         function_info: FunctionInfo<'a>,
-        parameters: &'a [LLVMVariable]
-    }
+        parameters: &'a [LLVMVariable],
+    },
 }
 
 impl fmt::Display for OtherInstruction<'_> {
@@ -18,18 +18,27 @@ impl fmt::Display for OtherInstruction<'_> {
             f,
             "{}",
             match &self {
-                Call { result, function_info, parameters } => call_content(result, function_info, parameters)
+                Call {
+                    result,
+                    function_info,
+                    parameters,
+                } => call_content(result, function_info, parameters),
             }
         )
     }
 }
 
-fn call_content(result: &String, function_info: &FunctionInfo, parameters: &[LLVMVariable]) -> String {
+fn call_content(
+    result: &String,
+    function_info: &FunctionInfo,
+    parameters: &[LLVMVariable],
+) -> String {
     format!(
         "  %{} = call {} ({}{}) @{}({})",
         result,
         function_info.ret_type.to_string(),
-        function_info.args_types
+        function_info
+            .args_types
             .iter()
             .map(|arg| { format!("{}", arg.to_string()) })
             .collect::<Vec<String>>()
@@ -48,11 +57,7 @@ fn call_content(result: &String, function_info: &FunctionInfo, parameters: &[LLV
                     paras.result_type.to_string(),
                     format!(
                         "{}{}",
-                        if paras.is_global {
-                            "@"
-                        } else {
-                            "%"
-                        },
+                        if paras.is_global { "@" } else { "%" },
                         paras.variable_name.to_string()
                     )
                 )

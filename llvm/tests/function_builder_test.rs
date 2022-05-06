@@ -1,7 +1,9 @@
 use llvm::function::function_builder::FunctionBuilder;
-use llvm::function::instruction::terminator_instruction::create_function::{create_basic_block, create_store_value, unconditional_br};
+use llvm::function::instruction::terminator_instruction::create_function::{
+    create_basic_block, create_store_value, unconditional_br,
+};
 use llvm::llvm_type::LLVMTypes;
-use llvm::value::{create_number};
+use llvm::value::create_number;
 
 #[test]
 fn function_builder_test() {

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test_parser {
-    use parser::Parser;
     use lexer::Lexer;
+    use parser::Parser;
     use std::fs;
     use util::report::{Level, Report};
     use util::token::{Literal, Position, Token, Tokens};

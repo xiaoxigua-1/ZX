@@ -102,8 +102,10 @@ impl Parser<'_> {
 
                         match &token.token_type {
                             Tokens::IdentifierToken { ref literal }
-                            if literal == "true" || literal == "false" =>
-                                Expression::Bool { identifier: token },
+                                if literal == "true" || literal == "false" =>
+                            {
+                                Expression::Bool { identifier: token }
+                            }
                             _ => Expression::Identifier {
                                 identifier: token,
                                 next,
@@ -112,11 +114,11 @@ impl Parser<'_> {
                     }
                 };
 
-
-
                 Ok(match &self.currently.token_type {
-                    token_type if is_operator(token_type) => self.operator_expression(min_bp, expression)?,
-                    _ => expression
+                    token_type if is_operator(token_type) => {
+                        self.operator_expression(min_bp, expression)?
+                    }
+                    _ => expression,
                 })
             }
             Tokens::DotToken => {
@@ -139,26 +141,24 @@ impl Parser<'_> {
             Tokens::MinusToken => {
                 self.comparison(&Tokens::MinusToken)?;
                 match &self.currently.token_type {
-                    Tokens::LiteralToken { kid, .. } => {
-                        match kid {
-                            Literal::PositiveInteger => {
-                                let content = self.comparison_string(vec!["LiteralToken"])?;
-                                Ok(Expression::Value {
-                                    kid: Literal::NegativeInteger,
-                                    content,
-                                    next: Box::new(None),
-                                })
-                            }
-                            _ => Err(ZXError::SyntaxError {
-                                message: "Unknown Token".to_string(),
-                                pos: self.currently.pos.clone(),
+                    Tokens::LiteralToken { kid, .. } => match kid {
+                        Literal::PositiveInteger => {
+                            let content = self.comparison_string(vec!["LiteralToken"])?;
+                            Ok(Expression::Value {
+                                kid: Literal::NegativeInteger,
+                                content,
+                                next: Box::new(None),
                             })
                         }
-                    }
+                        _ => Err(ZXError::SyntaxError {
+                            message: "Unknown Token".to_string(),
+                            pos: self.currently.pos.clone(),
+                        }),
+                    },
                     _ => Err(ZXError::SyntaxError {
                         message: "Unknown Token".to_string(),
                         pos: self.currently.pos.clone(),
-                    })
+                    }),
                 }
             }
             _ => Err(ZXError::SyntaxError {

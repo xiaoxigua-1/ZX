@@ -23,8 +23,8 @@ pub enum LLVMTypes {
         len: usize,
     },
     Pointer {
-        llvm_type: Box<LLVMTypes>
-    }
+        llvm_type: Box<LLVMTypes>,
+    },
 }
 
 impl LLVMTypes {
@@ -42,7 +42,7 @@ impl LLVMTypes {
 
     pub fn get_pointer(llvm_type: LLVMTypes) -> LLVMTypes {
         LLVMTypes::Pointer {
-            llvm_type: Box::new(llvm_type)
+            llvm_type: Box::new(llvm_type),
         }
     }
 }
@@ -62,7 +62,7 @@ impl fmt::Display for LLVMTypes {
                 Void => "void".to_string(),
                 String { len } => format!("[{} x i8]", len + 1),
                 Array { arr_type, len } => format!("[{} x {}]", len, arr_type.to_string()),
-                Pointer { llvm_type } => format!("{}*", llvm_type)
+                Pointer { llvm_type } => format!("{}*", llvm_type),
             }
         )
     }

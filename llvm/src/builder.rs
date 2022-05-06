@@ -1,17 +1,17 @@
-use std::fmt;
 use crate::context::{Declaration, GlobalVariableContext, LLVMContext, NamedMetadata};
+use crate::function::function_builder::FunctionBuilder;
+use crate::function::info::{FunctionInfo, LLVMVariable};
 use crate::linkage_types::LinkageTypes;
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
 use crate::value::{create_number, Value};
-use crate::function::function_builder::FunctionBuilder;
-use crate::function::info::{FunctionInfo, LLVMVariable};
+use std::fmt;
 
 pub struct LLVMBuilder<'a> {
     context: LLVMContext<'a>,
 }
 
-impl <'a> LLVMBuilder<'a> {
+impl<'a> LLVMBuilder<'a> {
     pub fn new(module_name: &str) -> LLVMBuilder {
         LLVMBuilder {
             context: LLVMContext {
@@ -19,7 +19,7 @@ impl <'a> LLVMBuilder<'a> {
                 global_variables: vec![],
                 named_metadata: vec![],
                 functions: vec![],
-                declarations: vec![]
+                declarations: vec![],
             },
         }
     }
@@ -53,7 +53,7 @@ impl <'a> LLVMBuilder<'a> {
             Ok(LLVMVariable {
                 variable_name,
                 result_type: value.value_type,
-                is_global: true
+                is_global: true,
             })
         } else {
             Err(LLVMError {
@@ -77,12 +77,12 @@ impl <'a> LLVMBuilder<'a> {
             name: function_info.name.to_string(),
             ret_type: function_info.ret_type.clone(),
             args_types: function_info.args_types,
-            varargs: function_info.varargs
+            varargs: function_info.varargs,
         });
     }
 }
 
-impl LLVMBuilder <'_> {
+impl LLVMBuilder<'_> {
     pub fn to_string(&mut self) -> String {
         format!("{}", self.context.to_string())
     }

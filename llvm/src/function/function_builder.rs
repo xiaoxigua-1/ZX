@@ -1,10 +1,10 @@
-use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
-use crate::function::instruction::terminator_instruction::{TerminatorInstructions};
 use crate::function::info::{FunctionInfo, LLVMVariable};
+use crate::function::instruction::terminator_instruction::memory_access::MemoryAccess;
+use crate::function::instruction::terminator_instruction::other::OtherInstruction;
+use crate::function::instruction::terminator_instruction::TerminatorInstructions;
+use crate::function::instruction::terminator_instruction::TerminatorInstructions::{Block, Other};
 use std::fmt;
 use std::fmt::Formatter;
-use crate::function::instruction::terminator_instruction::other::OtherInstruction;
-use crate::function::instruction::terminator_instruction::TerminatorInstructions::{Block, Other};
 
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::LLVMError;
@@ -20,7 +20,7 @@ pub struct FunctionBuilder<'a> {
     ret_type: LLVMTypes,
 }
 
-impl <'b> FunctionBuilder<'b> {
+impl<'b> FunctionBuilder<'b> {
     pub fn new<'a>(
         name: &'a str,
         arguments: &'a [LLVMTypes],
@@ -50,50 +50,61 @@ impl <'b> FunctionBuilder<'b> {
         LLVMVariable {
             variable_name: id.to_string(),
             result_type: alloca_type.clone(),
-            is_global: false
+            is_global: false,
         }
     }
 
-    pub fn create_call(&mut self, call_function_info: &'b FunctionInfo, parameters: &'b [LLVMVariable]) -> LLVMVariable {
+    pub fn create_call(
+        &mut self,
+        call_function_info: &'b FunctionInfo,
+        parameters: &'b [LLVMVariable],
+    ) -> LLVMVariable {
         let id = self.get_id();
         self.index += 1;
         self.instructions.push(Other {
             instruction: OtherInstruction::Call {
                 result: id.to_string(),
                 function_info: call_function_info.clone(),
-                parameters
-            }
+                parameters,
+            },
         });
 
         LLVMVariable {
             variable_name: id.to_string().clone(),
             result_type: call_function_info.ret_type.clone(),
-            is_global: false
+            is_global: false,
         }
     }
 
     pub fn create_getelementptr(&mut self, variable: LLVMVariable) -> LLVMVariable {
         let result = self.get_id().to_string();
-        self.instructions.push(TerminatorInstructions::MemoryAccess {
-            instruction: MemoryAccess::Getelementptr {
-                result: result.clone(),
-                variable: variable.clone()
-            }
-        });
+        self.instructions
+            .push(TerminatorInstructions::MemoryAccess {
+                instruction: MemoryAccess::Getelementptr {
+                    result: result.clone(),
+                    variable: variable.clone(),
+                },
+            });
 
         LLVMVariable {
             variable_name: result,
             result_type: match &variable.result_type {
-                LLVMTypes::String { .. } => LLVMTypes::Pointer { llvm_type: Box::new(LLVMTypes::Int8) },
-                LLVMTypes::Array { arr_type, .. } => LLVMTypes::Pointer { llvm_type: arr_type.clone() },
-                _ => variable.result_type
+                LLVMTypes::String { .. } => LLVMTypes::Pointer {
+                    llvm_type: Box::new(LLVMTypes::Int8),
+                },
+                LLVMTypes::Array { arr_type, .. } => LLVMTypes::Pointer {
+                    llvm_type: arr_type.clone(),
+                },
+                _ => variable.result_type,
             },
-            is_global: false
+            is_global: false,
         }
     }
 
     pub fn add_basic_block<T: fmt::Display>(&mut self, id: T) {
-        self.instructions.push(Block { name: id.to_string() });
+        self.instructions.push(Block {
+            name: id.to_string(),
+        });
     }
 
     pub fn get_nth_param(&mut self, index: usize) -> Result<LLVMVariable, LLVMError<&str>> {
@@ -120,7 +131,7 @@ impl <'b> FunctionBuilder<'b> {
             Ok(LLVMVariable {
                 variable_name: id.to_string(),
                 result_type: argument_type.clone(),
-                is_global: false
+                is_global: false,
             })
         } else {
             Err(LLVMError {

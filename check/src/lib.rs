@@ -110,7 +110,7 @@ impl Checker {
                     Literal::Char => ZXTyped::Char,
                     Literal::PositiveInteger => ZXTyped::Integer,
                     Literal::Float => ZXTyped::Float,
-                    Literal::NegativeInteger => ZXTyped::Integer
+                    Literal::NegativeInteger => ZXTyped::Integer,
                 })
             }
             Call {

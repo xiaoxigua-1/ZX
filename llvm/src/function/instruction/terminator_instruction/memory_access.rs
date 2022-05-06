@@ -1,10 +1,10 @@
+use crate::function::info::LLVMVariable;
 use crate::llvm_type::LLVMTypes;
 use crate::llvm_util::align_content;
 use crate::value::Value;
 use std::fmt;
 use std::fmt::Formatter;
 use MemoryAccess::*;
-use crate::function::info::LLVMVariable;
 
 /// A key design point of an SSA-based representation is how it represents memory.
 /// In LLVM, no memory locations are in SSA form, which makes things very simple.
@@ -34,8 +34,8 @@ pub enum MemoryAccess {
     },
     Getelementptr {
         result: String,
-        variable: LLVMVariable
-    }
+        variable: LLVMVariable,
+    },
 }
 
 impl fmt::Display for MemoryAccess {
@@ -61,7 +61,7 @@ impl fmt::Display for MemoryAccess {
                     pointer,
                     align,
                 } => store_content(value, &value.value_type.clone(), pointer, align),
-                Getelementptr { result, variable } => getelementptr_content(result, variable)
+                Getelementptr { result, variable } => getelementptr_content(result, variable),
             }
         )
     }
@@ -126,6 +126,6 @@ fn getelementptr_content(result: &String, value: &LLVMVariable) -> String {
             &value.result_type.to_string(),
             value.variable_name
         ),
-        _ => String::new()
+        _ => String::new(),
     }
 }

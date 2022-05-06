@@ -62,7 +62,7 @@ pub enum Literal {
     PositiveInteger,
     Float,
     Char,
-    NegativeInteger
+    NegativeInteger,
 }
 
 #[derive(Debug, Clone)]

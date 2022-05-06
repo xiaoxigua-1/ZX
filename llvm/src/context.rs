@@ -1,9 +1,9 @@
+use crate::function::function_builder::FunctionBuilder;
 use crate::linkage_types::LinkageTypes;
+use crate::llvm_type::LLVMTypes;
 use crate::value::Value;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::function::function_builder::FunctionBuilder;
-use crate::llvm_type::LLVMTypes;
 
 pub struct LLVMContext<'a> {
     pub source_filename: String,
@@ -29,7 +29,7 @@ pub struct GlobalVariableContext {
 pub struct Declaration<'a> {
     pub name: String,
     pub ret_type: LLVMTypes,
-    pub args_types: &'a[LLVMTypes],
+    pub args_types: &'a [LLVMTypes],
     pub varargs: bool,
 }
 
@@ -88,7 +88,7 @@ impl fmt::Display for NamedMetadata {
     }
 }
 
-impl LLVMContext <'_> {
+impl LLVMContext<'_> {
     pub fn to_string(&mut self) -> String {
         let global_variable_string = self
             .global_variables
@@ -102,14 +102,16 @@ impl LLVMContext <'_> {
             .map(|named_metadata| named_metadata.to_string())
             .collect::<Vec<String>>()
             .join("\n");
-        let functions_string = self.functions
+        let functions_string = self
+            .functions
             .iter_mut()
-            .map(|function| { function.build() })
+            .map(|function| function.build())
             .collect::<Vec<String>>()
             .join("\n");
-        let declarations_string = self.declarations
+        let declarations_string = self
+            .declarations
             .iter()
-            .map(|declaration| { declaration.to_string() })
+            .map(|declaration| declaration.to_string())
             .collect::<Vec<String>>()
             .join("\n");
         format!(

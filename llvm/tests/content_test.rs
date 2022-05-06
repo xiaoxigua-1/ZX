@@ -1,7 +1,7 @@
 use llvm::context::{GlobalVariableContext, LLVMContext};
 use llvm::linkage_types::LinkageTypes;
 use llvm::llvm_type::LLVMTypes;
-use llvm::value::{Value};
+use llvm::value::Value;
 
 #[test]
 fn global_variable_context() {
@@ -14,7 +14,7 @@ fn global_variable_context() {
             value_type: LLVMTypes::Int8,
         },
     }
-        .to_string();
+    .to_string();
 
     let expect_test = r##"@a = dso_local global i8 2, align 1"##;
 
@@ -40,9 +40,9 @@ fn context_test() {
         global_variables,
         named_metadata: vec![],
         functions: vec![],
-        declarations: vec![]
+        declarations: vec![],
     }
-        .to_string();
+    .to_string();
     let expect_test = r##"; ModuleID = 'test.zx'
 source_filename = "test.zx"
 
