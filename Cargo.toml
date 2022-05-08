@@ -1,11 +1,11 @@
 [workspace]
 members = [
-    "llvm",
-    "util",
-    "lexer",
-    "parser",
-    "compiler",
-    "cli",
-    "check",
-    "main",
+    "compiler/llvm",
+    "compiler/util",
+    "compiler/lexer",
+    "compiler/parser",
+    "compiler/compiler",
+    "compiler/cli",
+    "compiler/check",
+    "compiler/main",
 ]
