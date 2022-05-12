@@ -5,10 +5,13 @@ use util::ast::{Parameter, Statement};
 pub enum ScopeType {
     DefFunction {
         parameters: Vec<Parameter>,
+        block: Statement,
         return_type: ZXTyped,
     },
-    DefVariable,
-    DefClass,
+    DefVariable {
+        var_type: ZXTyped,
+    },
+    // DefClass,
 }
 
 #[derive(Clone, Debug)]
@@ -16,7 +19,6 @@ pub struct Scope {
     pub(crate) name: String,
     pub(crate) scope_type: ScopeType,
     pub(crate) uses_num: i32,
-    pub(crate) block: Statement,
 }
 
 #[derive(Debug)]

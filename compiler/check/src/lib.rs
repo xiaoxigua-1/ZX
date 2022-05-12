@@ -10,6 +10,7 @@ use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
 use util::token::{Literal, Tokens};
+use util::token::Tokens::IdentifierToken;
 
 struct File {
     name: String,
@@ -68,7 +69,7 @@ impl Checker {
             } => {
                 // TODO: Check function block and parameters type and return type
                 Ok(Scope {
-                    name: if let Tokens::IdentifierToken { literal } = function_name.token_type {
+                    name: if let IdentifierToken { literal } = function_name.token_type {
                         literal
                     } else {
                         return Err(ZXError::UnknownError {
@@ -77,16 +78,29 @@ impl Checker {
                     },
                     scope_type: ScopeType::DefFunction {
                         parameters,
+                        block: *block,
                         return_type: if let Some(expression) = return_type {
-                            self.auto_type(expression)?
+                            self.find_scope(scopes, &expression)?
                         } else {
                             ZXTyped::Void
                         },
                     },
                     uses_num: 0,
-                    block: *block,
                 })
-            }
+            },
+            VariableDeclaration { var_name, type_identifier, value, .. } => Ok(Scope {
+                name: if let IdentifierToken { literal } = var_name.token_type {
+                    literal
+                } else {
+                    return Err(ZXError::UnknownError {
+                        message: "".to_string(),
+                    });
+                },
+                scope_type: ScopeType::DefVariable {
+                    var_type: ZXTyped::String
+                },
+                uses_num: 0,
+            }),
             _ => Err(ZXError::UnknownError {
                 message: String::from("Unknown statement."),
             }),
@@ -101,11 +115,11 @@ impl Checker {
     //     }
     // }
 
-    fn auto_type(&self, expression: Expression) -> Result<ZXTyped, ZXError> {
+    fn auto_type(&self, expression: Expression) -> Option<ZXTyped> {
         match expression {
             Value { kid, .. } => {
                 // value type
-                Ok(match kid {
+                Some(match kid {
                     Literal::String => ZXTyped::String,
                     Literal::Char => ZXTyped::Char,
                     Literal::PositiveInteger => ZXTyped::Integer,
@@ -113,35 +127,61 @@ impl Checker {
                     Literal::NegativeInteger => ZXTyped::Integer,
                 })
             }
-            Call {
-                call_name, next, ..
-            } => {
-                // TODO: return type
-                Ok(ZXTyped::Other {
-                    type_name: call_name,
-                })
+            // Call {
+            //     call_name, next, ..
+            // } => {
+            //     // TODO: return type
+            //     Ok(ZXTyped::Other {
+            //         type_name: call_name,
+            //     })
+            // }
+            Type { identifier, nullable } => {
+                if let IdentifierToken { literal } = identifier.token_type {
+                    Some(match literal.as_ref() {
+                        "Int" => ZXTyped::Integer,
+                        "Float" => ZXTyped::Float,
+                        "Str" => ZXTyped::String,
+                        "Char" => ZXTyped::Char,
+                        _ => ZXTyped::Other { type_name: literal }
+                    })
+                } else {
+                    None
+                }
             }
             // Path { identifier, next } => {
-            //     // TODO: path end type
+            // TODO: path end type
             // },
             // SubMember { sub_member } => {
-            //     // TODO: sub　member type
+            // TODO: sub　member type
             // },
-            _ => Err(ZXError::UnknownError {
-                message: String::from("Unknown type"),
-            }),
+            _ => None,
         }
     }
 
-    fn find_scope(&self, scopes: Vec<Scopes>, name: &String) -> Option<Scope> {
+    fn find_scope(&self, scopes: Vec<&Scopes>, expression: &Expression) -> Result<ZXTyped, ZXError> {
+        let identifier = if let Type { identifier, .. } = expression {
+            Some(identifier)
+        } else {
+            None
+        };
+        let literal = if let IdentifierToken { literal } = &identifier.unwrap().token_type {
+            Some(literal)
+        } else {
+            None
+        };
         let mut find_scope = None;
         for scope in scopes.iter() {
-            if let Some(find) = scope.find_scope(name) {
-                find_scope = Some(find);
+            if let Some(find) = scope.find_scope(literal.unwrap()) {
+                find_scope = Some(find.name);
                 break;
             }
         }
-
-        find_scope
+        if let Some(find_scope) = find_scope {
+            Ok(ZXTyped::Other {
+                type_name: find_scope
+            })
+        } else {
+            Err(ZXError::TypeError { message: format!("type `{}` not found", literal.unwrap()), pos: identifier.unwrap().pos.clone() })
+        }
     }
 }

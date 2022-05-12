@@ -16,6 +16,7 @@
       <sourceFolder url="file://$MODULE_DIR$/compiler/parser/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/compiler/parser/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/compiler/util/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/compiler/check/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/compiler/cli/target" />
       <excludeFolder url="file://$MODULE_DIR$/compiler/lexer/target" />
