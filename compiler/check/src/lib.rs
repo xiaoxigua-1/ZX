@@ -171,32 +171,28 @@ impl Checker {
         scopes: Vec<&Scopes>,
         expression: &Expression,
     ) -> Result<ZXTyped, ZXError> {
-        let identifier = if let Type { identifier, .. } = expression {
-            Some(identifier)
-        } else {
-            None
-        };
-        let literal = if let IdentifierToken { literal } = &identifier.unwrap().token_type {
-            Some(literal)
-        } else {
-            None
-        };
-        let mut find_scope = None;
-        for scope in scopes.iter() {
-            if let Some(find) = scope.find_scope(literal.unwrap()) {
-                find_scope = Some(find.name);
-                break;
+        if let Some(zx_type) = self.auto_type(expression.clone()) {
+            if let ZXTyped::Other { type_name } = zx_type {
+                for scope in scopes.iter() {
+                    if let Some(find) = scope.find_scope(&type_name) {
+                        return Ok(ZXTyped::Other {
+                            type_name: find.name,
+                        });
+                    }
+                }
+                Err(if let Type { identifier, .. } = expression {
+                    ZXError::TypeError {
+                        message: format!("type `{}` not found", type_name),
+                        pos: identifier.pos.clone(),
+                    }
+                } else {
+                    ZXError::UnknownError { message: "".to_string() }
+                })
+            } else {
+                Ok(zx_type)
             }
-        }
-        if let Some(find_scope) = find_scope {
-            Ok(ZXTyped::Other {
-                type_name: find_scope,
-            })
         } else {
-            Err(ZXError::TypeError {
-                message: format!("type `{}` not found", literal.unwrap()),
-                pos: identifier.unwrap().pos.clone(),
-            })
+            Err(ZXError::UnknownError { message: "".to_string() })
         }
     }
 }
