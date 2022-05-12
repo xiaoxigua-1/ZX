@@ -1,6 +1,4 @@
 use check;
 
 #[test]
-fn check_test() {
-
-}
+fn check_test() {}

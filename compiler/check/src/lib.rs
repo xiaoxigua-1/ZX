@@ -9,8 +9,8 @@ use util::ast::Statement::*;
 use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
-use util::token::{Literal, Tokens};
 use util::token::Tokens::IdentifierToken;
+use util::token::{Literal, Tokens};
 
 struct File {
     name: String,
@@ -87,8 +87,13 @@ impl Checker {
                     },
                     uses_num: 0,
                 })
-            },
-            VariableDeclaration { var_name, type_identifier, value, .. } => Ok(Scope {
+            }
+            VariableDeclaration {
+                var_name,
+                type_identifier,
+                value,
+                ..
+            } => Ok(Scope {
                 name: if let IdentifierToken { literal } = var_name.token_type {
                     literal
                 } else {
@@ -97,7 +102,7 @@ impl Checker {
                     });
                 },
                 scope_type: ScopeType::DefVariable {
-                    var_type: ZXTyped::String
+                    var_type: ZXTyped::String,
                 },
                 uses_num: 0,
             }),
@@ -135,14 +140,17 @@ impl Checker {
             //         type_name: call_name,
             //     })
             // }
-            Type { identifier, nullable } => {
+            Type {
+                identifier,
+                nullable,
+            } => {
                 if let IdentifierToken { literal } = identifier.token_type {
                     Some(match literal.as_ref() {
                         "Int" => ZXTyped::Integer,
                         "Float" => ZXTyped::Float,
                         "Str" => ZXTyped::String,
                         "Char" => ZXTyped::Char,
-                        _ => ZXTyped::Other { type_name: literal }
+                        _ => ZXTyped::Other { type_name: literal },
                     })
                 } else {
                     None
@@ -158,7 +166,11 @@ impl Checker {
         }
     }
 
-    fn find_scope(&self, scopes: Vec<&Scopes>, expression: &Expression) -> Result<ZXTyped, ZXError> {
+    fn find_scope(
+        &self,
+        scopes: Vec<&Scopes>,
+        expression: &Expression,
+    ) -> Result<ZXTyped, ZXError> {
         let identifier = if let Type { identifier, .. } = expression {
             Some(identifier)
         } else {
@@ -178,10 +190,13 @@ impl Checker {
         }
         if let Some(find_scope) = find_scope {
             Ok(ZXTyped::Other {
-                type_name: find_scope
+                type_name: find_scope,
             })
         } else {
-            Err(ZXError::TypeError { message: format!("type `{}` not found", literal.unwrap()), pos: identifier.unwrap().pos.clone() })
+            Err(ZXError::TypeError {
+                message: format!("type `{}` not found", literal.unwrap()),
+                pos: identifier.unwrap().pos.clone(),
+            })
         }
     }
 }
