@@ -10,7 +10,7 @@ use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
 use util::token::Tokens::IdentifierToken;
-use util::token::{Literal, Tokens};
+use util::token::{Literal, Token, Tokens};
 
 struct File {
     name: String,
@@ -80,7 +80,7 @@ impl Checker {
                         parameters,
                         block: *block,
                         return_type: if let Some(expression) = return_type {
-                            self.find_scope(scopes, &expression)?
+                            self.auto_type(scopes, expression)?
                         } else {
                             ZXTyped::Void
                         },
@@ -120,11 +120,11 @@ impl Checker {
     //     }
     // }
 
-    fn auto_type(&self, expression: Expression) -> Option<ZXTyped> {
+    fn auto_type(&self, scopes: Vec<&Scopes>, expression: Expression) -> Result<ZXTyped, ZXError> {
         match expression {
             Value { kid, .. } => {
                 // value type
-                Some(match kid {
+                Ok(match kid {
                     Literal::String => ZXTyped::String,
                     Literal::Char => ZXTyped::Char,
                     Literal::PositiveInteger => ZXTyped::Integer,
@@ -144,16 +144,24 @@ impl Checker {
                 identifier,
                 nullable,
             } => {
-                if let IdentifierToken { literal } = identifier.token_type {
-                    Some(match literal.as_ref() {
+                if let IdentifierToken { literal } = &identifier.token_type {
+                    Ok(match literal.as_ref() {
                         "Int" => ZXTyped::Integer,
                         "Float" => ZXTyped::Float,
                         "Str" => ZXTyped::String,
                         "Char" => ZXTyped::Char,
-                        _ => ZXTyped::Other { type_name: literal },
+                        _ => {
+                            let scope = self.find_scope(scopes, &identifier)?;
+
+                            if let ScopeType::DefClass = &scope.scope_type {
+                                ZXTyped::Other { type_name: scope.name }
+                            } else {
+                                return Err(ZXError::TypeError { message: format!("type `{}` not found", literal), pos: identifier.pos });
+                            }
+                        },
                     })
                 } else {
-                    None
+                    Err(ZXError::UnknownError { message: "".to_string() })
                 }
             }
             // Path { identifier, next } => {
@@ -162,37 +170,26 @@ impl Checker {
             // SubMember { sub_member } => {
             // TODO: sub　member type
             // },
-            _ => None,
+            _ => Err(ZXError::UnknownError { message: "".to_string() }),
         }
     }
 
     fn find_scope(
         &self,
         scopes: Vec<&Scopes>,
-        expression: &Expression,
-    ) -> Result<ZXTyped, ZXError> {
-        if let Some(zx_type) = self.auto_type(expression.clone()) {
-            if let ZXTyped::Other { type_name } = zx_type {
-                for scope in scopes.iter() {
-                    if let Some(find) = scope.find_scope(&type_name) {
-                        return Ok(ZXTyped::Other {
-                            type_name: find.name,
-                        });
-                    }
+        name: &Token,
+    ) -> Result<Scope, ZXError> {
+        if let IdentifierToken { literal } = &name.token_type {
+            for scope in scopes.iter() {
+                if let Some(find) = scope.find_scope(literal) {
+                    return Ok(find);
                 }
-                Err(if let Type { identifier, .. } = expression {
-                    ZXError::TypeError {
-                        message: format!("type `{}` not found", type_name),
-                        pos: identifier.pos.clone(),
-                    }
-                } else {
-                    ZXError::UnknownError { message: "".to_string() }
-                })
-            } else {
-                Ok(zx_type)
             }
+
+            Err(ZXError::TypeError { message: format!("type `{}` not found", literal), pos: name.pos.clone() })
         } else {
             Err(ZXError::UnknownError { message: "".to_string() })
         }
+
     }
 }
