@@ -10,7 +10,7 @@ use util::ast::{Expression, Parameter, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
 use util::token::Tokens::IdentifierToken;
-use util::token::{Literal, Token, Tokens};
+use util::token::{Literal, Token};
 
 struct File {
     name: String,
@@ -92,20 +92,58 @@ impl Checker {
                 var_name,
                 type_identifier,
                 value,
+                equal,
                 ..
-            } => Ok(Scope {
-                name: if let IdentifierToken { literal } = var_name.token_type {
-                    literal
+            } => {
+                let auto_type = if let Some(type_expression) = type_identifier {
+                    let auto_type = self.auto_type(scopes.clone(), type_expression)?;
+
+                    if let Some(value) = value {
+                        if let Statement::Expression { expression } = *value {
+                            let value_type = self.auto_type(scopes, expression.clone())?;
+                            if let Type { identifier, .. } = expression {
+                                if auto_type != value_type {
+                                    return Err(ZXError::TypeError {
+                                        message: "mismatched types".to_string(),
+                                        pos: identifier.pos,
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    auto_type
                 } else {
-                    return Err(ZXError::UnknownError {
-                        message: "".to_string(),
-                    });
-                },
-                scope_type: ScopeType::DefVariable {
-                    var_type: ZXTyped::String,
-                },
-                uses_num: 0,
-            }),
+                    if let Some(value) = value {
+                        if let Statement::Expression { expression } = *value {
+                            self.auto_type(scopes, expression.clone())?
+                        } else {
+                            return Err(ZXError::SyntaxError {
+                                message: "this is not a expression".to_string(),
+                                pos: equal.unwrap().pos,
+                            });
+                        }
+                    } else {
+                        return Err(ZXError::TypeError {
+                            message: "type annotations needed".to_string(),
+                            pos: var_name.pos.clone(),
+                        });
+                    }
+                };
+                Ok(Scope {
+                    name: if let IdentifierToken { literal } = var_name.token_type {
+                        literal
+                    } else {
+                        return Err(ZXError::UnknownError {
+                            message: "".to_string(),
+                        });
+                    },
+                    scope_type: ScopeType::DefVariable {
+                        var_type: auto_type,
+                    },
+                    uses_num: 0,
+                })
+            }
             _ => Err(ZXError::UnknownError {
                 message: String::from("Unknown statement."),
             }),
@@ -154,14 +192,21 @@ impl Checker {
                             let scope = self.find_scope(scopes, &identifier)?;
 
                             if let ScopeType::DefClass = &scope.scope_type {
-                                ZXTyped::Other { type_name: scope.name }
+                                ZXTyped::Other {
+                                    type_name: scope.name,
+                                }
                             } else {
-                                return Err(ZXError::TypeError { message: format!("type `{}` not found", literal), pos: identifier.pos });
+                                return Err(ZXError::TypeError {
+                                    message: format!("type `{}` not found", literal),
+                                    pos: identifier.pos,
+                                });
                             }
-                        },
+                        }
                     })
                 } else {
-                    Err(ZXError::UnknownError { message: "".to_string() })
+                    Err(ZXError::UnknownError {
+                        message: "".to_string(),
+                    })
                 }
             }
             // Path { identifier, next } => {
@@ -170,15 +215,13 @@ impl Checker {
             // SubMember { sub_member } => {
             // TODO: sub　member type
             // },
-            _ => Err(ZXError::UnknownError { message: "".to_string() }),
+            _ => Err(ZXError::UnknownError {
+                message: "".to_string(),
+            }),
         }
     }
 
-    fn find_scope(
-        &self,
-        scopes: Vec<&Scopes>,
-        name: &Token,
-    ) -> Result<Scope, ZXError> {
+    fn find_scope(&self, scopes: Vec<&Scopes>, name: &Token) -> Result<Scope, ZXError> {
         if let IdentifierToken { literal } = &name.token_type {
             for scope in scopes.iter() {
                 if let Some(find) = scope.find_scope(literal) {
@@ -186,10 +229,14 @@ impl Checker {
                 }
             }
 
-            Err(ZXError::TypeError { message: format!("type `{}` not found", literal), pos: name.pos.clone() })
+            Err(ZXError::TypeError {
+                message: format!("type `{}` not found", literal),
+                pos: name.pos.clone(),
+            })
         } else {
-            Err(ZXError::UnknownError { message: "".to_string() })
+            Err(ZXError::UnknownError {
+                message: "".to_string(),
+            })
         }
-
     }
 }
