@@ -6,7 +6,7 @@ use crate::r#type::ZXTyped;
 use crate::scope::{Scope, ScopeType, Scopes};
 use util::ast::Expression::*;
 use util::ast::Statement::*;
-use util::ast::{Expression, Parameter, Statement};
+use util::ast::{Expression, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
 use util::token::Tokens::IdentifierToken;
@@ -163,11 +163,11 @@ impl Checker {
             Value { kid, .. } => {
                 // value type
                 Ok(match kid {
-                    Literal::String => ZXTyped::String,
-                    Literal::Char => ZXTyped::Char,
-                    Literal::PositiveInteger => ZXTyped::Integer,
-                    Literal::Float => ZXTyped::Float,
-                    Literal::NegativeInteger => ZXTyped::Integer,
+                    Literal::String => ZXTyped::String { nullable: false },
+                    Literal::Char => ZXTyped::Char { nullable: false },
+                    Literal::PositiveInteger => ZXTyped::Integer { nullable: false },
+                    Literal::Float => ZXTyped::Float { nullable: false },
+                    Literal::NegativeInteger => ZXTyped::Integer { nullable: false },
                 })
             }
             // Call {
@@ -184,10 +184,10 @@ impl Checker {
             } => {
                 if let IdentifierToken { literal } = &identifier.token_type {
                     Ok(match literal.as_ref() {
-                        "Int" => ZXTyped::Integer,
-                        "Float" => ZXTyped::Float,
-                        "Str" => ZXTyped::String,
-                        "Char" => ZXTyped::Char,
+                        "Int" => ZXTyped::Integer { nullable },
+                        "Float" => ZXTyped::Float { nullable },
+                        "Str" => ZXTyped::String { nullable },
+                        "Char" => ZXTyped::Char { nullable },
                         _ => {
                             let scope = self.find_scope(scopes, &identifier)?;
 
