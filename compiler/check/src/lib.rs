@@ -59,7 +59,11 @@ impl Checker {
         })
     }
 
-    fn declaration(&mut self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
+    fn declaration(
+        &mut self,
+        statement: Statement,
+        scopes: Vec<&Scopes>,
+    ) -> Result<Scope, ZXError> {
         match statement {
             FunctionDeclaration {
                 function_name,
@@ -157,7 +161,11 @@ impl Checker {
         }
     }
 
-    fn statement(&mut self, statement: Statement, scopes: Vec<&Scopes>) -> Result<ZXTyped, ZXError> {
+    fn statement(
+        &mut self,
+        statement: Statement,
+        scopes: Vec<&Scopes>,
+    ) -> Result<ZXTyped, ZXError> {
         match statement {
             Block { statements, .. } => {
                 for statement in statements.iter() {
