@@ -51,7 +51,11 @@ impl Report {
                         arrow_position: Position {
                             start: pos.start - source_index,
                             end: if source_index + line_code.len() > pos.end {
-                                pos.end - source_index
+                                if pos.end - source_index > pos.start - source_index {
+                                    pos.end - source_index - 1
+                                } else {
+                                    pos.end - source_index
+                                }
                             } else {
                                 source_index + line_code.len()
                             },

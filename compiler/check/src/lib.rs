@@ -39,7 +39,7 @@ impl Checker {
 
     pub fn check(&mut self) {
         for statement in self.ast.clone() {
-            match self.statement(statement, vec![&self.global_scopes]) {
+            match self.declaration(statement, vec![&self.global_scopes]) {
                 Ok(scope) => {
                     self.global_scopes.add_scope(scope);
                 }
@@ -58,7 +58,7 @@ impl Checker {
         })
     }
 
-    fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
+    fn declaration(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
         match statement {
             FunctionDeclaration {
                 function_name,
@@ -68,6 +68,7 @@ impl Checker {
                 ..
             } => {
                 // TODO: Check function block and parameters type and return type
+                self.statement(*block.clone(), scopes.clone())?;
                 Ok(Scope {
                     name: if let IdentifierToken { literal } = function_name.token_type {
                         literal
@@ -147,6 +148,22 @@ impl Checker {
             _ => Err(ZXError::UnknownError {
                 message: String::from("Unknown statement."),
             }),
+        }
+    }
+
+    fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<ZXTyped, ZXError> {
+        match statement {
+            Block { statements, .. } => {
+                for statement in statements.iter() {
+                    self.statement(statement.clone(), scopes.clone())?;
+                }
+
+                Ok(ZXTyped::Void)
+            }
+            _ => {
+                self.declaration(statement, scopes)?;
+                Ok(ZXTyped::Void)
+            }
         }
     }
 
