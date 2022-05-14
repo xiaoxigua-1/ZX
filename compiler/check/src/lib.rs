@@ -38,8 +38,9 @@ impl Checker {
     }
 
     pub fn check(&mut self) {
+        let scopes = self.global_scopes.clone();
         for statement in self.ast.clone() {
-            match self.declaration(statement, vec![&self.global_scopes]) {
+            match self.declaration(statement, vec![&scopes]) {
                 Ok(scope) => {
                     self.global_scopes.add_scope(scope);
                 }
@@ -58,7 +59,7 @@ impl Checker {
         })
     }
 
-    fn declaration(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
+    fn declaration(&mut self, statement: Statement, scopes: Vec<&Scopes>) -> Result<Scope, ZXError> {
         match statement {
             FunctionDeclaration {
                 function_name,
@@ -68,7 +69,12 @@ impl Checker {
                 ..
             } => {
                 // TODO: Check function block and parameters type and return type
-                self.statement(*block.clone(), scopes.clone())?;
+                if let Err(error) = self.statement(*block.clone(), scopes.clone()) {
+                    self.reposts.push(Report {
+                        level: Level::Error,
+                        error,
+                    });
+                };
                 Ok(Scope {
                     name: if let IdentifierToken { literal } = function_name.token_type {
                         literal
@@ -151,7 +157,7 @@ impl Checker {
         }
     }
 
-    fn statement(&self, statement: Statement, scopes: Vec<&Scopes>) -> Result<ZXTyped, ZXError> {
+    fn statement(&mut self, statement: Statement, scopes: Vec<&Scopes>) -> Result<ZXTyped, ZXError> {
         match statement {
             Block { statements, .. } => {
                 for statement in statements.iter() {

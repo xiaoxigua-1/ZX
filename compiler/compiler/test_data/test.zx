@@ -1,4 +1,4 @@
-fn main(a: Int) {
+fn main(a: Int): Voidc {
     fn a(): Voida {
 
     }

@@ -21,7 +21,7 @@ pub struct Scope {
     pub(crate) uses_num: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Scopes {
     scopes: Vec<Scope>,
 }
