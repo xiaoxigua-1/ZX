@@ -83,7 +83,6 @@ impl Checker {
                         error,
                     }),
                     Ok(ret_type) => if return_type.0 != ret_type.0 {
-                        println!("{:?}", ret_type.1);
                         return Err(ZXError::TypeError {
                             message: "mismatched types".to_string(),
                             pos: ret_type.1.unwrap()
