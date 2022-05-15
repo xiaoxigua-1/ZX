@@ -10,7 +10,7 @@ use util::ast::{Expression, Statement};
 use util::error::ZXError;
 use util::report::{Level, Report};
 use util::token::Tokens::IdentifierToken;
-use util::token::{Literal, Token};
+use util::token::{Literal, Position, Token};
 
 struct File {
     name: String,
@@ -22,7 +22,6 @@ pub struct Checker {
     ast: Vec<Statement>,
     files: Vec<File>,
     global_scopes: Scopes,
-    types: Vec<ZXTyped>,
     pub reposts: Vec<Report>,
 }
 
@@ -32,7 +31,6 @@ impl Checker {
             ast,
             files: vec![],
             global_scopes: Scopes::new(),
-            types: vec![],
             reposts: vec![],
         }
     }
@@ -73,12 +71,26 @@ impl Checker {
                 ..
             } => {
                 // TODO: Check function block and parameters type and return type
-                if let Err(error) = self.statement(*block.clone(), scopes.clone()) {
-                    self.reposts.push(Report {
+                let return_type = if let Some(expression) = return_type {
+                    self.auto_type(scopes.clone(), expression)?
+                } else {
+                    (ZXTyped::Void, None)
+                };
+
+                match self.statement(*block.clone(), scopes.clone()) {
+                    Err(error) => self.reposts.push(Report {
                         level: Level::Error,
                         error,
-                    });
-                };
+                    }),
+                    Ok(ret_type) => if return_type.0 != ret_type.0 {
+                        println!("{:?}", ret_type.1);
+                        return Err(ZXError::TypeError {
+                            message: "mismatched types".to_string(),
+                            pos: ret_type.1.unwrap()
+                        })
+                    }
+                }
+
                 Ok(Scope {
                     name: if let IdentifierToken { literal } = function_name.token_type {
                         literal
@@ -90,11 +102,7 @@ impl Checker {
                     scope_type: ScopeType::DefFunction {
                         parameters,
                         block: *block,
-                        return_type: if let Some(expression) = return_type {
-                            self.auto_type(scopes, expression)?
-                        } else {
-                            ZXTyped::Void
-                        },
+                        return_type: return_type.0,
                     },
                     uses_num: 0,
                 })
@@ -112,13 +120,11 @@ impl Checker {
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
                             let value_type = self.auto_type(scopes, expression.clone())?;
-                            if let Type { identifier, .. } = expression {
-                                if auto_type != value_type {
-                                    return Err(ZXError::TypeError {
-                                        message: "mismatched types".to_string(),
-                                        pos: identifier.pos,
-                                    });
-                                }
+                            if auto_type.0 != value_type.0 {
+                                return Err(ZXError::TypeError {
+                                    message: "mismatched types".to_string(),
+                                    pos: auto_type.1.unwrap(),
+                                });
                             }
                         }
                     }
@@ -150,7 +156,7 @@ impl Checker {
                         });
                     },
                     scope_type: ScopeType::DefVariable {
-                        var_type: auto_type,
+                        var_type: auto_type.0,
                     },
                     uses_num: 0,
                 })
@@ -165,18 +171,27 @@ impl Checker {
         &mut self,
         statement: Statement,
         scopes: Vec<&Scopes>,
-    ) -> Result<ZXTyped, ZXError> {
+    ) -> Result<(ZXTyped, Option<Position>), ZXError> {
         match statement {
-            Block { statements, .. } => {
+            Block { statements, left_curly_brackets, .. } => {
+                let mut ret = (ZXTyped::Void, Some(left_curly_brackets.pos));
                 for statement in statements.iter() {
-                    self.statement(statement.clone(), scopes.clone())?;
+                    ret = self.statement(statement.clone(), scopes.clone())?;
                 }
 
-                Ok(ZXTyped::Void)
+                Ok(ret)
             }
+            Return { return_expression, .. } => {
+                let ret_type = self.statement(*return_expression, scopes.clone())?;
+
+                Ok(ret_type)
+            }
+            Statement::Expression { expression } => {
+                Ok(self.auto_type(scopes, expression)?)
+            },
             _ => {
                 self.declaration(statement, scopes)?;
-                Ok(ZXTyped::Void)
+                Ok((ZXTyped::Void, None))
             }
         }
     }
@@ -189,17 +204,17 @@ impl Checker {
     //     }
     // }
 
-    fn auto_type(&self, scopes: Vec<&Scopes>, expression: Expression) -> Result<ZXTyped, ZXError> {
+    fn auto_type(&self, scopes: Vec<&Scopes>, expression: Expression) -> Result<(ZXTyped, Option<Position>), ZXError> {
         match expression {
-            Value { kid, .. } => {
+            Value { kid, content, .. } => {
                 // value type
-                Ok(match kid {
+                Ok((match kid {
                     Literal::String => ZXTyped::String { nullable: false },
                     Literal::Char => ZXTyped::Char { nullable: false },
                     Literal::PositiveInteger => ZXTyped::Integer { nullable: false },
                     Literal::Float => ZXTyped::Float { nullable: false },
                     Literal::NegativeInteger => ZXTyped::Integer { nullable: false },
-                })
+                }, Some(content.pos)))
             }
             // Call {
             //     call_name, next, ..
@@ -214,11 +229,12 @@ impl Checker {
                 nullable,
             } => {
                 if let IdentifierToken { literal } = &identifier.token_type {
-                    Ok(match literal.as_ref() {
+                    Ok((match literal.as_ref() {
                         "Int" => ZXTyped::Integer { nullable },
                         "Float" => ZXTyped::Float { nullable },
                         "Str" => ZXTyped::String { nullable },
                         "Char" => ZXTyped::Char { nullable },
+                        "Void" => ZXTyped::Void,
                         _ => {
                             let scope = self.find_scope(scopes, &identifier)?;
 
@@ -229,11 +245,11 @@ impl Checker {
                             } else {
                                 return Err(ZXError::TypeError {
                                     message: format!("type `{}` not found", literal),
-                                    pos: identifier.pos,
+                                    pos: identifier.pos.clone(),
                                 });
                             }
                         }
-                    })
+                    }, Some(identifier.pos)))
                 } else {
                     Err(ZXError::UnknownError {
                         message: "".to_string(),

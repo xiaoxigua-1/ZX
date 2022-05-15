@@ -1,5 +1,3 @@
-fn main(a: Int): Voidc {
-    fn a(): Voida {
-
-    }
+fn main(a: Int): Void {
+    return 10
 }

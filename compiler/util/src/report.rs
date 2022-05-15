@@ -50,7 +50,7 @@ impl Report {
                         line_number,
                         arrow_position: Position {
                             start: pos.start - source_index,
-                            end: if source_index + line_code.len() > pos.end {
+                            end: if source_index + line_code.len() >= pos.end {
                                 if pos.end - source_index > pos.start - source_index {
                                     pos.end - source_index - 1
                                 } else {
@@ -62,7 +62,7 @@ impl Report {
                         },
                     });
 
-                    if source_index + line_code.len() > pos.end {
+                    if source_index + line_code.len() >= pos.end {
                         break;
                     }
                 }
