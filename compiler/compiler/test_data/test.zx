@@ -1,3 +1,4 @@
-fn main(a: Int): Void {
+fn main(a: Int): Int {
+    var a: Int = 10
     return 10
 }

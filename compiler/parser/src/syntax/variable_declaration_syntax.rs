@@ -8,14 +8,9 @@ impl Parser<'_> {
         let var_keyword = self.comparison_string(vec!["IdentifierToken"])?;
         let var_name = self.comparison_string(vec!["IdentifierToken"])?;
 
-        let colon = match &self.currently.token_type {
-            Tokens::ColonToken => Some(self.comparison(&Tokens::ColonToken)?),
+        let type_identifier = match &self.currently.token_type {
+            Tokens::ColonToken => Some(self.type_syntax()?),
             _ => None,
-        };
-        let type_identifier = if colon.is_none() {
-            None
-        } else {
-            Some(self.type_syntax()?)
         };
         let equal = match &self.currently.token_type {
             Tokens::EqualToken => Some(self.comparison(&Tokens::EqualToken)?),
@@ -30,7 +25,6 @@ impl Parser<'_> {
         Ok(Statement::VariableDeclaration {
             var_keyword,
             var_name,
-            colon,
             type_identifier,
             equal,
             value,
