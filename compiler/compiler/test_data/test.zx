@@ -1,4 +1,6 @@
 fn main(a: Int): Int {
+    fn a() {}
+    main()
     var a: Int = 10
     return 10
 }
