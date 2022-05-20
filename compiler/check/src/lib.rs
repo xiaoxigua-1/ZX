@@ -97,11 +97,13 @@ impl Checker {
                         level: Level::Error,
                         error,
                     }),
-                    Ok(ret_type) => if return_type.0 != ret_type.0 {
-                        return Err(ZXError::TypeError {
-                            message: "mismatched types".to_string(),
-                            pos: ret_type.1.unwrap()
-                        })
+                    Ok(ret_type) => {
+                        if return_type.0 != ret_type.0 {
+                            return Err(ZXError::TypeError {
+                                message: "mismatched types".to_string(),
+                                pos: ret_type.1.unwrap(),
+                            });
+                        }
                     }
                 }
             }
@@ -162,9 +164,11 @@ impl Checker {
                     })
                 }
             }
-            _ => return Err(ZXError::UnknownError {
-                message: String::from("Unknown statement."),
-            }),
+            _ => {
+                return Err(ZXError::UnknownError {
+                    message: String::from("Unknown statement."),
+                })
+            }
         }
 
         Ok(())
@@ -176,7 +180,11 @@ impl Checker {
         scopes: &mut Vec<Scopes>,
     ) -> Result<(ZXTyped, Option<Position>), ZXError> {
         match statement {
-            Block { statements, left_curly_brackets, .. } => {
+            Block {
+                statements,
+                left_curly_brackets,
+                ..
+            } => {
                 let mut ret = (ZXTyped::Void, Some(left_curly_brackets.pos));
                 scopes.push(Scopes::new());
                 for statement in statements.iter() {
@@ -185,14 +193,14 @@ impl Checker {
 
                 Ok(ret)
             }
-            Return { return_expression, .. } => {
+            Return {
+                return_expression, ..
+            } => {
                 let ret_type = self.statement(*return_expression, scopes)?;
 
                 Ok(ret_type)
             }
-            Statement::Expression { expression } => {
-                Ok(self.auto_type(scopes.clone(), expression)?)
-            },
+            Statement::Expression { expression } => Ok(self.auto_type(scopes.clone(), expression)?),
             _ => {
                 self.declaration(statement, scopes)?;
                 Ok((ZXTyped::Void, None))
@@ -200,32 +208,51 @@ impl Checker {
         }
     }
 
-    fn auto_type(&self, scopes: Vec<Scopes>, expression: Expression) -> Result<(ZXTyped, Option<Position>), ZXError> {
+    fn auto_type(
+        &self,
+        scopes: Vec<Scopes>,
+        expression: Expression,
+    ) -> Result<(ZXTyped, Option<Position>), ZXError> {
         match expression {
             Value { kid, content, .. } => {
                 // value type
-                Ok((match kid {
-                    Literal::String => ZXTyped::String { nullable: false },
-                    Literal::Char => ZXTyped::Char { nullable: false },
-                    Literal::PositiveInteger => ZXTyped::Integer { nullable: false },
-                    Literal::Float => ZXTyped::Float { nullable: false },
-                    Literal::NegativeInteger => ZXTyped::Integer { nullable: false },
-                }, Some(content.pos)))
+                Ok((
+                    match kid {
+                        Literal::String => ZXTyped::String { nullable: false },
+                        Literal::Char => ZXTyped::Char { nullable: false },
+                        Literal::PositiveInteger => ZXTyped::Integer { nullable: false },
+                        Literal::Float => ZXTyped::Float { nullable: false },
+                        Literal::NegativeInteger => ZXTyped::Integer { nullable: false },
+                    },
+                    Some(content.pos),
+                ))
             }
             Call {
-                call_name, next, right_parentheses, ..
+                call_name,
+                next,
+                right_parentheses,
+                arguments,
+                ..
             } => {
                 // TODO: return type
-                let scope = self.find_scope(scopes,  &call_name)?;
+                let scope = self.find_scope(scopes, &call_name)?;
 
                 match scope.scope_type {
-                    ScopeType::DefFunction { parameters, return_type, .. } => {
-                        Ok((return_type, Option::from(Position {
+                    ScopeType::DefFunction {
+                        parameters,
+                        return_type,
+                        ..
+                    } => Ok((
+                        return_type,
+                        Option::from(Position {
                             start: call_name.pos.start,
-                            end: right_parentheses.pos.end
-                        })))
-                    }
-                    _ => Err(ZXError::NameError { message: format!("NameError: name '{}' is not defined", scope.name), pos: call_name.pos })
+                            end: right_parentheses.pos.end,
+                        }),
+                    )),
+                    _ => Err(ZXError::NameError {
+                        message: format!("NameError: name '{}' is not defined", scope.name),
+                        pos: call_name.pos,
+                    }),
                 }
             }
             Type {
@@ -233,27 +260,30 @@ impl Checker {
                 nullable,
             } => {
                 if let IdentifierToken { literal } = &identifier.token_type {
-                    Ok((match literal.as_ref() {
-                        "Int" => ZXTyped::Integer { nullable },
-                        "Float" => ZXTyped::Float { nullable },
-                        "Str" => ZXTyped::String { nullable },
-                        "Char" => ZXTyped::Char { nullable },
-                        "Void" => ZXTyped::Void,
-                        _ => {
-                            let scope = self.find_scope(scopes, &identifier)?;
+                    Ok((
+                        match literal.as_ref() {
+                            "Int" => ZXTyped::Integer { nullable },
+                            "Float" => ZXTyped::Float { nullable },
+                            "Str" => ZXTyped::String { nullable },
+                            "Char" => ZXTyped::Char { nullable },
+                            "Void" => ZXTyped::Void,
+                            _ => {
+                                let scope = self.find_scope(scopes, &identifier)?;
 
-                            if let ScopeType::DefClass = &scope.scope_type {
-                                ZXTyped::Other {
-                                    type_name: scope.name,
+                                if let ScopeType::DefClass = &scope.scope_type {
+                                    ZXTyped::Other {
+                                        type_name: scope.name,
+                                    }
+                                } else {
+                                    return Err(ZXError::TypeError {
+                                        message: format!("type `{}` not found", literal),
+                                        pos: identifier.pos.clone(),
+                                    });
                                 }
-                            } else {
-                                return Err(ZXError::TypeError {
-                                    message: format!("type `{}` not found", literal),
-                                    pos: identifier.pos.clone(),
-                                });
                             }
-                        }
-                    }, Some(identifier.pos)))
+                        },
+                        Some(identifier.pos),
+                    ))
                 } else {
                     Err(ZXError::UnknownError {
                         message: "".to_string(),
