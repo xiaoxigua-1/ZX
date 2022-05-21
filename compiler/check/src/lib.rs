@@ -22,7 +22,6 @@ struct File {
 pub struct Checker {
     ast: Vec<Statement>,
     files: Vec<File>,
-    global_scopes: Scopes,
     pub reposts: Vec<Report>,
 }
 
@@ -31,13 +30,12 @@ impl Checker {
         Checker {
             ast,
             files: vec![],
-            global_scopes: Scopes::new(),
             reposts: vec![],
         }
     }
 
     pub fn check(&mut self) {
-        let mut scopes = vec![self.global_scopes.clone()];
+        let mut scopes = vec![Scopes::new()];
         for statement in self.ast.clone() {
             if let Err(error) = self.declaration(statement, &mut scopes) {
                 self.reposts.push(Report {
@@ -50,7 +48,7 @@ impl Checker {
         self.reposts.push(Report {
             level: Level::Debug,
             error: ZXError::Debug {
-                message: format!("global {:#?}", self.global_scopes),
+                message: format!("scopes {:#?}", scopes),
             },
         })
     }
@@ -70,7 +68,7 @@ impl Checker {
             } => {
                 // TODO: Check function block and parameters type and return type
                 let return_type = if let Some(expression) = return_type {
-                    self.auto_type(scopes.clone(), expression)?
+                    self.auto_type(scopes, expression)?
                 } else {
                     (ZXTyped::Void, None)
                 };
@@ -117,11 +115,11 @@ impl Checker {
                 ..
             } => {
                 let auto_type = if let Some(type_expression) = type_identifier {
-                    let auto_type = self.auto_type(scopes.clone(), type_expression)?;
+                    let auto_type = self.auto_type(scopes, type_expression)?;
 
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
-                            let value_type = self.auto_type(scopes.clone(), expression.clone())?;
+                            let value_type = self.auto_type(scopes, expression.clone())?;
                             if auto_type.0 != value_type.0 {
                                 return Err(ZXError::TypeError {
                                     message: "mismatched types".to_string(),
@@ -135,7 +133,7 @@ impl Checker {
                 } else {
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
-                            self.auto_type(scopes.clone(), expression.clone())?
+                            self.auto_type(scopes, expression.clone())?
                         } else {
                             return Err(ZXError::SyntaxError {
                                 message: "this is not a expression".to_string(),
@@ -221,7 +219,7 @@ impl Checker {
 
                 Ok(ret_type)
             }
-            Statement::Expression { expression } => Ok(self.auto_type(scopes.clone(), expression)?),
+            Statement::Expression { expression } => Ok(self.auto_type(scopes, expression)?),
             _ => {
                 self.declaration(statement, scopes)?;
                 Ok((ZXTyped::Void, None))
@@ -231,7 +229,7 @@ impl Checker {
 
     fn auto_type(
         &self,
-        scopes: Vec<Scopes>,
+        scopes: &mut Vec<Scopes>,
         expression: Expression,
     ) -> Result<(ZXTyped, Option<Position>), ZXError> {
         match expression {
@@ -257,7 +255,7 @@ impl Checker {
                 ..
             } => {
                 // TODO: return type
-                let scope = self.find_scope(scopes.clone(), &call_name)?;
+                let scope = self.find_scope(scopes, &call_name)?;
 
                 match scope.scope_type {
                     ScopeType::DefFunction {
@@ -269,9 +267,9 @@ impl Checker {
                             for index in 0..arguments.len() {
                                 let parameter = &parameters[index];
                                 let arg_scope =
-                                    self.auto_type(scopes.clone(), arguments[index].clone())?;
+                                    self.auto_type(scopes, arguments[index].clone())?;
                                 let parameter_scope = self
-                                    .auto_type(scopes.clone(), parameter.type_expression.clone())?;
+                                    .auto_type(scopes, parameter.type_expression.clone())?;
 
                                 if arg_scope.0 != parameter_scope.0 {
                                     return Err(ZXError::TypeError {
@@ -348,7 +346,7 @@ impl Checker {
             // TODO: sub　member type
             // },
             Identifier { identifier, .. } => {
-                let scope = self.find_scope(scopes.clone(), &identifier)?;
+                let scope = self.find_scope(scopes, &identifier)?;
 
                 match scope.scope_type {
                     ScopeType::DefVariable { var_type } => Ok((var_type, Some(identifier.pos))),
@@ -367,7 +365,7 @@ impl Checker {
         }
     }
 
-    fn find_scope(&self, mut scopes: Vec<Scopes>, name: &Token) -> Result<Scope, ZXError> {
+    fn find_scope(&self, scopes: &mut Vec<Scopes>, name: &Token) -> Result<Scope, ZXError> {
         if let IdentifierToken { literal } = &name.token_type {
             for scope in scopes.iter_mut() {
                 if let Some(find) = scope.find_scope(literal) {

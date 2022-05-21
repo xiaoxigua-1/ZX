@@ -2,8 +2,9 @@ fn ab(a: Int): Int {
     return 11
 }
 
+
 fn main(a: Int): Int {
-    var a = 10
+    var a = 10.1
     var b: Int = ab(a)
     return 10
 }
