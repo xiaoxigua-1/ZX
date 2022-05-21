@@ -36,6 +36,7 @@ impl Report {
             ZXError::NameError { message, pos } => (message, Some(pos)),
             ZXError::NullError { message, pos } => (message, Some(pos)),
             ZXError::TypeError { message, pos } => (message, Some(pos)),
+            ZXError::Warning { message, pos } => (message, Some(pos)),
             ZXError::UnknownError { message } => (message, None),
             ZXError::Debug { message } => (message, None),
         };

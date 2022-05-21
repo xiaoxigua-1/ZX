@@ -1,6 +1,9 @@
+fn ab(a: Int): Int {
+    return 11
+}
+
 fn main(a: Int): Int {
-    fn a() {}
-    main()
-    var a: Int = 10
+    var a = 10
+    var b: Int = ab(a)
     return 10
 }

@@ -1,5 +1,6 @@
 use crate::ZXTyped;
 use util::ast::{Parameter, Statement};
+use util::token::Position;
 
 #[derive(Clone, Debug)]
 pub enum ScopeType {
@@ -17,6 +18,7 @@ pub enum ScopeType {
 #[derive(Clone, Debug)]
 pub struct Scope {
     pub(crate) name: String,
+    pub(crate) pos: Position,
     pub(crate) scope_type: ScopeType,
     pub(crate) uses_num: i32,
 }
@@ -31,8 +33,9 @@ impl Scopes {
         Scopes { scopes: vec![] }
     }
 
-    pub fn find_scope(&self, name: &String) -> Option<Scope> {
-        if let Some(find) = self.scopes.iter().find(|scope| scope.name.eq(name)) {
+    pub fn find_scope(&mut self, name: &String) -> Option<Scope> {
+        if let Some(find) = self.scopes.iter_mut().find(|scope| scope.name.eq(name)) {
+            find.uses_num += 1;
             Some(find.clone())
         } else {
             None
@@ -41,5 +44,10 @@ impl Scopes {
 
     pub fn add_scope(&mut self, scope: Scope) {
         self.scopes.push(scope);
+    }
+
+    pub fn no_used_variables_or_functions(&self) -> Vec<Scope> {
+        println!("{:#?}", self.scopes);
+        self.scopes.iter().filter(|scope| { scope.uses_num == 0 }).cloned().collect::<Vec<Scope>>()
     }
 }

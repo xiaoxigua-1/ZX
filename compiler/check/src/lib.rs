@@ -8,6 +8,7 @@ use util::ast::Expression::*;
 use util::ast::Statement::*;
 use util::ast::{Expression, Statement};
 use util::error::ZXError;
+use util::report::Level::Error;
 use util::report::{Level, Report};
 use util::token::Tokens::IdentifierToken;
 use util::token::{Literal, Position, Token};
@@ -36,11 +37,11 @@ impl Checker {
     }
 
     pub fn check(&mut self) {
+        let mut scopes = vec![self.global_scopes.clone()];
         for statement in self.ast.clone() {
-            let mut scopes = vec![self.global_scopes.clone()];
             if let Err(error) = self.declaration(statement, &mut scopes) {
                 self.reposts.push(Report {
-                    level: Level::Error,
+                    level: Error,
                     error,
                 })
             }
@@ -89,12 +90,13 @@ impl Checker {
                             return_type: return_type.0.clone(),
                         },
                         uses_num: 0,
+                        pos: function_name.pos
                     });
                 }
 
                 match self.statement(*block, scopes) {
                     Err(error) => self.reposts.push(Report {
-                        level: Level::Error,
+                        level: Error,
                         error,
                     }),
                     Ok(ret_type) => {
@@ -161,13 +163,14 @@ impl Checker {
                             var_type: auto_type.0,
                         },
                         uses_num: 0,
+                        pos: var_name.pos
                     })
                 }
             }
             _ => {
                 return Err(ZXError::UnknownError {
                     message: String::from("Unknown statement."),
-                })
+                });
             }
         }
 
@@ -188,9 +191,27 @@ impl Checker {
                 let mut ret = (ZXTyped::Void, Some(left_curly_brackets.pos));
                 scopes.push(Scopes::new());
                 for statement in statements.iter() {
-                    ret = self.statement(statement.clone(), scopes)?;
+                    match self.statement(statement.clone(), scopes) {
+                        Ok(ret_type) => ret = ret_type,
+                        Err(error) => self.reposts.push(Report {
+                            level: Error,
+                            error,
+                        }),
+                    }
                 }
-
+                if let Some(last_scope) = scopes.last() {
+                    let no_used_list = last_scope.no_used_variables_or_functions();
+                    no_used_list.iter().for_each(|no_used_scope| {
+                        self.reposts.push(Report {
+                            level: Level::Warning,
+                            error: ZXError::Warning {
+                                message: format!("field is never read: `{}`", no_used_scope.name),
+                                pos: no_used_scope.pos.clone()
+                            }
+                        })
+                    })
+                }
+                scopes.pop();
                 Ok(ret)
             }
             Return {
@@ -229,26 +250,56 @@ impl Checker {
             }
             Call {
                 call_name,
-                next,
+                // next,
+                left_parentheses,
                 right_parentheses,
                 arguments,
                 ..
             } => {
                 // TODO: return type
-                let scope = self.find_scope(scopes, &call_name)?;
+                let scope = self.find_scope(scopes.clone(), &call_name)?;
 
                 match scope.scope_type {
                     ScopeType::DefFunction {
                         parameters,
                         return_type,
                         ..
-                    } => Ok((
-                        return_type,
-                        Option::from(Position {
-                            start: call_name.pos.start,
-                            end: right_parentheses.pos.end,
-                        }),
-                    )),
+                    } => {
+                        if arguments.len() == parameters.len() {
+                            for index in 0..arguments.len() {
+                                let parameter = &parameters[index];
+                                let arg_scope =
+                                    self.auto_type(scopes.clone(), arguments[index].clone())?;
+                                let parameter_scope = self
+                                    .auto_type(scopes.clone(), parameter.type_expression.clone())?;
+
+                                if arg_scope.0 != parameter_scope.0 {
+                                    return Err(ZXError::TypeError {
+                                        message: format!("mismatched types"),
+                                        pos: arg_scope.1.unwrap(),
+                                    });
+                                }
+                            }
+                        } else {
+                            return Err(ZXError::TypeError {
+                                message: format!(
+                                    "this function takes {} argument but {} arguments were supplied",
+                                    parameters.len(),
+                                    arguments.len()),
+                                pos: Position {
+                                    start: left_parentheses.pos.start,
+                                    end: right_parentheses.pos.end + 1,
+                                },
+                            });
+                        }
+                        Ok((
+                            return_type,
+                            Option::from(Position {
+                                start: call_name.pos.start,
+                                end: right_parentheses.pos.end,
+                            }),
+                        ))
+                    }
                     _ => Err(ZXError::NameError {
                         message: format!("NameError: name '{}' is not defined", scope.name),
                         pos: call_name.pos,
@@ -296,15 +347,29 @@ impl Checker {
             // SubMember { sub_member } => {
             // TODO: sub　member type
             // },
+            Identifier { identifier, .. } => {
+                let scope = self.find_scope(scopes.clone(), &identifier)?;
+
+                match scope.scope_type {
+                    ScopeType::DefVariable { var_type } => Ok((var_type, Some(identifier.pos))),
+                    ScopeType::DefFunction { .. } => Err(ZXError::TypeError {
+                        message: format!("`{}` is Function not a variable", scope.name),
+                        pos: identifier.pos,
+                    }),
+                    _ => Err(ZXError::UnknownError {
+                        message: "".to_string(),
+                    }),
+                }
+            }
             _ => Err(ZXError::UnknownError {
-                message: "".to_string(),
+                message: "123".to_string(),
             }),
         }
     }
 
-    fn find_scope(&self, scopes: Vec<Scopes>, name: &Token) -> Result<Scope, ZXError> {
+    fn find_scope(&self, mut scopes: Vec<Scopes>, name: &Token) -> Result<Scope, ZXError> {
         if let IdentifierToken { literal } = &name.token_type {
-            for scope in scopes.iter() {
+            for scope in scopes.iter_mut() {
                 if let Some(find) = scope.find_scope(literal) {
                     return Ok(find);
                 }
