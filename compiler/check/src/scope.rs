@@ -47,6 +47,10 @@ impl Scopes {
     }
 
     pub fn no_used_variables_or_functions(&self) -> Vec<Scope> {
-        self.scopes.iter().filter(|scope| { scope.uses_num == 0 }).cloned().collect::<Vec<Scope>>()
+        self.scopes
+            .iter()
+            .filter(|scope| scope.uses_num == 0)
+            .cloned()
+            .collect::<Vec<Scope>>()
     }
 }

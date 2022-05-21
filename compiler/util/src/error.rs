@@ -8,5 +8,5 @@ pub enum ZXError {
     NullError { message: String, pos: Position },
     UnknownError { message: String },
     Debug { message: String },
-    Warning { message: String, pos: Position }
+    Warning { message: String, pos: Position },
 }

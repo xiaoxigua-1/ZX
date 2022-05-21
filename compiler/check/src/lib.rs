@@ -88,7 +88,7 @@ impl Checker {
                             return_type: return_type.0.clone(),
                         },
                         uses_num: 0,
-                        pos: function_name.pos
+                        pos: function_name.pos,
                     });
                 }
 
@@ -161,7 +161,7 @@ impl Checker {
                             var_type: auto_type.0,
                         },
                         uses_num: 0,
-                        pos: var_name.pos
+                        pos: var_name.pos,
                     })
                 }
             }
@@ -204,8 +204,8 @@ impl Checker {
                             level: Level::Warning,
                             error: ZXError::Warning {
                                 message: format!("field is never read: `{}`", no_used_scope.name),
-                                pos: no_used_scope.pos.clone()
-                            }
+                                pos: no_used_scope.pos.clone(),
+                            },
                         })
                     })
                 }
@@ -266,10 +266,9 @@ impl Checker {
                         if arguments.len() == parameters.len() {
                             for index in 0..arguments.len() {
                                 let parameter = &parameters[index];
-                                let arg_scope =
-                                    self.auto_type(scopes, arguments[index].clone())?;
-                                let parameter_scope = self
-                                    .auto_type(scopes, parameter.type_expression.clone())?;
+                                let arg_scope = self.auto_type(scopes, arguments[index].clone())?;
+                                let parameter_scope =
+                                    self.auto_type(scopes, parameter.type_expression.clone())?;
 
                                 if arg_scope.0 != parameter_scope.0 {
                                     return Err(ZXError::TypeError {
