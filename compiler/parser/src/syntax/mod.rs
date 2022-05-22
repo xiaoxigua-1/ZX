@@ -7,6 +7,7 @@ mod syntax_util;
 mod type_syntax;
 mod variable_declaration_syntax;
 mod while_syntax;
+mod class_syntax;
 
 use crate::syntax::syntax_util::{infix_binding_power, is_operator, operator_type};
 use crate::Parser;
@@ -24,15 +25,30 @@ impl Parser<'_> {
             let statement = match literal.as_str() {
                 "fn" => self.function_syntax()?,
                 "pub" => {
-                    self.comparison_string(vec!["IdentifierToken"])?;
-                    Statement::Public {
-                        statement: Box::new(self.statement()?),
+                    let pub_keyword = self.comparison_string(vec!["IdentifierToken"])?;
+                    let statement = self.statement()?;
+                    match statement {
+                        Statement::FunctionDeclaration { .. } | Statement::VariableDeclaration { .. } => Statement::Public {
+                            statement: Box::new(statement),
+                        },
+                        _ => return Err(ZXError::SyntaxError {
+                            message: String::from("visibility `pub` is not followed by an item"),
+                            pos: pub_keyword.pos
+                        })
                     }
                 }
                 "static" => {
                     self.comparison_string(vec!["IdentifierToken"])?;
-                    Statement::Static {
-                        statement: Box::new(self.statement()?),
+                    let statement = self.statement()?;
+
+                    match statement {
+                        Statement::FunctionDeclaration { .. } | Statement::VariableDeclaration { .. } => Statement::Static {
+                            statement: Box::new(statement),
+                        },
+                        _ => return Err(ZXError::SyntaxError {
+                            message: String::from("visibility `pub` is not followed by an item"),
+                            pos: pub_keyword.pos
+                        })
                     }
                 }
                 "return" => self.return_syntax()?,
@@ -40,6 +56,7 @@ impl Parser<'_> {
                 "if" => self.if_syntax()?,
                 "while" => self.while_syntax()?,
                 "for" => self.for_syntax()?,
+                // "class" => self.class_syntax()?,
                 _ => Statement::Expression {
                     expression: self.expressions(0)?,
                 },
