@@ -32,7 +32,7 @@ pub enum Statement {
         class_name: Token,
         clone: Option<Token>,
         inherit: Option<Token>,
-        block: Box<Statement>,
+        member: Vec<Statement>,
     },
     If {
         if_keyword: Token,

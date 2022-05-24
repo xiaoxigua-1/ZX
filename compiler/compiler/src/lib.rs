@@ -33,7 +33,10 @@ impl Compiler {
         check.check();
 
         for repost in check.reposts.iter() {
-            repost.print(&source, &self.path)
+            if let Level::Debug { .. } = repost.level {}
+            else {
+                repost.print(&source, &self.path)
+            }
         }
 
         Ok(())

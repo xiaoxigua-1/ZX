@@ -4,7 +4,11 @@ fn ab(a: Int): Int {
 
 
 fn main(a: Int): Int {
-    var a = 10.1
+    var a = 10
     var b: Int = ab(a)
     return 10
+}
+
+class A {
+    fn a() {}
 }

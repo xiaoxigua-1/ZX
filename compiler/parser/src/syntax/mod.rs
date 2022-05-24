@@ -38,7 +38,7 @@ impl Parser<'_> {
                     }
                 }
                 "static" => {
-                    self.comparison_string(vec!["IdentifierToken"])?;
+                    let static_keyword = self.comparison_string(vec!["IdentifierToken"])?;
                     let statement = self.statement()?;
 
                     match statement {
@@ -47,7 +47,7 @@ impl Parser<'_> {
                         },
                         _ => return Err(ZXError::SyntaxError {
                             message: String::from("visibility `pub` is not followed by an item"),
-                            pos: pub_keyword.pos
+                            pos: static_keyword.pos
                         })
                     }
                 }
@@ -56,7 +56,7 @@ impl Parser<'_> {
                 "if" => self.if_syntax()?,
                 "while" => self.while_syntax()?,
                 "for" => self.for_syntax()?,
-                // "class" => self.class_syntax()?,
+                "class" => self.class_syntax()?,
                 _ => Statement::Expression {
                     expression: self.expressions(0)?,
                 },
