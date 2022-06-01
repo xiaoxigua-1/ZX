@@ -1,11 +1,11 @@
+use crate::ScopeType::DefClass;
+use crate::{Checker, Scope, ScopeType, Scopes, ZXTyped};
 use util::ast::Statement;
-use util::ast::Statement::{FunctionDeclaration, VariableDeclaration, Class};
+use util::ast::Statement::{Class, FunctionDeclaration, VariableDeclaration};
 use util::error::ZXError;
 use util::report::Level::Error;
 use util::report::Report;
 use util::token::Tokens::IdentifierToken;
-use crate::{Checker, Scope, Scopes, ScopeType, ZXTyped};
-use crate::ScopeType::DefClass;
 
 impl Checker {
     pub fn declaration(
@@ -43,7 +43,6 @@ impl Checker {
                     uses_num: 0,
                     pos: function_name.pos,
                 };
-
 
                 match self.statement(*block, scopes) {
                     Err(error) => self.reposts.push(Report {
@@ -104,40 +103,41 @@ impl Checker {
                 };
 
                 Ok(Scope {
-                        name: if let IdentifierToken { literal } = var_name.token_type {
-                            literal
-                        } else {
-                            return Err(ZXError::UnknownError {
-                                message: "".to_string(),
-                            });
-                        },
-                        scope_type: ScopeType::DefVariable {
-                            var_type: auto_type.0,
-                        },
-                        uses_num: 0,
-                        pos: var_name.pos,
-                    }
-                )
+                    name: if let IdentifierToken { literal } = var_name.token_type {
+                        literal
+                    } else {
+                        return Err(ZXError::UnknownError {
+                            message: "".to_string(),
+                        });
+                    },
+                    scope_type: ScopeType::DefVariable {
+                        var_type: auto_type.0,
+                    },
+                    uses_num: 0,
+                    pos: var_name.pos,
+                })
             }
-            Class { class_name, member, .. } => {
+            Class {
+                class_name, member, ..
+            } => {
                 scopes.push(Scopes::new());
-                let mut members: Vec<Scope> = vec![];
+                let mut members = Scopes::new();
 
                 for member in member {
-                    members.push(self.declaration(member, scopes)?);
+                    members.add_scope(self.declaration(member, scopes)?);
                 }
 
                 Ok(Scope {
-                    name: if let IdentifierToken { literal } =  class_name.token_type { literal } else {
+                    name: if let IdentifierToken { literal } = class_name.token_type {
+                        literal
+                    } else {
                         return Err(ZXError::UnknownError {
                             message: "".to_string(),
                         });
                     },
                     pos: class_name.pos,
-                    scope_type: DefClass {
-                        members
-                    },
-                    uses_num: 0
+                    scope_type: DefClass { members },
+                    uses_num: 0,
                 })
             }
             _ => {

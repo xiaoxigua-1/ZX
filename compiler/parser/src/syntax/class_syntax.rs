@@ -1,7 +1,7 @@
+use crate::Parser;
 use util::ast::Statement;
 use util::error::ZXError;
 use util::token::Tokens;
-use crate::Parser;
 
 impl Parser<'_> {
     pub fn class_syntax(&mut self) -> Result<Statement, ZXError> {
@@ -23,14 +23,22 @@ impl Parser<'_> {
                     let statement = self.statement()?;
 
                     match statement {
-                        Statement::Public { .. } | Statement::Static { .. } | Statement::FunctionDeclaration { .. } | Statement::VariableDeclaration { .. } => {
+                        Statement::Public { .. }
+                        | Statement::Static { .. }
+                        | Statement::FunctionDeclaration { .. }
+                        | Statement::VariableDeclaration { .. } => {
                             member.push(statement);
                         }
-                        _ => return Err(ZXError::SyntaxError { pos: left_curly_bracket.pos, message: "unknown statement".to_string() })
+                        _ => {
+                            return Err(ZXError::SyntaxError {
+                                pos: left_curly_bracket.pos,
+                                message: "unknown statement".to_string(),
+                            })
+                        }
                     }
-                },
+                }
             }
-        };
+        }
 
         self.comparison(&Tokens::RightCurlyBracketsToken)?;
 
@@ -39,7 +47,7 @@ impl Parser<'_> {
             class_name,
             clone: None,
             inherit: None,
-            member
+            member,
         })
     }
 }

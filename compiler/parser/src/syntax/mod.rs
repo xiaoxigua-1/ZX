@@ -1,4 +1,5 @@
 mod block_syntax;
+mod class_syntax;
 mod for_loop_syntax;
 mod function_syntax;
 mod if_syntax;
@@ -7,7 +8,6 @@ mod syntax_util;
 mod type_syntax;
 mod variable_declaration_syntax;
 mod while_syntax;
-mod class_syntax;
 
 use crate::syntax::syntax_util::{infix_binding_power, is_operator, operator_type};
 use crate::Parser;
@@ -28,13 +28,18 @@ impl Parser<'_> {
                     let pub_keyword = self.comparison_string(vec!["IdentifierToken"])?;
                     let statement = self.statement()?;
                     match statement {
-                        Statement::FunctionDeclaration { .. } | Statement::VariableDeclaration { .. } => Statement::Public {
+                        Statement::FunctionDeclaration { .. }
+                        | Statement::VariableDeclaration { .. } => Statement::Public {
                             statement: Box::new(statement),
                         },
-                        _ => return Err(ZXError::SyntaxError {
-                            message: String::from("visibility `pub` is not followed by an item"),
-                            pos: pub_keyword.pos
-                        })
+                        _ => {
+                            return Err(ZXError::SyntaxError {
+                                message: String::from(
+                                    "visibility `pub` is not followed by an item",
+                                ),
+                                pos: pub_keyword.pos,
+                            })
+                        }
                     }
                 }
                 "static" => {
@@ -42,13 +47,18 @@ impl Parser<'_> {
                     let statement = self.statement()?;
 
                     match statement {
-                        Statement::FunctionDeclaration { .. } | Statement::VariableDeclaration { .. } => Statement::Static {
+                        Statement::FunctionDeclaration { .. }
+                        | Statement::VariableDeclaration { .. } => Statement::Static {
                             statement: Box::new(statement),
                         },
-                        _ => return Err(ZXError::SyntaxError {
-                            message: String::from("visibility `pub` is not followed by an item"),
-                            pos: static_keyword.pos
-                        })
+                        _ => {
+                            return Err(ZXError::SyntaxError {
+                                message: String::from(
+                                    "visibility `pub` is not followed by an item",
+                                ),
+                                pos: static_keyword.pos,
+                            })
+                        }
                     }
                 }
                 "return" => self.return_syntax()?,

@@ -13,7 +13,7 @@ pub enum ScopeType {
         var_type: ZXTyped,
     },
     DefClass {
-        members: Vec<Scope>
+        members: Scopes,
     },
 }
 

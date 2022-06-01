@@ -1,7 +1,7 @@
+mod checks;
 mod scope;
 mod test;
 mod r#type;
-mod checks;
 
 use crate::r#type::ZXTyped;
 use crate::scope::{Scope, ScopeType, Scopes};
@@ -30,12 +30,12 @@ impl Checker {
     pub fn check(&mut self) {
         let mut scopes = vec![Scopes::new()];
         for statement in self.ast.clone() {
-            match self.declaration(statement, &mut scopes)  {
+            match self.declaration(statement, &mut scopes) {
                 Ok(declaration) => scopes.last_mut().unwrap().add_scope(declaration),
                 Err(error) => self.reposts.push(Report {
                     level: Error,
                     error,
-                })
+                }),
             }
         }
 
@@ -121,7 +121,7 @@ impl Checker {
             }
             Call {
                 call_name,
-                // next,
+                next,
                 left_parentheses,
                 right_parentheses,
                 arguments,
@@ -170,6 +170,20 @@ impl Checker {
                             }),
                         ))
                     }
+                    ScopeType::DefClass { members } => {
+                        let return_type = if let Some(next) = next {
+                            self.auto_type(&mut vec![members], *next)?.0
+                        } else {
+                            ZXTyped::Other(scope.name)
+                        };
+                        Ok((
+                            return_type,
+                            Option::from(Position {
+                                start: call_name.pos.start,
+                                end: right_parentheses.pos.end,
+                            }),
+                        ))
+                    }
                     _ => Err(ZXError::NameError {
                         message: format!("NameError: name '{}' is not defined", scope.name),
                         pos: call_name.pos,
@@ -192,9 +206,7 @@ impl Checker {
                                 let scope = self.find_scope(scopes, &identifier)?;
 
                                 if let ScopeType::DefClass { .. } = &scope.scope_type {
-                                    ZXTyped::Other {
-                                        type_name: scope.name,
-                                    }
+                                    ZXTyped::Other(scope.name)
                                 } else {
                                     return Err(ZXError::TypeError {
                                         message: format!("type `{}` not found", literal),
@@ -214,14 +226,36 @@ impl Checker {
             // Path { identifier, next } => {
             // TODO: path end type
             // },
-            // SubMember { sub_member } => {
-            // TODO: sub　member type
-            // },
-            Identifier { identifier, .. } => {
+            SubMember { sub_member } => self.auto_type(scopes, *sub_member),
+            Identifier { identifier, next } => {
                 let scope = self.find_scope(scopes, &identifier)?;
 
                 match scope.scope_type {
-                    ScopeType::DefVariable { var_type } => Ok((var_type, Some(identifier.pos))),
+                    ScopeType::DefVariable { var_type } => {
+                        let var_type = if let Some(next) = next {
+                            let scope = self.find_scope(
+                                scopes,
+                                &Token {
+                                    token_type: IdentifierToken {
+                                        literal: var_type.to_string(),
+                                    },
+                                    pos: Position { start: 0, end: 0 },
+                                },
+                            )?;
+
+                            if let ScopeType::DefClass { members } = scope.scope_type {
+                                let mut scopes = vec![members];
+                                self.auto_type(&mut scopes, *next)?.0
+                            } else {
+                                return Err(ZXError::UnknownError {
+                                    message: String::new(),
+                                });
+                            }
+                        } else {
+                            var_type
+                        };
+                        Ok((var_type, Some(identifier.pos)))
+                    }
                     ScopeType::DefFunction { .. } => Err(ZXError::TypeError {
                         message: format!("`{}` is Function not a variable", scope.name),
                         pos: identifier.pos,
