@@ -14,15 +14,8 @@ use util::report::{Level, Report};
 use util::token::Tokens::IdentifierToken;
 use util::token::{Literal, Position, Token};
 
-struct File {
-    name: String,
-    path: String,
-    ast: Vec<Statement>,
-}
-
 pub struct Checker {
     ast: Vec<Statement>,
-    files: Vec<File>,
     pub reposts: Vec<Report>,
 }
 
@@ -30,7 +23,6 @@ impl Checker {
     pub fn new(ast: Vec<Statement>) -> Checker {
         Checker {
             ast,
-            files: vec![],
             reposts: vec![],
         }
     }
@@ -38,8 +30,9 @@ impl Checker {
     pub fn check(&mut self) {
         let mut scopes = vec![Scopes::new()];
         for statement in self.ast.clone() {
-            if let Err(error) = self.declaration(statement, &mut scopes) {
-                self.reposts.push(Report {
+            match self.declaration(statement, &mut scopes)  {
+                Ok(declaration) => scopes.last_mut().unwrap().add_scope(declaration),
+                Err(error) => self.reposts.push(Report {
                     level: Error,
                     error,
                 })
@@ -100,7 +93,8 @@ impl Checker {
             }
             Statement::Expression { expression } => Ok(self.auto_type(scopes, expression)?),
             _ => {
-                self.declaration(statement, scopes)?;
+                let scope = self.declaration(statement, scopes)?;
+                scopes.last_mut().unwrap().add_scope(scope);
                 Ok((ZXTyped::Void, None))
             }
         }
@@ -197,7 +191,7 @@ impl Checker {
                             _ => {
                                 let scope = self.find_scope(scopes, &identifier)?;
 
-                                if let ScopeType::DefClass = &scope.scope_type {
+                                if let ScopeType::DefClass { .. } = &scope.scope_type {
                                     ZXTyped::Other {
                                         type_name: scope.name,
                                     }
