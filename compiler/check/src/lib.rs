@@ -127,7 +127,6 @@ impl Checker {
                 arguments,
                 ..
             } => {
-                // TODO: return type
                 let scope = self.find_scope(scopes, &call_name)?;
 
                 match scope.scope_type {
@@ -163,7 +162,25 @@ impl Checker {
                             });
                         }
                         Ok((
-                            return_type,
+                            if let Some(next) = next {
+                                let scope = self.find_scope_str(
+                                    scopes,
+                                    &return_type.to_string(),
+                                    call_name.pos.clone(),
+                                )?;
+
+                                if let ScopeType::DefClass { members } = scope.scope_type {
+                                    let mut scopes = scopes.clone();
+                                    scopes.push(members);
+                                    self.auto_type(&mut scopes, *next)?.0
+                                } else {
+                                    return Err(ZXError::UnknownError {
+                                        message: String::new(),
+                                    });
+                                }
+                            } else {
+                                return_type
+                            },
                             Option::from(Position {
                                 start: call_name.pos.start,
                                 end: right_parentheses.pos.end,
@@ -172,7 +189,10 @@ impl Checker {
                     }
                     ScopeType::DefClass { members } => {
                         let return_type = if let Some(next) = next {
-                            self.auto_type(&mut vec![members], *next)?.0
+                            let mut scopes = scopes.clone();
+                            scopes.push(members);
+
+                            self.auto_type(&mut scopes, *next)?.0
                         } else {
                             ZXTyped::Other(scope.name)
                         };
@@ -233,18 +253,15 @@ impl Checker {
                 match scope.scope_type {
                     ScopeType::DefVariable { var_type } => {
                         let var_type = if let Some(next) = next {
-                            let scope = self.find_scope(
+                            let scope = self.find_scope_str(
                                 scopes,
-                                &Token {
-                                    token_type: IdentifierToken {
-                                        literal: var_type.to_string(),
-                                    },
-                                    pos: Position { start: 0, end: 0 },
-                                },
+                                &var_type.to_string(),
+                                identifier.pos.clone(),
                             )?;
 
                             if let ScopeType::DefClass { members } = scope.scope_type {
-                                let mut scopes = vec![members];
+                                let mut scopes = scopes.clone();
+                                scopes.push(members);
                                 self.auto_type(&mut scopes, *next)?.0
                             } else {
                                 return Err(ZXError::UnknownError {
@@ -273,20 +290,31 @@ impl Checker {
 
     fn find_scope(&self, scopes: &mut Vec<Scopes>, name: &Token) -> Result<Scope, ZXError> {
         if let IdentifierToken { literal } = &name.token_type {
-            for scope in scopes.iter_mut() {
-                if let Some(find) = scope.find_scope(literal) {
-                    return Ok(find);
-                }
-            }
-
-            Err(ZXError::NameError {
-                message: format!("NameError: name '{}' is not defined", literal),
-                pos: name.pos.clone(),
-            })
+            self.find_scope_str(scopes, literal, name.pos.clone())
         } else {
             Err(ZXError::UnknownError {
                 message: "".to_string(),
             })
         }
     }
+
+    fn find_scope_str(
+        &self,
+        scopes: &mut Vec<Scopes>,
+        name: &String,
+        pos: Position,
+    ) -> Result<Scope, ZXError> {
+        for scope in scopes.iter_mut().rev() {
+            if let Some(find) = scope.find_scope(name) {
+                return Ok(find);
+            }
+        }
+
+        Err(ZXError::NameError {
+            message: format!("NameError: name '{}' is not defined", name),
+            pos,
+        })
+    }
+
+    fn next_scope(&self) {}
 }
