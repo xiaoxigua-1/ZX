@@ -163,11 +163,19 @@ impl Checker {
                         }
                         Ok((
                             if let Some(next) = next {
-                                let scope = self.find_scope_str(
+                                let scope = match self.find_scope_str(
                                     scopes,
                                     &return_type.to_string(),
                                     call_name.pos.clone(),
-                                )?;
+                                ) {
+                                    Ok(scope) => Ok(scope),
+                                    _ => Err(ZXError::TypeError { message: format!(
+                                        "member reference base type '{}' is not a structure or union",
+                                        return_type.to_string()
+                                    ), pos: call_name.pos.clone() })
+                                }?;
+
+                                
 
                                 if let ScopeType::DefClass { members } = scope.scope_type {
                                     let mut scopes = scopes.clone();

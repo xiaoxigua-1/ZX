@@ -9,4 +9,5 @@ pub enum ZXError {
     UnknownError { message: String },
     Debug { message: String },
     Warning { message: String, pos: Position },
+    InternalError { message: String }
 }

@@ -39,6 +39,7 @@ impl Report {
             ZXError::Warning { message, pos } => (message, Some(pos)),
             ZXError::UnknownError { message } => (message, None),
             ZXError::Debug { message } => (message, None),
+            ZXError::InternalError { message } => (message, None),
         };
 
         self.print_error_message(color_char, message.to_string());
