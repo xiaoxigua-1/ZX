@@ -1,7 +1,33 @@
-pub mod builder;
-pub mod context;
-pub mod function;
-pub mod linkage_types;
-pub mod llvm_type;
-pub mod llvm_util;
-pub mod value;
+mod statement;
+mod expression;
+
+use inkwell::context::Context;
+use inkwell::module::Module;
+use util::ast::Statement;
+use util::report::Report;
+
+pub struct Builder<'a> {
+    ast: Vec<Statement>,
+    reports: Vec<Report>,
+    context: &'a Context,
+    module: Module<'a>,
+    builder: inkwell::builder::Builder<'a>
+}
+
+impl Builder<'_> {
+    pub fn new(ast: Vec<Statement>, context: &Context) -> Builder {
+        Builder {
+            ast,
+            reports: vec![],
+            builder: context.create_builder(),
+            module: context.create_module("main"),
+            context,
+        }
+    }
+
+    pub fn build(&self) {
+        for statement in &self.ast {
+            self.statement(statement)
+        }
+    }
+}
