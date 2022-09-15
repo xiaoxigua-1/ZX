@@ -1,23 +1,19 @@
-use util::ast::{Parameter, Statement, Statement::*, Expression};
+use util::ast::Expression;
+use util::ast::Expression::Type;
 use crate::Builder;
 
 impl Builder<'_> {
-    pub fn statement(&self, statement: &Statement) {
-        match statement {
-            FunctionDeclaration { function_name, parameters, return_type, block, .. } =>
-                self.build_function(function_name.get_string().unwrap(), parameters, return_type, block),
+    pub fn expression(&self, expression: Expression) {
+        match expression {
             _ => {}
         }
     }
 
-    pub fn build_function(&self, name: String, parameters: &Vec<Parameter>, return_type: &Option<Expression>, block: &Box<Statement>) {
-        if let Some(return_type) = return_type {
+    pub fn type_express(&self, expression: Expression) {
+        if let Expression::Type { identifier,  nullable } = expression {
 
         } else {
-            self.context.void_type().fn_type(&[], false)
+            
         }
-        self.module.add_function(
-            name
-        )
     }
 }

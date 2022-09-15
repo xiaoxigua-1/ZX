@@ -1,14 +1,15 @@
+mod scope;
 mod statement;
-mod expression;
 
 use util::scope::Scope;
 use inkwell::context::Context;
 use inkwell::module::Module;
 use util::ast::Statement;
 use util::report::Report;
+use util::scope::Scopes;
 
 pub struct Builder<'a> {
-    ast: Vec<Statement>,
+    ast: Vec<Scopes>,
     reports: Vec<Report>,
     context: &'a Context,
     module: Module<'a>,
@@ -27,8 +28,8 @@ impl Builder<'_> {
     }
 
     pub fn build(&self) {
-        for statement in &self.ast {
-            self.statement(statement)
+        for scope in &self.ast {
+            self.scope(scope)
         }
     }
 }
