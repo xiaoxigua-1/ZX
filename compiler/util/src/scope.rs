@@ -1,6 +1,6 @@
-use crate::ZXTyped;
-use util::ast::{Parameter, Statement};
-use util::token::Position;
+use crate::zx_type::ZXTyped;
+use crate::ast::{Parameter, Statement};
+use crate::token::Position;
 
 #[derive(Clone, Debug)]
 pub enum ScopeType {
@@ -19,10 +19,10 @@ pub enum ScopeType {
 
 #[derive(Clone, Debug)]
 pub struct Scope {
-    pub(crate) name: String,
-    pub(crate) pos: Position,
-    pub(crate) scope_type: ScopeType,
-    pub(crate) uses_num: i32,
+    pub name: String,
+    pub pos: Position,
+    pub scope_type: ScopeType,
+    pub uses_num: i32,
 }
 
 #[derive(Debug, Clone)]

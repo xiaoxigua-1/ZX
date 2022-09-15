@@ -10,6 +10,10 @@ impl Builder<'_> {
     }
 
     pub fn type_express(&self, expression: Expression) {
-        if let Expression::Type { identifier,  nullable } = expression {} else {}
+        if let Expression::Type { identifier,  nullable } = expression {
+
+        } else {
+            
+        }
     }
 }

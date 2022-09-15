@@ -1,5 +1,6 @@
 use crate::ScopeType::DefClass;
-use crate::{Checker, Scope, ScopeType, Scopes, ZXTyped};
+use crate::{Checker, ZXTyped};
+use util::scope::{ScopeType, Scope, Scopes};
 use util::ast::Statement;
 use util::ast::Statement::{Class, FunctionDeclaration, VariableDeclaration};
 use util::error::ZXError;

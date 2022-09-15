@@ -1,10 +1,9 @@
 mod checks;
-mod scope;
 mod test;
 mod r#type;
 
-use crate::r#type::ZXTyped;
-use crate::scope::{Scope, ScopeType, Scopes};
+use util::scope::{Scope, ScopeType, Scopes};
+use util::zx_type::ZXTyped;
 use util::ast::Expression::*;
 use util::ast::Statement::*;
 use util::ast::{Expression, Statement};
@@ -27,7 +26,7 @@ impl Checker {
         }
     }
 
-    pub fn check(&mut self) {
+    pub fn check(&mut self) -> Vec<Scopes> {
         let mut scopes = vec![Scopes::new()];
         for statement in self.ast.clone() {
             match self.declaration(statement, &mut scopes) {
@@ -44,7 +43,9 @@ impl Checker {
             error: ZXError::Debug {
                 message: format!("scopes {:#?}", scopes),
             },
-        })
+        });
+
+        scopes
     }
 
     fn statement(

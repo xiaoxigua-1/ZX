@@ -1,6 +1,7 @@
 mod statement;
 mod expression;
 
+use util::scope::Scope;
 use inkwell::context::Context;
 use inkwell::module::Module;
 use util::ast::Statement;
@@ -15,7 +16,7 @@ pub struct Builder<'a> {
 }
 
 impl Builder<'_> {
-    pub fn new(ast: Vec<Statement>, context: &Context) -> Builder {
+    pub fn new(ast: Vec<Scopes>, context: &Context) -> Builder {
         Builder {
             ast,
             reports: vec![],
