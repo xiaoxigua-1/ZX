@@ -15,6 +15,10 @@ pub enum ScopeType {
     DefClass {
         members: Scopes,
     },
+    Block {
+        children: Scopes,
+        ret: (ZXTyped, Option<Position>)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -27,7 +31,7 @@ pub struct Scope {
 
 #[derive(Debug, Clone)]
 pub struct Scopes {
-    scopes: Vec<Scope>,
+    pub scopes: Vec<Scope>,
 }
 
 impl Scopes {
@@ -36,12 +40,25 @@ impl Scopes {
     }
 
     pub fn find_scope(&mut self, name: &String) -> Option<Scope> {
-        if let Some(find) = self.scopes.iter_mut().find(|scope| scope.name.eq(name)) {
-            find.uses_num += 1;
-            Some(find.clone())
-        } else {
-            None
+        let mut find: Option<Scope> = None;
+        for scope in self.scopes.iter_mut() {
+            if scope.name.eq(name) {
+                scope.uses_num += 1;
+                find = Some(scope.clone())
+            }
         }
+
+        if let Some(last_scope) = self.scopes.last_mut() {
+            if let Some(find) = match &mut last_scope.scope_type {
+                ScopeType::Block { children, .. } => children.find_scope(name),
+                ScopeType::DefClass { members } => members.find_scope(name),
+                _ => None,
+            } {
+                return Some(find);
+            };
+        };
+
+        find
     }
 
     pub fn add_scope(&mut self, scope: Scope) {

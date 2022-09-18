@@ -2,17 +2,18 @@ use crate::ScopeType::DefClass;
 use crate::{Checker, ZXTyped};
 use util::scope::{ScopeType, Scope, Scopes};
 use util::ast::Statement;
-use util::ast::Statement::{Class, FunctionDeclaration, VariableDeclaration};
+use util::ast::Statement::{Class, FunctionDeclaration, VariableDeclaration, Block};
 use util::error::ZXError;
-use util::report::Level::Error;
+use util::report::Level::{Error, self};
 use util::report::Report;
+use util::token::Position;
 use util::token::Tokens::IdentifierToken;
 
 impl Checker {
     pub fn declaration(
         &mut self,
         statement: Statement,
-        scopes: &mut Vec<Scopes>,
+        scopes: &mut Scopes,
     ) -> Result<Scope, ZXError> {
         match statement {
             FunctionDeclaration {
@@ -23,7 +24,7 @@ impl Checker {
                 ..
             } => {
                 let return_type = if let Some(expression) = return_type {
-                    self.auto_type(scopes, expression)?
+                    self.auto_type(scopes, None, expression)?
                 } else {
                     (ZXTyped::Void, None)
                 };
@@ -45,17 +46,19 @@ impl Checker {
                     pos: function_name.pos,
                 };
 
-                match self.statement(*block, scopes) {
+                match self.declaration(*block, scopes) {
                     Err(error) => self.reposts.push(Report {
                         level: Error,
                         error,
                     }),
-                    Ok(ret_type) => {
-                        if return_type.0 != ret_type.0 {
-                            return Err(ZXError::TypeError {
-                                message: "mismatched types".to_string(),
-                                pos: ret_type.1.unwrap(),
-                            });
+                    Ok(scope) => {
+                        if let ScopeType::Block { ret, .. } = scope.scope_type {
+                            if return_type.0 != ret.0 {
+                                return Err(ZXError::TypeError {
+                                    message: "mismatched types".to_string(),
+                                    pos: ret.1.unwrap(),
+                                });
+                            }
                         }
                     }
                 }
@@ -70,11 +73,11 @@ impl Checker {
                 ..
             } => {
                 let auto_type = if let Some(type_expression) = type_identifier {
-                    let auto_type = self.auto_type(scopes, type_expression)?;
+                    let auto_type = self.auto_type(scopes, None, type_expression)?;
 
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
-                            let value_type = self.auto_type(scopes, expression.clone())?;
+                            let value_type = self.auto_type(scopes, None, expression.clone())?;
                             if auto_type.0 != value_type.0 {
                                 return Err(ZXError::TypeError {
                                     message: "mismatched types".to_string(),
@@ -88,7 +91,7 @@ impl Checker {
                 } else {
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
-                            self.auto_type(scopes, expression.clone())?
+                            self.auto_type(scopes, None, expression.clone())?
                         } else {
                             return Err(ZXError::SyntaxError {
                                 message: "this is not a expression".to_string(),
@@ -121,13 +124,11 @@ impl Checker {
             Class {
                 class_name, member, ..
             } => {
-                scopes.push(Scopes::new());
                 let mut members = Scopes::new();
 
                 for member in member {
                     members.add_scope(self.declaration(member, scopes)?);
                 }
-
                 Ok(Scope {
                     name: if let IdentifierToken { literal } = class_name.token_type {
                         literal
@@ -139,6 +140,39 @@ impl Checker {
                     pos: class_name.pos,
                     scope_type: DefClass { members },
                     uses_num: 0,
+                })
+            }
+            Block { left_curly_brackets, statements, right_curly_brackets } => {
+                let mut children = Scopes::new();
+                let mut ret = (ZXTyped::Void, Some(right_curly_brackets.pos.clone()));
+                for statement in statements.iter() {
+                    match self.statement(statement.clone(), scopes, &mut children) {
+                        Ok(ret_type) => if ret_type.1.is_some() { ret = ret_type },
+                        Err(error) => self.reposts.push(Report {
+                            level: Error,
+                            error,
+                        }),
+                    }
+                }
+
+                children.no_used_variables_or_functions().iter().for_each(|no_used_scope| {
+                    self.reposts.push(Report {
+                        level: Level::Warning,
+                        error: ZXError::Warning {
+                            message: format!("field is never read: `{}`", no_used_scope.name),
+                            pos: no_used_scope.pos.clone(),
+                        },
+                    })
+                });
+
+                Ok(Scope {
+                    name: "_".into(),
+                    scope_type: ScopeType::Block { children, ret },
+                    uses_num: 0,
+                    pos: Position {
+                        start: left_curly_brackets.pos.start.clone(),
+                        end: right_curly_brackets.pos.end.clone(),
+                    }
                 })
             }
             _ => {

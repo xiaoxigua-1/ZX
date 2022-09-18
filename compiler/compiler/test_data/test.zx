@@ -1,18 +1,15 @@
-class B {
-    fn b() {
-
+class A {
+    fn a(): Int {
+        10
     }
 }
 
-class A {
-    fn a(): B {
-        return B()
+class B {
+    fn a(): A {
+        A()
     }
 }
 
 fn main(a: Int): Int {
-    var a = 10
-    var c = A()
-    c.a().b().d()
-    return 10
+    B().a().a()
 }
