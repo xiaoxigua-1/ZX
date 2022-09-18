@@ -2,20 +2,20 @@ mod checks;
 mod test;
 mod r#type;
 
-use util::scope::{Scope, ScopeType, Scopes};
-use util::zx_type::ZXTyped;
 use util::ast::Expression::*;
 use util::ast::Statement::*;
 use util::ast::{Expression, Statement};
 use util::error::ZXError;
 use util::report::Level::Error;
 use util::report::{Level, Report};
+use util::scope::{Scope, ScopeType, Scopes};
 use util::token::Tokens::IdentifierToken;
 use util::token::{Literal, Position, Token};
+use util::zx_type::ZXTyped;
 
 pub struct Checker {
     ast: Vec<Statement>,
-    pub reposts: Vec<Report>
+    pub reposts: Vec<Report>,
 }
 
 impl Checker {
@@ -30,9 +30,7 @@ impl Checker {
         let mut scopes = Scopes::new();
         for statement in self.ast.clone() {
             match self.declaration(statement, &mut scopes) {
-                Ok(declaration) => {
-                    scopes.add_scope(declaration)
-                },
+                Ok(declaration) => scopes.add_scope(declaration),
                 Err(error) => self.reposts.push(Report {
                     level: Error,
                     error,
@@ -101,7 +99,14 @@ impl Checker {
                 arguments,
                 ..
             } => {
-                let scope = self.find_scope(if let Some(scopes) = sub_scopes { scopes } else { global_scopes }, &call_name)?;
+                let scope = self.find_scope(
+                    if let Some(scopes) = sub_scopes {
+                        scopes
+                    } else {
+                        global_scopes
+                    },
+                    &call_name,
+                )?;
 
                 match scope.scope_type {
                     ScopeType::DefFunction {
@@ -111,12 +116,17 @@ impl Checker {
                     } => {
                         if arguments.len() == parameters.len() {
                             for index in 0..arguments.len() {
-                                let parameter = &parameters[index];
-                                let arg_scope = self.auto_type(global_scopes, None, arguments[index].clone())?;
-                                let parameter_scope =
-                                    self.auto_type(global_scopes, None, parameter.type_expression.clone())?;
+                                let arg_scope =
+                                    self.auto_type(global_scopes, None, arguments[index].clone())?;
+                                let parameter_type = if let ScopeType::DefVariable { var_type } =
+                                    &parameters[index].scope_type
+                                {
+                                    Ok(var_type)
+                                } else {
+                                    Err(ZXError::InternalError { message: "".into() })
+                                }?;
 
-                                if arg_scope.0 != parameter_scope.0 {
+                                if !arg_scope.0.eq(parameter_type) {
                                     return Err(ZXError::TypeError {
                                         message: format!("mismatched types"),
                                         pos: arg_scope.1.unwrap(),
@@ -149,10 +159,13 @@ impl Checker {
                                     ), pos: call_name.pos.clone() })
                                 }?;
 
-                                
-
                                 if let ScopeType::DefClass { members } = scope.scope_type {
-                                    self.auto_type(global_scopes, Some(&mut members.clone()), *next)?.0
+                                    self.auto_type(
+                                        global_scopes,
+                                        Some(&mut members.clone()),
+                                        *next,
+                                    )?
+                                    .0
                                 } else {
                                     return Err(ZXError::UnknownError {
                                         message: String::new(),
@@ -169,7 +182,9 @@ impl Checker {
                     }
                     ScopeType::DefClass { members } => {
                         let return_type = if let Some(next) = next {
-                            let ret = self.auto_type(global_scopes, Some(&mut members.clone()), *next)?.0;
+                            let ret = self
+                                .auto_type(global_scopes, Some(&mut members.clone()), *next)?
+                                .0;
                             ret
                         } else {
                             ZXTyped::Other(scope.name)

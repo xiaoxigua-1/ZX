@@ -10,6 +10,7 @@ class B {
     }
 }
 
-fn main(a: Int): Int {
+fn main(a: B): Int {
     B().a().a()
+    a().a()
 }

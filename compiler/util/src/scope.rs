@@ -1,11 +1,11 @@
 use crate::zx_type::ZXTyped;
-use crate::ast::{Parameter, Statement};
+use crate::ast::Statement;
 use crate::token::Position;
 
 #[derive(Clone, Debug)]
 pub enum ScopeType {
     DefFunction {
-        parameters: Vec<Parameter>,
+        parameters: Vec<Scope>,
         block: Statement,
         return_type: ZXTyped,
     },

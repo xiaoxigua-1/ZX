@@ -1,11 +1,11 @@
 use crate::ScopeType::DefClass;
 use crate::{Checker, ZXTyped};
-use util::scope::{ScopeType, Scope, Scopes};
 use util::ast::Statement;
-use util::ast::Statement::{Class, FunctionDeclaration, VariableDeclaration, Block};
+use util::ast::Statement::{Block, Class, FunctionDeclaration, VariableDeclaration};
 use util::error::ZXError;
-use util::report::Level::{Error, self};
+use util::report::Level::{self, Error};
 use util::report::Report;
+use util::scope::{Scope, ScopeType, Scopes};
 use util::token::Position;
 use util::token::Tokens::IdentifierToken;
 
@@ -28,6 +28,18 @@ impl Checker {
                 } else {
                     (ZXTyped::Void, None)
                 };
+                
+                let parameters = parameters
+                    .iter()
+                    .map(|parameter| {
+                        let scope = self.auto_type(scopes, None, parameter.type_expression.clone())?;
+                        Ok(Scope {
+                            name: parameter.parameter_name.get_string()?,
+                            pos: parameter.parameter_name.pos.clone(),
+                            scope_type: ScopeType::DefVariable { var_type: scope.0 },
+                            uses_num: 0,
+                        })
+                    }).collect::<Result<Vec<Scope>, ZXError>>()?;
 
                 let scope = Scope {
                     name: if let IdentifierToken { literal } = function_name.token_type {
@@ -142,12 +154,20 @@ impl Checker {
                     uses_num: 0,
                 })
             }
-            Block { left_curly_brackets, statements, right_curly_brackets } => {
+            Block {
+                left_curly_brackets,
+                statements,
+                right_curly_brackets,
+            } => {
                 let mut children = Scopes::new();
                 let mut ret = (ZXTyped::Void, Some(right_curly_brackets.pos.clone()));
                 for statement in statements.iter() {
                     match self.statement(statement.clone(), scopes, &mut children) {
-                        Ok(ret_type) => if ret_type.1.is_some() { ret = ret_type },
+                        Ok(ret_type) => {
+                            if ret_type.1.is_some() {
+                                ret = ret_type
+                            }
+                        }
                         Err(error) => self.reposts.push(Report {
                             level: Error,
                             error,
@@ -155,15 +175,18 @@ impl Checker {
                     }
                 }
 
-                children.no_used_variables_or_functions().iter().for_each(|no_used_scope| {
-                    self.reposts.push(Report {
-                        level: Level::Warning,
-                        error: ZXError::Warning {
-                            message: format!("field is never read: `{}`", no_used_scope.name),
-                            pos: no_used_scope.pos.clone(),
-                        },
-                    })
-                });
+                children
+                    .no_used_variables_or_functions()
+                    .iter()
+                    .for_each(|no_used_scope| {
+                        self.reposts.push(Report {
+                            level: Level::Warning,
+                            error: ZXError::Warning {
+                                message: format!("field is never read: `{}`", no_used_scope.name),
+                                pos: no_used_scope.pos.clone(),
+                            },
+                        })
+                    });
 
                 Ok(Scope {
                     name: "_".into(),
@@ -172,7 +195,7 @@ impl Checker {
                     pos: Position {
                         start: left_curly_brackets.pos.start.clone(),
                         end: right_curly_brackets.pos.end.clone(),
-                    }
+                    },
                 })
             }
             _ => {
