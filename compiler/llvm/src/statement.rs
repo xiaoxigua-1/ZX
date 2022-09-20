@@ -1,5 +1,4 @@
 use util::ast::Expression;
-use util::ast::Expression::Type;
 use crate::Builder;
 
 impl Builder<'_> {
