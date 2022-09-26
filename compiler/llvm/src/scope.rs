@@ -5,7 +5,7 @@ use inkwell::{
 };
 use util::{
     scope::{Scope, ScopeType},
-    zx_type::ZXTyped,
+    zx_type::ZXTyped, ast::Statement,
 };
 
 impl<'a> Builder<'a> {
@@ -15,12 +15,12 @@ impl<'a> Builder<'a> {
                 parameters,
                 block,
                 return_type,
-            } => self.build_function(&scope.name, parameters, return_type),
+            } => self.build_function(&scope.name, parameters, return_type, block),
             _ => {}
         }
     }
 
-    pub fn build_function(&self, name: &String, parameters: &Vec<Scope>, ret_type: &ZXTyped) {
+    pub fn build_function(&self, name: &String, parameters: &Vec<Scope>, ret_type: &ZXTyped, block: &Statement) {
         let function = self.module.add_function(
             &name,
             self.function_type(
@@ -29,6 +29,9 @@ impl<'a> Builder<'a> {
             ),
             None,
         );
+        let basic_block = self.context.append_basic_block(function, "entry");
+        self.builder.position_at_end(basic_block);
+        self.statements(block, function);
     }
 
     pub fn function_type(
@@ -67,8 +70,8 @@ impl<'a> Builder<'a> {
                             .into(),
                         ZXTyped::Integer { .. } => self.context.i32_type().into(),
                         ZXTyped::Float { .. } => self.context.f32_type().into(),
-                        ZXTyped::Other(name) => todo!(),
-                        ZXTyped::Void => todo!(),
+                        ZXTyped::Other(name) => self.structs.find(&name).into(),
+                        ZXTyped::Void => todo!("error"),
                     })
                 } else {
                     Err(())

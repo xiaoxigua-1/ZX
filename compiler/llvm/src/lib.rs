@@ -1,13 +1,18 @@
 mod scope;
+mod struct_type;
 mod statement;
 
-use inkwell::context::Context;
+use std::path::Path;
+
+pub use inkwell::context::Context;
 use inkwell::module::Module;
+use struct_type::Structs;
 use util::report::Report;
 use util::scope::Scopes;
 
 pub struct Builder<'a> {
     scopes: Scopes,
+    structs: Structs<'a>,
     reports: Vec<Report>,
     context: &'a Context,
     module: Module<'a>,
@@ -19,6 +24,7 @@ impl Builder<'_> {
         Builder {
             scopes,
             reports: vec![],
+            structs: Structs::new(),
             builder: context.create_builder(),
             module: context.create_module("main"),
             context,
@@ -29,5 +35,9 @@ impl Builder<'_> {
         for scope in &self.scopes.scopes {
             self.scope(scope)
         }
+    }
+
+    pub fn compile(&self, path: &Path) {
+        self.module.write_bitcode_to_path(path);
     }
 }

@@ -24,6 +24,7 @@ pub enum ScopeType {
 #[derive(Clone, Debug)]
 pub struct Scope {
     pub name: String,
+    pub path: String,
     pub pos: Position,
     pub scope_type: ScopeType,
     pub uses_num: i32,

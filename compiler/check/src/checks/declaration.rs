@@ -14,6 +14,7 @@ impl Checker {
         &mut self,
         statement: Statement,
         scopes: &mut Scopes,
+        path: String,
     ) -> Result<Scope, ZXError> {
         match statement {
             FunctionDeclaration {
@@ -33,22 +34,26 @@ impl Checker {
                     .iter()
                     .map(|parameter| {
                         let scope = self.auto_type(scopes, None, parameter.type_expression.clone())?;
+                        let name = parameter.parameter_name.get_string()?;
                         Ok(Scope {
                             name: parameter.parameter_name.get_string()?,
+                            path: "".into(),
                             pos: parameter.parameter_name.pos.clone(),
                             scope_type: ScopeType::DefVariable { var_type: scope.0 },
                             uses_num: 0,
                         })
                     }).collect::<Result<Vec<Scope>, ZXError>>()?;
-
+                let name = if let IdentifierToken { literal } = function_name.token_type {
+                    literal
+                } else {
+                    return Err(ZXError::UnknownError {
+                        message: "".to_string(),
+                    });
+                };
+                let path = format!("{}${}", path, name);
                 let scope = Scope {
-                    name: if let IdentifierToken { literal } = function_name.token_type {
-                        literal
-                    } else {
-                        return Err(ZXError::UnknownError {
-                            message: "".to_string(),
-                        });
-                    },
+                    name,
+                    path: path.clone(),
                     scope_type: ScopeType::DefFunction {
                         parameters,
                         block: *block.clone(),
@@ -58,7 +63,7 @@ impl Checker {
                     pos: function_name.pos,
                 };
 
-                match self.declaration(*block, scopes) {
+                match self.declaration(*block, scopes, path) {
                     Err(error) => self.reposts.push(Report {
                         level: Error,
                         error,
@@ -117,15 +122,17 @@ impl Checker {
                         });
                     }
                 };
-
+                let name = if let IdentifierToken { literal } = var_name.token_type {
+                    literal
+                } else {
+                    return Err(ZXError::UnknownError {
+                        message: "".to_string(),
+                    });
+                };
+                let path = format!("{}${}", path, name);
                 Ok(Scope {
-                    name: if let IdentifierToken { literal } = var_name.token_type {
-                        literal
-                    } else {
-                        return Err(ZXError::UnknownError {
-                            message: "".to_string(),
-                        });
-                    },
+                    name,
+                    path,
                     scope_type: ScopeType::DefVariable {
                         var_type: auto_type.0,
                     },
@@ -137,18 +144,21 @@ impl Checker {
                 class_name, member, ..
             } => {
                 let mut members = Scopes::new();
+                let name = if let IdentifierToken { literal } = class_name.token_type {
+                    literal
+                } else {
+                    return Err(ZXError::UnknownError {
+                        message: "".to_string(),
+                    });
+                };
+                let path = format!("{}${}", path, name);
 
                 for member in member {
-                    members.add_scope(self.declaration(member, scopes)?);
+                    members.add_scope(self.declaration(member, scopes, path.clone())?);
                 }
                 Ok(Scope {
-                    name: if let IdentifierToken { literal } = class_name.token_type {
-                        literal
-                    } else {
-                        return Err(ZXError::UnknownError {
-                            message: "".to_string(),
-                        });
-                    },
+                    name,
+                    path,
                     pos: class_name.pos,
                     scope_type: DefClass { members },
                     uses_num: 0,
@@ -162,7 +172,7 @@ impl Checker {
                 let mut children = Scopes::new();
                 let mut ret = (ZXTyped::Void, Some(right_curly_brackets.pos.clone()));
                 for statement in statements.iter() {
-                    match self.statement(statement.clone(), scopes, &mut children) {
+                    match self.statement(statement.clone(), scopes, &mut children, path.clone()) {
                         Ok(ret_type) => {
                             if ret_type.1.is_some() {
                                 ret = ret_type
@@ -190,6 +200,7 @@ impl Checker {
 
                 Ok(Scope {
                     name: "_".into(),
+                    path,
                     scope_type: ScopeType::Block { children, ret },
                     uses_num: 0,
                     pos: Position {

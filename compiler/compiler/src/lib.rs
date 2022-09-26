@@ -3,6 +3,7 @@ use lexer::Lexer;
 use parser::Parser;
 use std::fs;
 use util::report::{Level, Report};
+use std::path::Path;
 
 pub struct Compiler {
     pub path: String,
@@ -30,7 +31,7 @@ impl Compiler {
             }
         };
 
-        check.check();
+        let scopes = check.check();
 
         for repost in check.reposts.iter() {
             if let Level::Debug { .. } = repost.level {
@@ -38,7 +39,10 @@ impl Compiler {
                 repost.print(&source, &self.path)
             }
         }
-
+        let context = llvm::Context::create();
+        let builder = llvm::Builder::new(scopes, &context);
+        builder.build();
+        builder.compile(&Path::new("./test.bc"));
         Ok(())
     }
 }

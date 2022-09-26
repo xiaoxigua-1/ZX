@@ -29,7 +29,7 @@ impl Checker {
     pub fn check(&mut self) -> Scopes {
         let mut scopes = Scopes::new();
         for statement in self.ast.clone() {
-            match self.declaration(statement, &mut scopes) {
+            match self.declaration(statement, &mut scopes, String::new()) {
                 Ok(declaration) => scopes.add_scope(declaration),
                 Err(error) => self.reposts.push(Report {
                     level: Error,
@@ -53,18 +53,19 @@ impl Checker {
         statement: Statement,
         scopes: &mut Scopes,
         children: &mut Scopes,
+        path: String,
     ) -> Result<(ZXTyped, Option<Position>), ZXError> {
         match statement {
             Return {
                 return_expression, ..
             } => {
-                let ret_type = self.statement(*return_expression, scopes, children)?;
+                let ret_type = self.statement(*return_expression, scopes, children, path)?;
 
                 Ok(ret_type)
             }
             Statement::Expression { expression } => Ok(self.auto_type(scopes, None, expression)?),
             _ => {
-                let scope = self.declaration(statement, scopes)?;
+                let scope = self.declaration(statement, scopes, path)?;
                 children.add_scope(scope.clone());
                 Ok((ZXTyped::Void, None))
             }

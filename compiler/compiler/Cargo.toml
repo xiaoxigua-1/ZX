@@ -10,3 +10,4 @@ lexer = { path = "../lexer" }
 parser = { path = "../parser" }
 check = { path = "../check" }
 util = { path = "../util" }
+llvm = { path = "../llvm" }

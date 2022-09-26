@@ -1,3 +1,5 @@
+/*
+
 class A {
     fn a(): Int {
         10
@@ -9,8 +11,10 @@ class B {
         A()
     }
 }
+*/
 
-fn main(a: B): Int {
-    B().a().a()
-    a().a()
+fn main(a: Str): Int {
+    // B().a().a()
+    // a().a()
+    10
 }
