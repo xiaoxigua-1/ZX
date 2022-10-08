@@ -31,7 +31,12 @@ impl Checker {
     pub fn check(&mut self) -> Scopes {
         let mut scopes = Scopes::new();
         for statement in self.ast.clone() {
-            match self.declaration(statement, &mut scopes, String::new(), vec![Scopes::new()].borrow_mut()) {
+            match self.declaration(
+                statement,
+                &mut scopes,
+                String::new(),
+                vec![Scopes::new()].borrow_mut(),
+            ) {
                 Ok(declaration) => scopes.add_scope(declaration),
                 Err(error) => self.reposts.push(Report {
                     level: Error,
@@ -380,7 +385,7 @@ impl Checker {
             if let Some(find) = currently_scopes.find_scope(name) {
                 return Ok(find);
             }
-        };
+        }
         if let Some(find) = scopes.find_scope(name) {
             Ok(find)
         } else {
