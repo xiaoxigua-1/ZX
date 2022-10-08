@@ -1,6 +1,6 @@
+mod bytecodes;
 mod scope;
 mod struct_type;
-mod statement;
 
 use std::path::Path;
 
@@ -16,7 +16,7 @@ pub struct Builder<'a> {
     reports: Vec<Report>,
     context: &'a Context,
     module: Module<'a>,
-    builder: inkwell::builder::Builder<'a>
+    builder: inkwell::builder::Builder<'a>,
 }
 
 impl Builder<'_> {

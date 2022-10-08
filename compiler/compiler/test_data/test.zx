@@ -16,5 +16,7 @@ class B {
 fn main(a: Str): Int {
     // B().a().a()
     // a().a()
-    10
+    var a = 10
+    test()
+    return a
 }

@@ -2,6 +2,7 @@ use crate::ScopeType::DefClass;
 use crate::{Checker, ZXTyped};
 use util::ast::Statement;
 use util::ast::Statement::{Block, Class, FunctionDeclaration, VariableDeclaration};
+use util::bytecode::BytecodeType;
 use util::error::ZXError;
 use util::report::Level::{self, Error};
 use util::report::Report;
@@ -15,6 +16,7 @@ impl Checker {
         statement: Statement,
         scopes: &mut Scopes,
         path: String,
+        children: &mut Vec<Scopes>,
     ) -> Result<Scope, ZXError> {
         match statement {
             FunctionDeclaration {
@@ -24,25 +26,39 @@ impl Checker {
                 return_type,
                 ..
             } => {
+                let mut param_index = 0;
                 let return_type = if let Some(expression) = return_type {
-                    self.auto_type(scopes, None, expression)?
+                    let ret = self.auto_type(scopes, None, children, expression)?;
+                    (ret.0, ret.1)
                 } else {
                     (ZXTyped::Void, None)
                 };
-                
+
                 let parameters = parameters
                     .iter()
                     .map(|parameter| {
-                        let scope = self.auto_type(scopes, None, parameter.type_expression.clone())?;
+                        let scope = self.auto_type(
+                            scopes,
+                            None,
+                            children,
+                            parameter.type_expression.clone(),
+                        )?;
                         let name = parameter.parameter_name.get_string()?;
-                        Ok(Scope {
-                            name: parameter.parameter_name.get_string()?,
-                            path: "".into(),
+                        let path = format!("{}${}", path, name);
+                        let scope = Scope {
+                            name,
+                            path,
                             pos: parameter.parameter_name.pos.clone(),
-                            scope_type: ScopeType::DefVariable { var_type: scope.0 },
+                            scope_type: ScopeType::DefVariable {
+                                var_type: scope.0,
+                                value: Some(BytecodeType::param_value(param_index)),
+                            },
                             uses_num: 0,
-                        })
-                    }).collect::<Result<Vec<Scope>, ZXError>>()?;
+                        };
+                        param_index = param_index + 1;
+                        Ok(scope)
+                    })
+                    .collect::<Result<Vec<Scope>, ZXError>>()?;
                 let name = if let IdentifierToken { literal } = function_name.token_type {
                     literal
                 } else {
@@ -52,35 +68,49 @@ impl Checker {
                 };
                 let path = format!("{}${}", path, name);
                 let scope = Scope {
-                    name,
+                    name: name.clone(),
                     path: path.clone(),
                     scope_type: ScopeType::DefFunction {
-                        parameters,
-                        block: *block.clone(),
+                        parameters: parameters.clone(),
+                        block: BytecodeType::Box { bytecodes: vec![] },
                         return_type: return_type.0.clone(),
+                        children: Scopes::new(),
+                    },
+                    uses_num: 0,
+                    pos: function_name.pos.clone(),
+                };
+                children.last_mut().unwrap().add_scope(scope.clone());
+                let block_scope = self.declaration(*block, scopes, path.clone(), children)?;
+                let block = if let ScopeType::Block {
+                    ret,
+                    bytecodes,
+                    children,
+                } = block_scope.scope_type
+                {
+                    if return_type.0 != ret.0 {
+                        Err(ZXError::TypeError {
+                            message: "mismatched types".to_string(),
+                            pos: return_type.1.unwrap(),
+                        })
+                    } else {
+                        Ok((BytecodeType::Box { bytecodes }, children))
+                    }
+                } else {
+                    Err(ZXError::InternalError { message: "".into() })
+                }?;
+
+                Ok(Scope {
+                    name,
+                    path,
+                    scope_type: ScopeType::DefFunction {
+                        parameters,
+                        block: block.0,
+                        return_type: return_type.0.clone(),
+                        children: block.1,
                     },
                     uses_num: 0,
                     pos: function_name.pos,
-                };
-
-                match self.declaration(*block, scopes, path) {
-                    Err(error) => self.reposts.push(Report {
-                        level: Error,
-                        error,
-                    }),
-                    Ok(scope) => {
-                        if let ScopeType::Block { ret, .. } = scope.scope_type {
-                            if return_type.0 != ret.0 {
-                                return Err(ZXError::TypeError {
-                                    message: "mismatched types".to_string(),
-                                    pos: ret.1.unwrap(),
-                                });
-                            }
-                        }
-                    }
-                }
-
-                Ok(scope)
+                })
             }
             VariableDeclaration {
                 var_name,
@@ -90,11 +120,12 @@ impl Checker {
                 ..
             } => {
                 let auto_type = if let Some(type_expression) = type_identifier {
-                    let auto_type = self.auto_type(scopes, None, type_expression)?;
+                    let auto_type = self.auto_type(scopes, None, children, type_expression)?;
 
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
-                            let value_type = self.auto_type(scopes, None, expression.clone())?;
+                            let value_type =
+                                self.auto_type(scopes, None, children, expression.clone())?;
                             if auto_type.0 != value_type.0 {
                                 return Err(ZXError::TypeError {
                                     message: "mismatched types".to_string(),
@@ -108,7 +139,7 @@ impl Checker {
                 } else {
                     if let Some(value) = value {
                         if let Statement::Expression { expression } = *value {
-                            self.auto_type(scopes, None, expression.clone())?
+                            self.auto_type(scopes, None, children, expression.clone())?
                         } else {
                             return Err(ZXError::SyntaxError {
                                 message: "this is not a expression".to_string(),
@@ -135,6 +166,7 @@ impl Checker {
                     path,
                     scope_type: ScopeType::DefVariable {
                         var_type: auto_type.0,
+                        value: auto_type.2,
                     },
                     uses_num: 0,
                     pos: var_name.pos,
@@ -154,7 +186,7 @@ impl Checker {
                 let path = format!("{}${}", path, name);
 
                 for member in member {
-                    members.add_scope(self.declaration(member, scopes, path.clone())?);
+                    members.add_scope(self.declaration(member, scopes, path.clone(), children)?);
                 }
                 Ok(Scope {
                     name,
@@ -169,13 +201,17 @@ impl Checker {
                 statements,
                 right_curly_brackets,
             } => {
-                let mut children = Scopes::new();
-                let mut ret = (ZXTyped::Void, Some(right_curly_brackets.pos.clone()));
+                let mut ret_type = (ZXTyped::Void, Some(right_curly_brackets.pos.clone()));
+                let mut bytecodes: Vec<BytecodeType> = vec![];
+                children.push(Scopes::new());
                 for statement in statements.iter() {
-                    match self.statement(statement.clone(), scopes, &mut children, path.clone()) {
-                        Ok(ret_type) => {
-                            if ret_type.1.is_some() {
-                                ret = ret_type
+                    match self.statement(statement.clone(), scopes, children, path.clone()) {
+                        Ok(ret) => {
+                            if ret.1.is_some() {
+                                ret_type = (ret.0, ret.1);
+                                if ret.2.is_some() {
+                                    bytecodes.push(ret.2.unwrap())
+                                }
                             }
                         }
                         Err(error) => self.reposts.push(Report {
@@ -184,8 +220,8 @@ impl Checker {
                         }),
                     }
                 }
-
-                children
+                let children_clone = children.last().unwrap().clone();
+                children_clone
                     .no_used_variables_or_functions()
                     .iter()
                     .for_each(|no_used_scope| {
@@ -197,11 +233,15 @@ impl Checker {
                             },
                         })
                     });
-
+                children.pop();
                 Ok(Scope {
-                    name: "_".into(),
+                    name: "$".into(),
                     path,
-                    scope_type: ScopeType::Block { children, ret },
+                    scope_type: ScopeType::Block {
+                        children: children_clone,
+                        ret: ret_type,
+                        bytecodes,
+                    },
                     uses_num: 0,
                     pos: Position {
                         start: left_curly_brackets.pos.start.clone(),

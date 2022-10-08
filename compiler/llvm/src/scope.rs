@@ -1,11 +1,14 @@
+use std::sync::Mutex;
+
 use crate::Builder;
 use inkwell::{
     types::{BasicMetadataTypeEnum, FunctionType},
     AddressSpace,
 };
 use util::{
+    bytecode::BytecodeType,
     scope::{Scope, ScopeType},
-    zx_type::ZXTyped, ast::Statement,
+    zx_type::ZXTyped,
 };
 
 impl<'a> Builder<'a> {
@@ -15,12 +18,20 @@ impl<'a> Builder<'a> {
                 parameters,
                 block,
                 return_type,
+                children,
             } => self.build_function(&scope.name, parameters, return_type, block),
             _ => {}
         }
     }
 
-    pub fn build_function(&self, name: &String, parameters: &Vec<Scope>, ret_type: &ZXTyped, block: &Statement) {
+    pub fn build_function(
+        &self,
+        name: &String,
+        parameters: &Vec<Scope>,
+        ret_type: &ZXTyped,
+        block: &BytecodeType,
+    ) {
+        let index = Mutex::new(parameters.len() + 2);
         let function = self.module.add_function(
             &name,
             self.function_type(
@@ -31,7 +42,7 @@ impl<'a> Builder<'a> {
         );
         let basic_block = self.context.append_basic_block(function, "entry");
         self.builder.position_at_end(basic_block);
-        self.statements(block, function);
+        self.bytecodes(block, function, &index);
     }
 
     pub fn function_type(
@@ -60,7 +71,7 @@ impl<'a> Builder<'a> {
         parameters
             .iter()
             .map(|parameter| {
-                if let ScopeType::DefVariable { var_type } = &parameter.scope_type {
+                if let ScopeType::DefVariable { var_type, .. } = &parameter.scope_type {
                     Ok(match var_type {
                         ZXTyped::Char { .. } => self.context.i8_type().into(),
                         ZXTyped::String { .. } => self

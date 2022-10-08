@@ -92,7 +92,9 @@ impl Token {
         match &self.token_type {
             Tokens::IdentifierToken { literal } => Ok(literal.to_string()),
             Tokens::LiteralToken { literal, .. } => Ok(literal.to_string()),
-            _ => Err(ZXError::InternalError { message: "Token to string error".into() })
+            _ => Err(ZXError::InternalError {
+                message: "Token to string error".into(),
+            }),
         }
     }
 }

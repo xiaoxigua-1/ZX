@@ -2,8 +2,8 @@ use check::Checker;
 use lexer::Lexer;
 use parser::Parser;
 use std::fs;
-use util::report::{Level, Report};
 use std::path::Path;
+use util::report::{Level, Report};
 
 pub struct Compiler {
     pub path: String,

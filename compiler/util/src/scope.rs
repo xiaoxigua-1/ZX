@@ -1,24 +1,27 @@
-use crate::zx_type::ZXTyped;
-use crate::ast::Statement;
+use crate::bytecode::BytecodeType;
 use crate::token::Position;
+use crate::zx_type::ZXTyped;
 
 #[derive(Clone, Debug)]
 pub enum ScopeType {
     DefFunction {
         parameters: Vec<Scope>,
-        block: Statement,
+        block: BytecodeType,
         return_type: ZXTyped,
+        children: Scopes,
     },
     DefVariable {
         var_type: ZXTyped,
+        value: Option<BytecodeType>,
     },
     DefClass {
         members: Scopes,
     },
     Block {
         children: Scopes,
-        ret: (ZXTyped, Option<Position>)
-    }
+        ret: (ZXTyped, Option<Position>),
+        bytecodes: Vec<BytecodeType>,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -48,16 +51,6 @@ impl Scopes {
                 find = Some(scope.clone())
             }
         }
-
-        if let Some(last_scope) = self.scopes.last_mut() {
-            if let Some(find) = match &mut last_scope.scope_type {
-                ScopeType::Block { children, .. } => children.find_scope(name),
-                ScopeType::DefClass { members } => members.find_scope(name),
-                _ => None,
-            } {
-                return Some(find);
-            };
-        };
 
         find
     }
